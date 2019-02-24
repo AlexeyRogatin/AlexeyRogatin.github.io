@@ -6,6 +6,18 @@ let rect = canvas.getBoundingClientRect();
 canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
 
+let camera = {
+    x: 0,
+    y: 0,
+    width: canvas.width,
+    height: canvas.height,
+    angle: 0,
+};
+
+let globalX = camera.width / 2;
+let globalY = camera.height / 2; //глобальная переменная расположения игрока
+
+
 let particles = [];
 
 let loose = null;
@@ -122,14 +134,6 @@ const AI_STATE_MOVE_FORWARD = 3;
 const AI_STATE_SHOOT = 4;
 
 let gameObjects = [];
-
-let camera = {
-    x: 0,
-    y: 0,
-    width: canvas.width,
-    height: canvas.height,
-    angle: 0,
-};
 
 let timers = [];
 function addTimer() {
@@ -249,11 +253,33 @@ function addBouncingPowerUp(x, y) {
 const globalPlayer = addPlayer();
 
 function addEnemy() {
+    let chance = getRandomInt(1, 4);
     let enemy = addGameObject(GAME_OBJECT_ENEMY);
     enemy.width = 20;
     enemy.height = 40;
-    enemy.x = -camera.width / 2;
-    enemy.y = -camera.height / 2;
+    switch (chance) {
+        case 1:
+            {
+                enemy.x = globalX - camera.width / 2;
+                enemy.y = globalY - camera.height / 2;
+            } break;
+        case 2:
+            {
+                enemy.x = globalX + camera.width / 2;
+                enemy.y = globalY - camera.height / 2;
+            } break;
+        case 3:
+            {
+                enemy.x = globalX - camera.width / 2;
+                enemy.y = globalY + camera.height / 2;
+            } break;
+        case 4:
+            {
+                enemy.x = globalX + camera.width / 2;
+                enemy.y = globalY + camera.height / 2;
+            } break;
+    }
+
     enemy.color = 'green';
     enemy.collisionRadius = 15;
     enemy.sprite = imgEnemyVadim;
@@ -264,8 +290,8 @@ function addEnemy() {
 
 function addEnemyRocketeer() {
     let enemy = addGameObject(GAME_OBJECT_ENEMY_ROCKETEER);
-    enemy.x = -camera.width / 2;
-    enemy.y = -camera.height / 2;
+    enemy.x = globalX - camera.width / 2;
+    enemy.y = globalY - camera.height / 2;
     enemy.collisionRadius = 15;
     enemy.sprite = imgEnemyVadim1;
     enemy.angle = getRandomFloat(0, 2 * Math.PI);
@@ -275,8 +301,8 @@ function addEnemyRocketeer() {
 
 function addEnemyTank() {
     let enemy = addGameObject(GAME_OBJECT_ENEMY_TANK);
-    enemy.x = -camera.width / 2;
-    enemy.y = -camera.height / 2;
+    enemy.x = globalX - camera.width / 2;
+    enemy.y = globalY - camera.height / 2;
     enemy.collisionRadius = 40;
     enemy.sprite = imgEnemyTank;
     enemy.angle = getRandomFloat(0, 2 * Math.PI);
@@ -286,8 +312,8 @@ function addEnemyTank() {
 
 function addTripleShooter() {
     let enemy = addGameObject(GAME_OBJECT_TRIPLESHOOTER);
-    enemy.x = -camera.width / 2;
-    enemy.y = -camera.height / 2;
+    enemy.x = globalX - camera.width / 2;
+    enemy.y = globalY - camera.height / 2;
     enemy.collisionRadius = 15;
     enemy.sprite = imgShooter;
     enemy.angle = getRandomFloat(0, 2 * Math.PI);
@@ -299,8 +325,8 @@ let globalBoss = null;
 
 function addBoss() {
     let enemy = addGameObject(GAME_OBJECT_BOSS);
-    enemy.x = -camera.width / 2;
-    enemy.y = -camera.height / 2;
+    enemy.x = globalX - camera.width / 2;
+    enemy.y = globalY - camera.height / 2;
     enemy.collisionRadius = 140;
     enemy.sprite = imgBoss;
     enemy.angle = getRandomFloat(0, 2 * Math.PI);
@@ -546,6 +572,10 @@ let globalScore = 0;
 
 function updateGameObject(gameObject) {
     if (gameObject.type === GAME_OBJECT_PLAYER) {
+        globalX = gameObject.x;
+        globalY = gameObject.y;
+        camera.x = gameObject.x
+        camera.y = gameObject.y
         let hitHeal = checkCollision(gameObject, [GAME_OBJECT_HEAL]);
         if (hitHeal !== null) {
             removeGameObject(hitHeal);
@@ -657,12 +687,12 @@ function updateGameObject(gameObject) {
         ctx.rotate(-camera.angle);
 
         const PADDING = 10;
-        drawRect(PADDING + width / 2 - camera.width / 2, PADDING + height / 2 - camera.height / 2, width, height, 0, 'red');
-        drawRect(PADDING + leftWidth / 2 - camera.width / 2, PADDING + height / 2 - camera.height / 2, leftWidth, height, 0, 'green');
+        drawRect(PADDING + width / 2 + globalX - camera.width / 2, PADDING + height / 2 + globalY - camera.height / 2, width, height, 0, 'red');
+        drawRect(PADDING + leftWidth / 2 + globalX - camera.width / 2, PADDING + height / 2 + globalY - camera.height / 2, leftWidth, height, 0, 'green');
         ctx.restore();
 
         //draw score
-        drawText(camera.width / 2 - PADDING, -camera.height / 2 + PADDING, 'Score: ' + globalScore, 'top', 'right', '30px Arial', 'white');
+        drawText(globalX + camera.width / 2 - PADDING, globalY - camera.height / 2 + PADDING, 'Score: ' + globalScore, 'top', 'right', '30px Arial', 'white');
     };
 
     if (gameObject.type === GAME_OBJECT_ENEMY) {
@@ -878,19 +908,6 @@ function updateGameObject(gameObject) {
         ) {
             gameObject.speedY *= -1;
         }
-    } else if (gameObject.type !== GAME_OBJECT_BULLET) {
-        if (gameObject.x > camera.width / 2) {
-            gameObject.x -= camera.width;
-        }
-        if (gameObject.x < -camera.width / 2) {
-            gameObject.x += camera.width;
-        }
-        if (gameObject.y > camera.height / 2) {
-            gameObject.y -= camera.height;
-        }
-        if (gameObject.y < -camera.height / 2) {
-            gameObject.y += camera.height;
-        }
     }
 
     if (gameObject.sprite) {
@@ -921,6 +938,7 @@ let songTimer = addTimer();
 
 timers[songTimer] = 30;
 timers[gameTimer] = 4200;
+timers[enemySpawnTimer] = 1;
 
 function loop() {
     if (timers[songTimer] <= 0) {
@@ -988,14 +1006,14 @@ function loop() {
     drawParticles();
 
     if (!globalPlayer.exists && win === null) {
-        drawText(0, -30, 'Вы были расплющены Score: ' + globalScore, 'middle', 'center', '60px Arial', 'white');
-        drawText(0, 30, 'Press F5 to restart', 'middle', 'center', '60px Arial', 'white');
+        drawText(globalX, globalY - 30, 'Вы были расплющены Score: ' + globalScore, 'middle', 'center', '60px Arial', 'white');
+        drawText(globalX, globalY + 30, 'Press F5 to restart', 'middle', 'center', '60px Arial', 'white');
         loose = true;
     }
 
     if (timers[gameTimer] <= 0 && !globalBoss.exists && loose === null) {
-        drawText(0, -30, 'Вы выиграли) Score: ' + globalScore, 'middle', 'center', '60px Arial', 'white');
-        drawText(0, 30, 'Press F5 to restart', 'middle', 'center', '60px Arial', 'white');
+        drawText(globalX, globalY - 30, 'Вы выиграли) Score: ' + globalScore, 'middle', 'center', '60px Arial', 'white');
+        drawText(globalX, globalY + 30, 'Press F5 to restart', 'middle', 'center', '60px Arial', 'white');
         win = true;
     }
 
