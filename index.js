@@ -538,9 +538,9 @@ function processAI(gameObject) {
     };
 }
 
-const ROCKET_MODE_TIME = 500;
-const BEAN_MODE_TIME = 800;
-const BOUNCING_MODE_TIME = 400;
+const ROCKET_MODE_TIME = 600;
+const BEAN_MODE_TIME = 600;
+const BOUNCING_MODE_TIME = 600;
 
 let globalScore = 0;
 
@@ -588,38 +588,40 @@ function updateGameObject(gameObject) {
             let beanModeOn = timers[gameObject.beanModeTimer] > 0;
             let bouncingModeOn = timers[gameObject.bouncingModeTimer] > 0;
 
-            if (rocketModeOn) {
+            if (rocketModeOn & timers[gameObject.rocketModeTimer] > timers[gameObject.beanModeTimer] & timers[gameObject.rocketModeTimer] > timers[gameObject.bouncingModeTimer]) {
                 bullet = addBullet(
                     gameObject.x, gameObject.y,
                     gameObject.angle, gameObject.speedX,
-                    gameObject.speedY, 9, killObjectTypes, 120, 60,
+                    gameObject.speedY, 9, killObjectTypes, 120, 70,
                 );
                 bullet.bounce = false;
                 bullet.sprite = imgRocketVadim;
                 bullet.shootParticles = true;
                 bullet.damage = 2;
 
-                timers[gameObject.shootTimer] = 12;
+                timers[gameObject.shootTimer] = 10;
                 playSound(sndRocket, 0.07);
-            } else if (beanModeOn) {
+            } else if (beanModeOn & timers[gameObject.beanModeTimer] > timers[gameObject.rocketModeTimer] & timers[gameObject.beanModeTimer] > timers[gameObject.bouncingModeTimer]) {
                 bullet = addBullet(
                     gameObject.x, gameObject.y,
                     gameObject.angle, gameObject.speedX,
-                    gameObject.speedY, 3, killObjectTypes, 800, 82,
+                    gameObject.speedY, 3,
+                    killObjectTypes,
+                    800, 82,
                 );
                 bullet.bounce = false;
                 bullet.sprite = imgGiantShoot;
                 bullet.shootParticles = false;
-                bullet.damage = 5;
+                bullet.damage = 0.2;
                 bullet.pierce = true;
 
-                timers[gameObject.shootTimer] = 100;
+                timers[gameObject.shootTimer] = 80;
                 playSound(sndMoon, 0.2);
-            } else if (bouncingModeOn) {
+            } else if (bouncingModeOn & timers[gameObject.bouncingModeTimer] > timers[gameObject.beanModeTimer] & timers[gameObject.bouncingModeTimer] > timers[gameObject.rocketModeTimer]) {
                 bullet = addBullet(
                     gameObject.x, gameObject.y,
                     gameObject.angle, gameObject.speedX,
-                    gameObject.speedY, 10, killObjectTypes, 400, 15,
+                    gameObject.speedY, 10, killObjectTypes, 200, 15,
                 );
                 bullet.bounce = true;
                 bullet.sprite = imgBounce;
@@ -784,7 +786,7 @@ function updateGameObject(gameObject) {
                 if (hitObject.type === GAME_OBJECT_PLAYER) {
                     timers[hitObject.unhitableTimer] = 2 * 60;
                 }
-                if (gameObject.pierce === false || gameObject.killObjectTypes === GAME_OBJECT_BOSS) {
+                if (gameObject.pierce === false) {
                     amIDead = true;
                 }
             }
@@ -926,7 +928,6 @@ function loop() {
         timers[songTimer] = 1500;
     }
 
-    console.log(timers[gameTimer]);
     if (imgStars.width) {
         let minX = Math.floor(camera.x / imgStars.width);
         let minY = Math.floor(camera.y / imgStars.height);
