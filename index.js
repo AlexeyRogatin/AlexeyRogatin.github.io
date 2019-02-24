@@ -1,7 +1,20 @@
 
 var canvas = document.getElementById("canvas");
-canvas.width = 800;
-canvas.height = 600;
+canvas.width = 1400;
+canvas.height = 725;
+
+function loadImage(src) {
+    let img = new Image()
+    img.src = src
+    return img
+}
+
+let imgEnemy = loadImage('./sprites/enemy.png')
+let imgEnemyBullet = loadImage('./sprites/enemy_bullet.png')
+let imgPlayerBullet = loadImage('./sprites/player_bullet.png')
+let imgPlayer = loadImage('./sprites/player.png')
+let imgPlayerConsept = loadImage('./sprites/playerconsept.png')
+let imgStars = loadImage('./sprites/stars.png')
 
 var ctx = canvas.getContext("2d");
 
@@ -17,6 +30,13 @@ const AI_STATE_MOVE_FORWARD = 3
 const AI_STATE_SHOOT = 4
 
 let gameObjects = []
+
+let camera = {
+    x: 0,
+    y: 0,
+    width: canvas.width,
+    height: canvas.height,
+}
 
 let timers = []
 function addTimer() {
@@ -73,11 +93,11 @@ function addGameObject(type) {
 
 function makePlayer() {
     let player = addGameObject(GAME_OBJECT_PLAYER)
-    player.height = 30
-    player.width = 50
+    player.width = 20
     player.x = 100
     player.y = 100
     player.color = 'yellow'
+    player.sprite = imgPlayer
     player.collisionRadius = 20;
     return (player)
 }
@@ -86,12 +106,13 @@ makePlayer()
 
 function makeEnemy() {
     let enemy = addGameObject(GAME_OBJECT_ENEMY)
-    enemy.width = 40
-    enemy.height = 60
+    enemy.width = 20
+    enemy.height = 40
     enemy.x = 60
     enemy.y = 60
     enemy.color = 'green'
     enemy.collisionRadius = 15;
+    enemy.sprite = imgEnemy;
     return (enemy)
 }
 
@@ -186,10 +207,14 @@ function updateGameObject(gameObject) {
 
     if (gameObject.type === GAME_OBJECT_PLAYER) {
 
+        camera.x = gameObject.x
+        camera.y = gameObject.y
+
         let canShoot = timers[gameObject.shootTimer] <= 0;
 
         if (spaceKey.isDown && canShoot) {
             let bullet = addBullet(gameObject.x, gameObject.y, gameObject.angle, gameObject.speedX, gameObject.speedY, 10, GAME_OBJECT_ENEMY);
+            bullet.sprite = imgPlayerBullet;
             timers[gameObject.shootTimer] = 10
         }
 
@@ -239,7 +264,8 @@ function updateGameObject(gameObject) {
         let canShoot = timers[gameObject.shootTimer] <= 0;
         if (shoot && canShoot) {
             let bullet = addBullet(gameObject.x, gameObject.y, gameObject.angle, gameObject.speedX, gameObject.speedY, 10, GAME_OBJECT_PLAYER)
-            timers[gameObject.shootTimer] = 1;
+            bullet.sprite = imgEnemyBullet;
+            timers[gameObject.shootTimer] = 15;
         }
 
         controlShip(gameObject, rotateRight, rotateLeft, moveForward)
@@ -279,6 +305,9 @@ function updateGameObject(gameObject) {
 
     ctx.save();
 
+    //camera
+    ctx.translate(-camera.x + camera.width / 2, -camera.y + camera.height / 2)
+
     if (gameObject.sprite) {
         drawSprite(gameObject.x, gameObject.y, gameObject.sprite, gameObject.angle)
     } else {
@@ -298,6 +327,25 @@ for (let i = 0; i < 4; i++) {
 function loop() {
     ctx.fillStyle = 'black';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+
+
+    if (imgStars.width) {
+        let minX = Math.floor(camera.x / imgStars.width)
+        let minY = Math.floor(camera.y / imgStars.height)
+        let maxX = Math.floor((camera.x + camera.width) / imgStars.width)
+        let maxY = Math.floor((camera.y + camera.height) / imgStars.height)
+
+        for (let bgTileX = minX; bgTileX <= maxX; bgTileX++) {
+            for (let bgTileY = minY; bgTileY <= maxY; bgTileY++) {
+                ctx.drawImage(imgStars,
+                    -camera.x - imgStars.width / 2 + camera.width / 2 + bgTileX * imgStars.width,
+                    -camera.y - imgStars.height / 2 + camera.height / 2 + bgTileY * imgStars.height,
+                )
+            }
+        }
+    }
+
 
     for (let gameObjectIndex = 0; gameObjectIndex < gameObjects.length; gameObjectIndex++) {
         let gameObject = gameObjects[gameObjectIndex]
