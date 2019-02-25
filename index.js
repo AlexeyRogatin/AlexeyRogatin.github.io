@@ -977,7 +977,7 @@ let tutorielTimer = addTimer();
 
 timers[gameTimer] = 0;
 timers[enemySpawnTimer] = 1;
-timers[tutorielTimer] = 300000000;
+timers[tutorielTimer] = 300;
 
 function loop() {
     if (imgStars.width > 0) {
