@@ -14,10 +14,6 @@ let camera = {
     angle: 0,
 };
 
-let globalX = camera.width / 2;
-let globalY = camera.height / 2; //глобальная переменная расположения игрока
-
-
 let particles = [];
 
 let loose = null;
@@ -70,18 +66,39 @@ function removeParticle(particleIndex) {
 }
 
 
+let resourcesWaitingForLoadCount = 0;
+let resourcesLoadedCount = 0;
+
+function resourceLoaded(src) {
+    resourcesLoadedCount++;
+
+    console.log('loaded', src);
+    if (resourcesWaitingForLoadCount === resourcesLoadedCount) {
+        beginGame();
+    }
+}
 
 function loadImage(src) {
     let img = new Image();
     img.src = src;
+    resourcesWaitingForLoadCount++;
+    img.onload = () => resourceLoaded(src);
+
     return img;
 }
 
 function loadSound(src) {
     let sound = new Audio();
     sound.src = src;
+    resourcesWaitingForLoadCount++;
+    sound.shouldBeLoaded = true;
+    sound.oncanplay = () => resourceLoaded(src);
     return sound;
 }
+
+
+
+
 let sndSong = loadSound('./sounds/Vadim/Moya_pesnya_6.wav');
 let sndEngine = loadSound('./sounds/engine.mp3');
 let sndShot = loadSound('./sounds/shot.mp3');
@@ -97,7 +114,7 @@ let imgPowerUp = loadImage('./sprites/powerUp.png');
 let imgEnemy = loadImage('./sprites/enemy.png');
 let imgEnemyBullet = loadImage('./sprites/enemy_bullet.png');
 let imgPlayerBullet = loadImage('./sprites/player_bullet.png');
-let imgStars = loadImage('./sprites/Vadim/stars.png');
+let imgStars = loadImage('./sprites/stars.png');
 let imgHeal = loadImage('./sprites/heal.png');
 let imgGiantShoot = loadImage('./sprites/bean.png');
 let imgEnemyTank = loadImage('./sprites/Vadim/tank.png');
@@ -110,6 +127,7 @@ let imgEnemyVadim1 = loadImage('./sprites/Vadim/player3.png');
 let imgEnemyVadim = loadImage('./sprites/Vadim/player.png');
 let imgPlayerVadim = loadImage('./sprites/Vadim/player2.png');
 let imgRocketVadim = loadImage('./sprites/Vadim/rocket.png');
+
 
 
 var ctx = canvas.getContext("2d");
@@ -260,23 +278,23 @@ function addEnemy() {
     switch (chance) {
         case 1:
             {
-                enemy.x = globalX - camera.width / 2;
-                enemy.y = globalY - camera.height / 2;
+                enemy.x = camera.x - camera.width / 2;
+                enemy.y = camera.y - camera.height / 2;
             } break;
         case 2:
             {
-                enemy.x = globalX + camera.width / 2;
-                enemy.y = globalY - camera.height / 2;
+                enemy.x = camera.x + camera.width / 2;
+                enemy.y = camera.y - camera.height / 2;
             } break;
         case 3:
             {
-                enemy.x = globalX - camera.width / 2;
-                enemy.y = globalY + camera.height / 2;
+                enemy.x = camera.x - camera.width / 2;
+                enemy.y = camera.y + camera.height / 2;
             } break;
         case 4:
             {
-                enemy.x = globalX + camera.width / 2;
-                enemy.y = globalY + camera.height / 2;
+                enemy.x = camera.x + camera.width / 2;
+                enemy.y = camera.y + camera.height / 2;
             } break;
     }
 
@@ -290,8 +308,8 @@ function addEnemy() {
 
 function addEnemyRocketeer() {
     let enemy = addGameObject(GAME_OBJECT_ENEMY_ROCKETEER);
-    enemy.x = globalX - camera.width / 2;
-    enemy.y = globalY - camera.height / 2;
+    enemy.x = camera.x - camera.width / 2;
+    enemy.y = camera.y - camera.height / 2;
     enemy.collisionRadius = 15;
     enemy.sprite = imgEnemyVadim1;
     enemy.angle = getRandomFloat(0, 2 * Math.PI);
@@ -301,8 +319,8 @@ function addEnemyRocketeer() {
 
 function addEnemyTank() {
     let enemy = addGameObject(GAME_OBJECT_ENEMY_TANK);
-    enemy.x = globalX - camera.width / 2;
-    enemy.y = globalY - camera.height / 2;
+    enemy.x = camera.x - camera.width / 2;
+    enemy.y = camera.y - camera.height / 2;
     enemy.collisionRadius = 40;
     enemy.sprite = imgEnemyTank;
     enemy.angle = getRandomFloat(0, 2 * Math.PI);
@@ -312,8 +330,8 @@ function addEnemyTank() {
 
 function addTripleShooter() {
     let enemy = addGameObject(GAME_OBJECT_TRIPLESHOOTER);
-    enemy.x = globalX - camera.width / 2;
-    enemy.y = globalY - camera.height / 2;
+    enemy.x = camera.x - camera.width / 2;
+    enemy.y = camera.y - camera.height / 2;
     enemy.collisionRadius = 15;
     enemy.sprite = imgShooter;
     enemy.angle = getRandomFloat(0, 2 * Math.PI);
@@ -325,8 +343,8 @@ let globalBoss = null;
 
 function addBoss() {
     let enemy = addGameObject(GAME_OBJECT_BOSS);
-    enemy.x = globalX - camera.width / 2;
-    enemy.y = globalY - camera.height / 2;
+    enemy.x = camera.x - camera.width / 2;
+    enemy.y = camera.y - camera.height / 2;
     enemy.collisionRadius = 140;
     enemy.sprite = imgBoss;
     enemy.angle = getRandomFloat(0, 2 * Math.PI);
@@ -439,10 +457,13 @@ function rotateVector(x, y, angle) {
     };
 }
 
-function playSound(sound, volume = 1) {
-    let newSound = loadSound(sound.src);
-    newSound.play();
+function playSound(sound, volume = 1, loop = false) {
+    let newSound = new Audio(sound.src);
     newSound.volume = volume;
+    newSound.loop = loop;
+    newSound.oncanplay = () => {
+        newSound.play();
+    };
 }
 
 function checkCollision(gameObject, otherTypes) {
@@ -572,10 +593,8 @@ let globalScore = 0;
 
 function updateGameObject(gameObject) {
     if (gameObject.type === GAME_OBJECT_PLAYER) {
-        globalX = gameObject.x;
-        globalY = gameObject.y;
-        camera.x = gameObject.x
-        camera.y = gameObject.y
+        camera.x = gameObject.x;
+        camera.y = gameObject.y;
         let hitHeal = checkCollision(gameObject, [GAME_OBJECT_HEAL]);
         if (hitHeal !== null) {
             removeGameObject(hitHeal);
@@ -629,7 +648,7 @@ function updateGameObject(gameObject) {
                 bullet.shootParticles = true;
                 bullet.damage = 2;
 
-                timers[gameObject.shootTimer] = 10;
+                timers[gameObject.shootTimer] = 15;
                 playSound(sndRocket, 0.07);
             } else if (beanModeOn & timers[gameObject.beanModeTimer] > timers[gameObject.rocketModeTimer] & timers[gameObject.beanModeTimer] > timers[gameObject.bouncingModeTimer]) {
                 bullet = addBullet(
@@ -687,12 +706,12 @@ function updateGameObject(gameObject) {
         ctx.rotate(-camera.angle);
 
         const PADDING = 10;
-        drawRect(PADDING + width / 2 + globalX - camera.width / 2, PADDING + height / 2 + globalY - camera.height / 2, width, height, 0, 'red');
-        drawRect(PADDING + leftWidth / 2 + globalX - camera.width / 2, PADDING + height / 2 + globalY - camera.height / 2, leftWidth, height, 0, 'green');
+        drawRect(PADDING + width / 2 + camera.x - camera.width / 2, PADDING + height / 2 + camera.y - camera.height / 2, width, height, 0, 'red');
+        drawRect(PADDING + leftWidth / 2 + camera.x - camera.width / 2, PADDING + height / 2 + camera.y - camera.height / 2, leftWidth, height, 0, 'green');
         ctx.restore();
 
         //draw score
-        drawText(globalX + camera.width / 2 - PADDING, globalY - camera.height / 2 + PADDING, 'Score: ' + globalScore, 'top', 'right', '30px Arial', 'white');
+        drawText(camera.x + camera.width / 2 - PADDING, camera.y - camera.height / 2 + PADDING, 'Score: ' + globalScore, 'top', 'right', '30px Arial', 'white');
     };
 
     if (gameObject.type === GAME_OBJECT_ENEMY) {
@@ -895,16 +914,37 @@ function updateGameObject(gameObject) {
     gameObject.speedX *= gameObject.frictionConst;
     gameObject.speedY *= gameObject.frictionConst;
 
+    if (gameObject.x > camera.x + camera.width / 2 + 150) {
+        gameObject.angle = gameObject.angle - Math.PI;
+        gameObject.moveForward = true;
+        gameObject.x -= 1;
+    }
+    if (gameObject.x < camera.x - camera.width / 2 - 150) {
+        gameObject.angle = gameObject.angle - Math.PI;
+        gameObject.moveForward = true;
+        gameObject.x += 1;
+    }
+    if (gameObject.y > camera.y + camera.width / 2 + 150) {
+        gameObject.angle = gameObject.angle - Math.PI;
+        gameObject.moveForward = true;
+        gameObject.y -= 1;
+    }
+    if (gameObject.y < camera.y - camera.width / 2 - 150) {
+        gameObject.angle = gameObject.angle - Math.PI;
+        gameObject.moveForward = true;
+        gameObject.y += 1;
+    }
+
     if (gameObject.bounce) {
         if (
-            gameObject.x > camera.width / 2 ||
-            gameObject.x < -camera.width / 2
+            gameObject.x > camera.x + camera.width / 2 ||
+            gameObject.x < camera.x - camera.width / 2
         ) {
             gameObject.speedX *= -1;
         }
         if (
-            gameObject.y > camera.height / 2 ||
-            gameObject.y < -camera.height / 2
+            gameObject.y > camera.y + camera.height / 2 ||
+            gameObject.y < camera.y - camera.height / 2
         ) {
             gameObject.speedY *= -1;
         }
@@ -932,29 +972,24 @@ let enemySpawnInterval = 2 * 60;
 
 let screenShakeTimer = addTimer();
 let globalTime = 0;
-
 let gameTimer = addTimer();
-let songTimer = addTimer();
+let tutorielTimer = addTimer();
 
-timers[songTimer] = 30;
-timers[gameTimer] = 4200;
+timers[gameTimer] = 0;
 timers[enemySpawnTimer] = 1;
+timers[tutorielTimer] = 300000000;
 
 function loop() {
-    if (timers[songTimer] <= 0) {
-        playSound(sndSong, 0.75);
-        timers[songTimer] = 1500;
-    }
-
-    if (imgStars.width) {
-        let minX = Math.floor(camera.x / imgStars.width);
-        let minY = Math.floor(camera.y / imgStars.height);
+    if (imgStars.width > 0) {
+        let minX = Math.floor((camera.x - camera.width) / imgStars.width);
+        let minY = Math.floor((camera.y - camera.height) / imgStars.height);
         let maxX = Math.floor((camera.x + camera.width) / imgStars.width);
         let maxY = Math.floor((camera.y + camera.height) / imgStars.height);
 
         for (let bgTileX = minX; bgTileX <= maxX; bgTileX++) {
             for (let bgTileY = minY; bgTileY <= maxY; bgTileY++) {
-                ctx.drawImage(imgStars,
+                ctx.drawImage(
+                    imgStars,
                     -camera.x - imgStars.width / 2 + camera.width / 2 + bgTileX * imgStars.width,
                     -camera.y - imgStars.height / 2 + camera.height / 2 + bgTileY * imgStars.height,
                 );
@@ -985,16 +1020,18 @@ function loop() {
         enemySpawnInterval = 1 / Math.sqrt(Math.sqrt(globalTime + 100)) * 700;
     }
 
-    if (timers[screenShakeTimer] > 0) {
-        camera.angle = getRandomFloat(-0.02, 0.02);
-    } else {
-        camera.angle = 0;
-    }
+    // if (timers[screenShakeTimer] > 0) {
+    //     camera.angle = getRandomFloat(-0.02, 0.02);
+    // } else {
+    //     camera.angle = 0;
+    // }
     ctx.save();
 
     //camera
-    ctx.translate(-camera.x + camera.width / 2, -camera.y + camera.height / 2);
+
+
     ctx.rotate(camera.angle);
+    ctx.translate(-camera.x + camera.width / 2, -camera.y + camera.height / 2);
 
     for (let gameObjectIndex = 0; gameObjectIndex < gameObjects.length; gameObjectIndex++) {
         let gameObject = gameObjects[gameObjectIndex];
@@ -1005,23 +1042,34 @@ function loop() {
 
     drawParticles();
 
+    if (timers[tutorielTimer] > 0) {
+        drawText(camera.x, camera.y - 160, '        W                         ', 'middle', 'center', '60px Arial', 'white');
+        drawText(camera.x, camera.y - 100, 'Двигаться - A    D     Стрелять - Пробел', 'middle', 'center', '60px Arial', 'white');
+    }
+
     if (!globalPlayer.exists && win === null) {
-        drawText(globalX, globalY - 30, 'Вы были расплющены Score: ' + globalScore, 'middle', 'center', '60px Arial', 'white');
-        drawText(globalX, globalY + 30, 'Press F5 to restart', 'middle', 'center', '60px Arial', 'white');
+        drawText(camera.x, camera.y - 30, 'Вы были расплющены Ваш счёт: ' + globalScore, 'middle', 'center', '60px Arial', 'white');
+        drawText(camera.x, camera.y + 30, 'Press F5 to restart', 'middle', 'center', '60px Arial', 'white');
         loose = true;
     }
 
     if (timers[gameTimer] <= 0 && !globalBoss.exists && loose === null) {
-        drawText(globalX, globalY - 30, 'Вы выиграли) Score: ' + globalScore, 'middle', 'center', '60px Arial', 'white');
-        drawText(globalX, globalY + 30, 'Press F5 to restart', 'middle', 'center', '60px Arial', 'white');
+        drawText(camera.x, camera.y - 30, 'Вы выиграли) Ваш счёт: ' + globalScore, 'middle', 'center', '60px Arial', 'white');
+        drawText(camera.x, camera.y + 30, 'Press F5 to restart', 'middle', 'center', '60px Arial', 'white');
         win = true;
     }
 
     ctx.restore();
 
-    globalTime++;
+    globalTime += 1;
     updateTimers();
     clearAllKeys();
     requestAnimationFrame(loop);
 }
-requestAnimationFrame(loop);
+
+function beginGame() {
+    playSound(sndSong, 0.75, true);
+    requestAnimationFrame(loop);
+    console.log('game started');
+}
+
