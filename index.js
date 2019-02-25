@@ -917,22 +917,22 @@ function updateGameObject(gameObject) {
     if (gameObject.x > camera.x + camera.width / 2 + 150) {
         gameObject.angle = gameObject.angle - Math.PI;
         gameObject.moveForward = true;
-        gameObject.x -= 1;
+        gameObject.x -= 5;
     }
     if (gameObject.x < camera.x - camera.width / 2 - 150) {
         gameObject.angle = gameObject.angle - Math.PI;
         gameObject.moveForward = true;
-        gameObject.x += 1;
+        gameObject.x += 5;
     }
     if (gameObject.y > camera.y + camera.width / 2 + 150) {
         gameObject.angle = gameObject.angle - Math.PI;
         gameObject.moveForward = true;
-        gameObject.y -= 1;
+        gameObject.y -= 5;
     }
     if (gameObject.y < camera.y - camera.width / 2 - 150) {
         gameObject.angle = gameObject.angle - Math.PI;
         gameObject.moveForward = true;
-        gameObject.y += 1;
+        gameObject.y += 5;
     }
 
     if (gameObject.bounce) {
