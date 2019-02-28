@@ -19,6 +19,16 @@ let particles = [];
 let loose = null;
 let win = null;
 
+function drawRect(x, y, width, height, angle, color) {
+    ctx.save();	//Сохраняется, чтобы потом можно было вернуть экран
+    ctx.translate(x, y);	//Сохраняет предыдущие координаты, чтобы переместить экран обратно
+    ctx.fillStyle = color;	//Выбирается окраска
+
+    ctx.rotate(-angle);	//Экран поворачивается на угол
+    ctx.fillRect(-width / 2, -height / 2, width, height);	//Рисуется четырёхугольник
+    ctx.restore();	//Экран возвращается
+}
+
 function addParticle(x, y, color, minRadius, maxRadius) {
     let randomAngle = getRandomFloat(0, Math.PI * 2);
 
@@ -376,15 +386,7 @@ function drawSprite(x, y, sprite, angle) {
     ctx.drawImage(sprite, -sprite.width / 2, -sprite.height / 2);
     ctx.restore();
 }
-function drawRect(x, y, width, height, angle, color) {
-    ctx.save();
-    ctx.translate(x, y);
-    ctx.fillStyle = color;
 
-    ctx.rotate(-angle);
-    ctx.fillRect(-width / 2, -height / 2, width, height);
-    ctx.restore();
-}
 
 function drawText(x, y, text, textBaseline, textAlign, font, fillStyle) {
     ctx.save();
@@ -806,7 +808,7 @@ function updateGameObject(gameObject) {
 
         let canShoot = timers[gameObject.shootTimer] <= 0;
         if (shoot && canShoot) {
-            for (let bulletIndex = 0; bulletIndex < 20; bulletIndex++) {
+            for (let bulletIndex = 0; bulletIndex < 30; bulletIndex++) {
                 let randomAngle = getRandomFloat(0, Math.PI * 2);
 
                 // let randomSpeed = getRandomFloat(2, 8);
