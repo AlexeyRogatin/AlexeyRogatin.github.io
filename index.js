@@ -78,13 +78,15 @@ function removeParticle(particleIndex) {
 
 let resourcesWaitingForLoadCount = 0;
 let resourcesLoadedCount = 0;
+let menu = true;
+let canBeginGame = false;
 
 function resourceLoaded(src) {
     resourcesLoadedCount++;
 
     console.log('loaded', src);
     if (resourcesWaitingForLoadCount === resourcesLoadedCount) {
-        beginGame();
+        canBeginGame = true;
     }
 }
 
@@ -105,9 +107,6 @@ function loadSound(src) {
     sound.oncanplay = () => resourceLoaded(src);
     return sound;
 }
-
-
-
 
 let sndSong = loadSound('./sounds/Vadim/Moya_pesnya_6.wav');
 let sndEngine = loadSound('./sounds/engine.mp3');
@@ -137,8 +136,6 @@ let imgEnemyVadim1 = loadImage('./sprites/Vadim/player3.png');
 let imgEnemyVadim = loadImage('./sprites/Vadim/player.png');
 let imgPlayerVadim = loadImage('./sprites/Vadim/player2.png');
 let imgRocketVadim = loadImage('./sprites/Vadim/rocket.png');
-
-
 
 var ctx = canvas.getContext("2d");
 
@@ -808,18 +805,18 @@ function updateGameObject(gameObject) {
 
         let canShoot = timers[gameObject.shootTimer] <= 0;
         if (shoot && canShoot) {
-            for (let bulletIndex = 0; bulletIndex < 30; bulletIndex++) {
+            for (let bulletIndex = 0; bulletIndex < 15; bulletIndex++) {
                 let randomAngle = getRandomFloat(0, Math.PI * 2);
 
                 // let randomSpeed = getRandomFloat(2, 8);
                 let bullet = addBullet(
                     gameObject.x, gameObject.y, randomAngle,
-                    gameObject.speedX, gameObject.speedY, 3, [GAME_OBJECT_PLAYER], 800, 15,
+                    gameObject.speedX, gameObject.speedY, 4, [GAME_OBJECT_PLAYER], 300, 15,
                 );
                 bullet.damage = 1;
                 bullet.sprite = imgEnemyBullet;
                 bullet.shootParticles = false;
-                timers[gameObject.shootTimer] = 120;
+                timers[gameObject.shootTimer] = 150;
             }
         };
 
@@ -859,7 +856,6 @@ function updateGameObject(gameObject) {
         }
     }
 
-
     if (gameObject.hitpoints <= 0) {
         timers[screenShakeTimer] = 20;
         if (gameObject.type === GAME_OBJECT_ENEMY) {
@@ -888,11 +884,6 @@ function updateGameObject(gameObject) {
         } else if (gameObject.type === GAME_OBJECT_PLAYER) {
             globalScore += 0;
         }
-
-
-
-
-
 
         removeGameObject(gameObject);
         playSound(sndExplosion, 1);
@@ -971,100 +962,164 @@ function updateGameObject(gameObject) {
 
 let enemySpawnTimer = addTimer();
 let enemySpawnInterval = 2 * 60;
+let globalTime = 0;
 
 let screenShakeTimer = addTimer();
-let globalTime = 0;
 let gameTimer = addTimer();
 let tutorielTimer = addTimer();
 
 timers[gameTimer] = 0;
 timers[enemySpawnTimer] = 1;
 timers[tutorielTimer] = 300;
+let menuKey = 1;
+let playerKey = 1;
+let difficult = 1;
+let difficultKey = 1;
 
 function loop() {
-    if (imgStars.width > 0) {
-        let minX = Math.floor((camera.x - camera.width) / imgStars.width);
-        let minY = Math.floor((camera.y - camera.height) / imgStars.height);
-        let maxX = Math.floor((camera.x + camera.width) / imgStars.width);
-        let maxY = Math.floor((camera.y + camera.height) / imgStars.height);
+    if (menu === true) {
+        if (upKey.wentDown & menuKey !== 1) {
+            menuKey--;
+        }
+        if (downKey.wentDown & menuKey !== 2) {
+            menuKey++;
+        }
+        drawRect(camera.x + camera.width / 2, camera.y + camera.height / 2, canvas.width, canvas.height, 0, 'black');
 
-        for (let bgTileX = minX; bgTileX <= maxX; bgTileX++) {
-            for (let bgTileY = minY; bgTileY <= maxY; bgTileY++) {
-                ctx.drawImage(
-                    imgStars,
-                    -camera.x - imgStars.width / 2 + camera.width / 2 + bgTileX * imgStars.width,
-                    -camera.y - imgStars.height / 2 + camera.height / 2 + bgTileY * imgStars.height,
-                );
+        drawText(camera.x + camera.width / 2, camera.y + camera.height / 2 - 330, 'Выберите персонажа', 'middle', 'center', '60px Arial', 'white');
+
+        if (menuKey === 1) {
+            drawText(camera.x + camera.width / 2, camera.y + camera.height / 2 - 150, '→  Играть', 'middle', 'center', '60px Arial', 'white');
+        } else {
+            drawText(camera.x + camera.width / 2, camera.y + camera.height / 2 - 150, '   Играть', 'middle', 'center', '60px Arial', 'white');
+        }
+
+        if (spaceKey.wentDown & canBeginGame & menuKey === 1) {
+            menu = false;
+        }
+
+        if (menuKey === 2 & difficultKey === 1) {
+            drawText(camera.x + camera.width / 2, camera.y + camera.height / 2 - 100, '→  Норма', 'middle', 'center', '60px Arial', 'white');
+            difficult = 1;
+        } else {
+            if (difficultKey === 1) {
+                drawText(camera.x + camera.width / 2, camera.y + camera.height / 2 - 100, '  Норма', 'middle', 'center', '60px Arial', 'white');
+                difficult = 1;
             }
         }
-    }
 
-
-    if (globalBoss === null) {
-        if (timers[gameTimer] <= 0) {
-            globalBoss = addBoss();
-        }
-    }
-
-    if (timers[enemySpawnTimer] <= 0) {
-        let chance = getRandomFloat(0, 1);
-        if (chance > 0.85) {
-            addEnemyRocketeer();
-        } else if (chance > 0.75) {
-            addEnemyTank();
-        } else if (chance > 0.60) {
-            addTripleShooter();
+        if (menuKey === 2 & difficultKey === 2) {
+            drawText(camera.x + camera.width / 2, camera.y + camera.height / 2 - 100, '→  Cложна', 'middle', 'center', '60px Arial', 'white');
+            difficult = 2;
         } else {
-            addEnemy();
+            if (difficultKey === 2) {
+                drawText(camera.x + camera.width / 2, camera.y + camera.height / 2 - 100, '  Сложна', 'middle', 'center', '60px Arial', 'white');
+                difficult = 2;
+            }
         }
 
-        timers[enemySpawnTimer] = enemySpawnInterval;
-        enemySpawnInterval = 1 / Math.sqrt(Math.sqrt(globalTime + 100)) * 700;
-    }
-
-    // if (timers[screenShakeTimer] > 0) {
-    //     camera.angle = getRandomFloat(-0.02, 0.02);
-    // } else {
-    //     camera.angle = 0;
-    // }
-    ctx.save();
-
-    //camera
-
-
-    ctx.rotate(camera.angle);
-    ctx.translate(-camera.x + camera.width / 2, -camera.y + camera.height / 2);
-
-    for (let gameObjectIndex = 0; gameObjectIndex < gameObjects.length; gameObjectIndex++) {
-        let gameObject = gameObjects[gameObjectIndex];
-        if (gameObject.exists) {
-            updateGameObject(gameObject);
+        if (menuKey === 2 & spaceKey.wentDown) {
+            difficultKey++;
+            if (difficultKey > 2) {
+                difficultKey -= 2;
+            }
         }
+
+        if (canBeginGame === false) {
+            drawText(camera.x + camera.width / 2, camera.y + camera.width / 2 - 90, 'Прогрузка...', 'middle', 'center', '60px Arial', 'white');
+        }
+    } else {
+        playSound(sndSong, 0.75, true);
+        if (imgStars.width > 0) {
+            let minX = Math.floor((camera.x - camera.width) / imgStars.width);
+            let minY = Math.floor((camera.y - camera.height) / imgStars.height);
+            let maxX = Math.floor((camera.x + camera.width) / imgStars.width);
+            let maxY = Math.floor((camera.y + camera.height) / imgStars.height);
+
+            for (let bgTileX = minX; bgTileX <= maxX; bgTileX++) {
+                for (let bgTileY = minY; bgTileY <= maxY; bgTileY++) {
+                    ctx.drawImage(
+                        imgStars,
+                        -camera.x - imgStars.width / 2 + camera.width / 2 + bgTileX * imgStars.width,
+                        -camera.y - imgStars.height / 2 + camera.height / 2 + bgTileY * imgStars.height,
+                    );
+                }
+            }
+        }
+
+
+        if (globalBoss === null) {
+            if (timers[gameTimer] <= 0) {
+                globalBoss = addBoss();
+            }
+        }
+
+        if (timers[enemySpawnTimer] <= 0) {
+            let chance = getRandomFloat(0, 1);
+            if (chance > 0.85) {
+                addEnemyRocketeer();
+            } else if (chance > 0.75) {
+                addEnemyTank();
+            } else if (chance > 0.60) {
+                addTripleShooter();
+            } else {
+                addEnemy();
+            }
+
+            timers[enemySpawnTimer] = enemySpawnInterval;
+            if (difficult === 1) {
+                enemySpawnInterval = 1 / Math.sqrt(Math.sqrt(globalTime + 100)) * 700;
+            }
+            if (difficult === 2) {
+                enemySpawnInterval = 0;
+            }
+        }
+
+        // if (timers[screenShakeTimer] > 0) {
+        //     camera.angle = getRandomFloat(-0.02, 0.02);
+        // } else {
+        //     camera.angle = 0;
+        // }
+        ctx.save();
+
+        //camera
+
+
+        ctx.rotate(camera.angle);
+        ctx.translate(-camera.x + camera.width / 2, -camera.y + camera.height / 2);
+
+        for (let gameObjectIndex = 0; gameObjectIndex < gameObjects.length; gameObjectIndex++) {
+            let gameObject = gameObjects[gameObjectIndex];
+            if (gameObject.exists) {
+                updateGameObject(gameObject);
+            }
+        }
+
+        drawParticles();
+
+        if (timers[tutorielTimer] > 0) {
+            drawText(camera.x, camera.y - 160, '        W                         ', 'middle', 'center', '60px Arial', 'white');
+            drawText(camera.x, camera.y - 100, 'Двигаться - A    D     Стрелять - Пробел', 'middle', 'center', '60px Arial', 'white');
+        }
+
+        if (!globalPlayer.exists && win === null) {
+            drawText(camera.x, camera.y - 30, 'Вы были расплющены Ваш счёт: ' + globalScore, 'middle', 'center', '60px Arial', 'white');
+            drawText(camera.x, camera.y + 30, 'Press F5 to restart', 'middle', 'center', '60px Arial', 'white');
+            loose = true;
+        }
+
+        if (timers[gameTimer] <= 0 && !globalBoss.exists && loose === null) {
+            drawText(camera.x, camera.y - 30, 'Вы выиграли) Ваш счёт: ' + globalScore, 'middle', 'center', '60px Arial', 'white');
+            drawText(camera.x, camera.y + 30, 'Press F5 to restart', 'middle', 'center', '60px Arial', 'white');
+            win = true;
+        }
+
+        ctx.restore();
+
+        globalTime += 1;
+
+        updateTimers();
     }
-
-    drawParticles();
-
-    if (timers[tutorielTimer] > 0) {
-        drawText(camera.x, camera.y - 160, '        W                         ', 'middle', 'center', '60px Arial', 'white');
-        drawText(camera.x, camera.y - 100, 'Двигаться - A    D     Стрелять - Пробел', 'middle', 'center', '60px Arial', 'white');
-    }
-
-    if (!globalPlayer.exists && win === null) {
-        drawText(camera.x, camera.y - 30, 'Вы были расплющены Ваш счёт: ' + globalScore, 'middle', 'center', '60px Arial', 'white');
-        drawText(camera.x, camera.y + 30, 'Press F5 to restart', 'middle', 'center', '60px Arial', 'white');
-        loose = true;
-    }
-
-    if (timers[gameTimer] <= 0 && !globalBoss.exists && loose === null) {
-        drawText(camera.x, camera.y - 30, 'Вы выиграли) Ваш счёт: ' + globalScore, 'middle', 'center', '60px Arial', 'white');
-        drawText(camera.x, camera.y + 30, 'Press F5 to restart', 'middle', 'center', '60px Arial', 'white');
-        win = true;
-    }
-
-    ctx.restore();
-
-    globalTime += 1;
-    updateTimers();
     clearAllKeys();
     requestAnimationFrame(loop);
 }
@@ -1074,4 +1129,4 @@ function beginGame() {
     requestAnimationFrame(loop);
     console.log('game started');
 }
-
+requestAnimationFrame(loop);
