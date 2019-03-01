@@ -30,7 +30,7 @@ function drawRect(x, y, width, height, angle, color) {
 }
 
 function addParticle(x, y, color, minRadius, maxRadius) {
-    let randomAngle = getRandomFloat(0, Math.PI * 2);
+    let randomAngle = getRandomFloat(0, Math.PI + Math.PI);
 
     let randomSpeed = getRandomFloat(1, 4);
     let speedVector = rotateVector(randomSpeed, 0, randomAngle);
@@ -58,7 +58,7 @@ function burstParticles(x, y, color, count, minRadius = 2, maxRadius = 8) {
 function drawParticles() {
     for (let particleIndex = 0; particleIndex < particles.length; particleIndex++) {
         let p = particles[particleIndex];
-        drawRect(p.x, p.y, p.r * 2, p.r * 2, 0, p.color);
+        drawRect(p.x, p.y, p.r + p.r, p.r + p.r, 0, p.color);
         p.x += p.speedX;
         p.y += p.speedY;
         p.r -= p.sizeDecrease;
@@ -847,12 +847,12 @@ function updateGameObject(gameObject) {
         if (amIDead) {
             removeGameObject(gameObject);
             if (gameObject.shootParticles) {
-                burstParticles(gameObject.x, gameObject.y, 'orange', 150);
+                burstParticles(gameObject.x, gameObject.y, 'orange', 15);
             }
         }
 
         if (gameObject.shootParticles) {
-            burstParticles(gameObject.x, gameObject.y, 'orange', 3, 3, 5);
+            burstParticles(gameObject.x, gameObject.y, 'orange', 2, 3, 5);
         }
     }
 
@@ -996,6 +996,7 @@ function loop() {
 
         if (spaceKey.wentDown & canBeginGame & menuKey === 1) {
             menu = false;
+            playSound(sndSong, 0.75, true);
         }
 
         if (menuKey === 2 & difficultKey === 1) {
@@ -1029,7 +1030,6 @@ function loop() {
             drawText(camera.x + camera.width / 2, camera.y + camera.width / 2 - 90, 'Прогрузка...', 'middle', 'center', '60px Arial', 'white');
         }
     } else {
-        playSound(sndSong, 0.75, true);
         if (imgStars.width > 0) {
             let minX = Math.floor((camera.x - camera.width) / imgStars.width);
             let minY = Math.floor((camera.y - camera.height) / imgStars.height);
