@@ -18,6 +18,7 @@ let particles = [];
 
 let loose = null;
 let win = null;
+let playerType = 2;
 
 function drawRect(x, y, width, height, angle, color) {
     ctx.save();	//Сохраняется, чтобы потом можно было вернуть экран
@@ -134,7 +135,8 @@ let imgBoss = loadImage('./sprites/Vadim/deathstar.png');
 
 let imgEnemyVadim1 = loadImage('./sprites/Vadim/player3.png');
 let imgEnemyVadim = loadImage('./sprites/Vadim/player.png');
-let imgPlayerVadim = loadImage('./sprites/Vadim/player2.png');
+let imgPlayerVadim1 = loadImage('./sprites/Vadim/player1.png');
+let imgPlayerVadim2 = loadImage('./sprites/Vadim/player2.png');
 let imgRocketVadim = loadImage('./sprites/Vadim/rocket.png');
 
 var ctx = canvas.getContext("2d");
@@ -184,7 +186,7 @@ function addGameObject(type) {
         speedY: 0,
         angle: 0,
         rotationSpeed: 0.05,
-        accelConst: 0.12,
+        accelConst: 0.18,
         frictionConst: 0.98,
         color: 'black',
         collisionRadius: 10,
@@ -232,18 +234,32 @@ function addGameObject(type) {
     return gameObject;
 }
 
-function addPlayer() {
+function addPlayer1() {
+    let player = addGameObject(GAME_OBJECT_PLAYER);
+    player.width = 20;
+    player.accelConst = 0.5;
+    player.hitpoints = 4;
+    player.maxHitpoints = 4;
+    player.x = 0;
+    player.y = 0;
+    player.sprite = imgPlayerVadim1;
+    player.collisionRadius = 30;
+    return player;
+}
+
+function addPlayer2() {
     let player = addGameObject(GAME_OBJECT_PLAYER);
     player.width = 20;
     player.x = 0;;
     player.y = 0;
-    player.color = 'yellow';
-    player.sprite = imgPlayerVadim;
+    player.sprite = imgPlayerVadim2;
     player.collisionRadius = 20;
     player.hitpoints = 3;
     player.maxHitpoints = 3;
     return player;
 }
+
+let globalPlayer = 1;
 
 function addPowerUp(type, sprite, x, y, lifetime = 600) {
     let powerUp = addGameObject(type);
@@ -274,8 +290,6 @@ function addHeal(x, y) {
 function addBouncingPowerUp(x, y) {
     addPowerUp(GAME_OBJECT_BOUNCINGPOWERUP, imgBouncingPowerUp, x, y);
 }
-
-const globalPlayer = addPlayer();
 
 function addEnemy() {
     let chance = getRandomInt(1, 4);
@@ -907,25 +921,41 @@ function updateGameObject(gameObject) {
     gameObject.speedX *= gameObject.frictionConst;
     gameObject.speedY *= gameObject.frictionConst;
 
-    if (gameObject.x > camera.x + camera.width / 2 + 150) {
-        gameObject.angle = gameObject.angle - Math.PI;
+    if (gameObject.x > camera.x + camera.width / 2 + 160) {
+        gameObject.angle = Math.PI;
         gameObject.moveForward = true;
-        gameObject.x -= 6;
+        if (playerType = 1) {
+            gameObject.speedX -= 1;
+        } else {
+            gameObject.speedX -= 1;
+        }
     }
-    if (gameObject.x < camera.x - camera.width / 2 - 150) {
-        gameObject.angle = gameObject.angle - Math.PI;
+    if (gameObject.x < camera.x - camera.width / 2 - 160) {
+        gameObject.angle = 0;
         gameObject.moveForward = true;
-        gameObject.x += 6;
+        if (playerType = 1) {
+            gameObject.speedX += 1;
+        } else {
+            gameObject.speedX += 1;
+        }
     }
-    if (gameObject.y > camera.y + camera.width / 2 + 150) {
-        gameObject.angle = gameObject.angle - Math.PI;
+    if (gameObject.y > camera.y + camera.width / 2 + 160) {
+        gameObject.angle = 0.5 * Math.PI;
         gameObject.moveForward = true;
-        gameObject.y -= 6;
+        if (playerType = 1) {
+            gameObject.speedY -= 1;
+        } else {
+            gameObject.speedY -= 1;
+        }
     }
-    if (gameObject.y < camera.y - camera.width / 2 - 150) {
-        gameObject.angle = gameObject.angle - Math.PI;
+    if (gameObject.y < camera.y - camera.width / 2 - 160) {
+        gameObject.angle = 1.5 * Math.PI;
         gameObject.moveForward = true;
-        gameObject.y += 6;
+        if (playerType = 1) {
+            gameObject.speedY += 1;
+        } else {
+            gameObject.speedY += 1;
+        }
     }
 
     if (gameObject.bounce) {
@@ -978,7 +1008,7 @@ let difficultKey = 1;
 
 function loop() {
     if (menu === true) {
-        if (upKey.wentDown & menuKey !== 1) {
+        if (upKey.wentDown & menuKey !== 0) {
             menuKey--;
         }
         if (downKey.wentDown & menuKey !== 2) {
@@ -988,15 +1018,36 @@ function loop() {
 
         drawText(camera.x + camera.width / 2, camera.y + camera.height / 2 - 330, 'Выберите персонажа', 'middle', 'center', '60px Arial', 'white');
 
+        drawSprite(camera.x + camera.width / 2, camera.y + camera.height / 2 - 250, imgPlayerVadim2, 0);
+
+        drawSprite(camera.x + camera.width / 2 - 150, camera.y + camera.height / 2 - 250, imgPlayerVadim1, 0);
+
+        drawSprite(camera.x + camera.width / 2 + 150, camera.y + camera.height / 2 - 250, imgPlayerVadim2, 0);
+
+        if (menuKey === 0 & playerType === 2) {
+            drawText(camera.x + camera.width / 2 - 50, camera.y + camera.height / 2 - 250, '→  ', 'middle', 'center', '60px Arial', 'white');
+        }
+
+        if (menuKey === 0 & playerType === 1) {
+            drawText(camera.x + camera.width / 2 - 200, camera.y + camera.height / 2 - 250, '→  ', 'middle', 'center', '60px Arial', 'white');
+        }
+
+        if (menuKey === 0 & playerType === 3) {
+            drawText(camera.x + camera.width / 2 + 100, camera.y + camera.height / 2 - 250, '→  ', 'middle', 'center', '60px Arial', 'white');
+        }
+
+        if (menuKey === 0 & rightKey.wentDown & playerType !== 3) {
+            playerType++;
+        }
+
+        if (menuKey === 0 & leftKey.wentDown & playerType !== 1) {
+            playerType--;
+        }
+
         if (menuKey === 1) {
             drawText(camera.x + camera.width / 2, camera.y + camera.height / 2 - 150, '→  Играть', 'middle', 'center', '60px Arial', 'white');
         } else {
             drawText(camera.x + camera.width / 2, camera.y + camera.height / 2 - 150, '   Играть', 'middle', 'center', '60px Arial', 'white');
-        }
-
-        if (spaceKey.wentDown & canBeginGame & menuKey === 1) {
-            menu = false;
-            playSound(sndSong, 0.75, true);
         }
 
         if (menuKey === 2 & difficultKey === 1) {
@@ -1029,6 +1080,18 @@ function loop() {
         if (canBeginGame === false) {
             drawText(camera.x + camera.width / 2, camera.y + camera.width / 2 - 90, 'Прогрузка...', 'middle', 'center', '60px Arial', 'white');
         }
+
+        if (spaceKey.wentDown & canBeginGame & menuKey === 1) {
+            menu = false;
+            playSound(sndSong, 0.75, true);
+            if (playerType === 1) {
+                globalPlayer = addPlayer1();
+            }
+            if (playerType === 2) {
+                globalPlayer = addPlayer2();
+            }
+        }
+
     } else {
         if (imgStars.width > 0) {
             let minX = Math.floor((camera.x - camera.width) / imgStars.width);
