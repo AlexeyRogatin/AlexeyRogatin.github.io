@@ -14,6 +14,9 @@ let camera = {
     angle: 0,
 };
 
+const HUNT_RADIUS = camera.width + 200;
+
+
 let particles = [];
 
 let loose = null;
@@ -159,6 +162,7 @@ const AI_STATE_ROTATE_LEFT = 1;
 const AI_STATE_ROTATE_RIGHT = 2;
 const AI_STATE_MOVE_FORWARD = 3;
 const AI_STATE_SHOOT = 4;
+const AI_STATE_HUNT = 5;
 
 let gameObjects = [];
 
@@ -171,7 +175,9 @@ function addTimer() {
 
 function updateTimers() {
     for (let timerIndex = 0; timerIndex < timers.length; timerIndex++) {
-        timers[timerIndex] -= 1;
+        if (timers[timerIndex] > 0) {
+            timers[timerIndex] -= 1;
+        }
     }
 }
 
@@ -209,16 +215,19 @@ function addGameObject(type) {
         //enemy
         aiState: AI_STATE_IDLE,
         aiTimer: addTimer(),
+        huntAccelMultiplier: 2,
 
         //player
-        rocketModeTimer: addTimer(),
-        beanModeTimer: addTimer(),
-        bouncingModeTimer: addTimer(),
+        powerUpTimer: addTimer(),
+        powerUpType: GAME_OBJECT_NONE,
 
         sprite: null,
 
-        bossRotateChance: 0,
+        //powerup
+        powerUpTime: 0,
 
+        //boss
+        bossRotateChance: 0,
     };
 
     let freeIndex = gameObjects.length;
@@ -261,7 +270,7 @@ function addPlayer2() {
 
 let globalPlayer = 1;
 
-function addPowerUp(type, sprite, x, y, lifetime = 600) {
+function addPowerUp(type, sprite, x, y, powerUpTime, lifetime = 600) {
     let powerUp = addGameObject(type);
     powerUp.sprite = sprite;
     powerUp.color = 'green';
@@ -270,25 +279,26 @@ function addPowerUp(type, sprite, x, y, lifetime = 600) {
     powerUp.maxHitpoints = 100000000000;
     powerUp.x = x;
     powerUp.y = y;
+    powerUp.powerUpTime = powerUpTime;
 
     timers[powerUp.lifetime] = lifetime;
     return powerUp;
 }
 
 function addRocketPowerUp(x, y) {
-    addPowerUp(GAME_OBJECT_ROCKETPOWERUP, imgPowerUp, x, y);
+    addPowerUp(GAME_OBJECT_ROCKETPOWERUP, imgPowerUp, x, y, 600);
 }
 
 function addBeanPowerUp(x, y) {
-    addPowerUp(GAME_OBJECT_BEANPOWERUP, imgBeanPowerUp, x, y);
+    addPowerUp(GAME_OBJECT_BEANPOWERUP, imgBeanPowerUp, x, y, 600);
 }
 
 function addHeal(x, y) {
-    addPowerUp(GAME_OBJECT_HEAL, imgHeal, x, y);
+    addPowerUp(GAME_OBJECT_HEAL, imgHeal, x, y, 600);
 }
 
 function addBouncingPowerUp(x, y) {
-    addPowerUp(GAME_OBJECT_BOUNCINGPOWERUP, imgBouncingPowerUp, x, y);
+    addPowerUp(GAME_OBJECT_BOUNCINGPOWERUP, imgBouncingPowerUp, x, y, 600);
 }
 
 function addEnemy() {
@@ -440,7 +450,11 @@ function controlShip(gameObject, rotateRight, rotateLeft, moveForward) {
         gameObject.angle += gameObject.rotationSpeed;
     }
     if (moveForward) {
-        const accelVector = rotateVector(gameObject.accelConst, 0, gameObject.angle);
+        let accelConst = gameObject.accelConst;
+        if (gameObject.aiState === AI_STATE_HUNT) {
+            accelConst *= gameObject.huntAccelMultiplier;
+        }
+        const accelVector = rotateVector(accelConst, 0, gameObject.angle);
         accelX = accelVector.x;
         accelY = accelVector.y;
     }
@@ -506,6 +520,25 @@ function checkCollision(gameObject, otherTypes) {
     return null;
 }
 
+
+function angleBetweenPoints(x0, y0, x1, y1) {
+    let dX = x1 - x0;
+    let dY = y1 - y0;
+    let cosA = dX / (Math.sqrt(dX * dX + dY * dY));
+    let result = Math.acos(cosA);
+    if (y1 > y0) {
+        result *= -1;
+    }
+    return result;
+}
+
+function distanceBetweenPoints(x0, y0, x1, y1) {
+    let dX = x1 - x0;
+    let dY = y1 - y0;
+    const result = Math.sqrt(dX * dX + dY * dY);
+    return result;
+}
+
 function bossProcessAI(gameObject) {
     let moveForward = false;
     let shoot = false;
@@ -513,7 +546,11 @@ function bossProcessAI(gameObject) {
     let rotateRight = false;
 
     let stateChanged = false;
-    if (timers[gameObject.aiTimer] <= 0) {
+
+    let distance = distanceBetweenPoints(gameObject.x, gameObject.y, globalPlayer.x, globalPlayer.y)
+    if (distance > HUNT_RADIUS) {
+        gameObject.aiState = AI_STATE_HUNT;
+    } else if (timers[gameObject.aiTimer] <= 0) {
         gameObject.aiState = getRandomInt(AI_STATE_MOVE_FORWARD, AI_STATE_SHOOT);
         gameObject.bossRotateChance = getRandomFloat(0, 1);
         stateChanged = true;
@@ -541,8 +578,12 @@ function bossProcessAI(gameObject) {
                 rotateLeft = true;
             }
         } break;
-    }
 
+        case AI_STATE_HUNT: {
+            gameObject.angle = angleBetweenPoints(gameObject.x, gameObject.y, globalPlayer.x, globalPlayer.y);
+            moveForward = true;
+        } break;
+    }
     return {
         moveForward,
         rotateLeft,
@@ -557,7 +598,10 @@ function processAI(gameObject) {
     let rotateRight = false;
     let shoot = false;
 
-    if (timers[gameObject.aiTimer] <= 0) {
+    let distance = distanceBetweenPoints(gameObject.x, gameObject.y, globalPlayer.x, globalPlayer.y)
+    if (distance > HUNT_RADIUS) {
+        gameObject.aiState = AI_STATE_HUNT;
+    } else if (timers[gameObject.aiTimer] <= 0) {
         gameObject.aiState = getRandomInt(AI_STATE_ROTATE_LEFT, AI_STATE_SHOOT);
         timers[gameObject.aiTimer] = 60;
     }
@@ -588,6 +632,11 @@ function processAI(gameObject) {
             shoot = true;
             moveForward = true;
         } break;
+
+        case AI_STATE_HUNT: {
+            gameObject.angle = angleBetweenPoints(gameObject.x, gameObject.y, globalPlayer.x, globalPlayer.y);
+            moveForward = true;
+        } break;
     }
 
     return {
@@ -597,10 +646,6 @@ function processAI(gameObject) {
         shoot,
     };
 }
-
-const ROCKET_MODE_TIME = 600;
-const BEAN_MODE_TIME = 600;
-const BOUNCING_MODE_TIME = 600;
 
 let globalScore = 0;
 
@@ -616,22 +661,16 @@ function updateGameObject(gameObject) {
             }
         }
 
-        let hitRocketPowerup = checkCollision(gameObject, [GAME_OBJECT_ROCKETPOWERUP]);
-        if (hitRocketPowerup !== null) {
-            timers[gameObject.rocketModeTimer] = ROCKET_MODE_TIME;
-            removeGameObject(hitRocketPowerup);
-        }
+        const hitPowerUp = checkCollision(gameObject, [
+            GAME_OBJECT_BEANPOWERUP,
+            GAME_OBJECT_BOUNCINGPOWERUP,
+            GAME_OBJECT_ROCKETPOWERUP,
+        ]);
 
-        let hitBeanPowerUp = checkCollision(gameObject, [GAME_OBJECT_BEANPOWERUP]);
-        if (hitBeanPowerUp !== null) {
-            timers[gameObject.beanModeTimer] = BEAN_MODE_TIME;
-            removeGameObject(hitBeanPowerUp);
-        }
-
-        let hitBouncingPowerUp = checkCollision(gameObject, [GAME_OBJECT_BOUNCINGPOWERUP]);
-        if (hitBouncingPowerUp !== null) {
-            timers[gameObject.bouncingModeTimer] = BOUNCING_MODE_TIME;
-            removeGameObject(hitBouncingPowerUp);
+        if (hitPowerUp) {
+            timers[gameObject.powerUpTimer] += hitPowerUp.powerUpTime;
+            gameObject.powerUpType = hitPowerUp.type;
+            removeGameObject(hitPowerUp);
         }
 
         let canShoot = timers[gameObject.shootTimer] <= 0;
@@ -646,53 +685,56 @@ function updateGameObject(gameObject) {
 
         if (spaceKey.isDown && canShoot) {
             let bullet = null;
-            let rocketModeOn = timers[gameObject.rocketModeTimer] > 0;
-            let beanModeOn = timers[gameObject.beanModeTimer] > 0;
-            let bouncingModeOn = timers[gameObject.bouncingModeTimer] > 0;
 
-            if (rocketModeOn & timers[gameObject.rocketModeTimer] > timers[gameObject.beanModeTimer] & timers[gameObject.rocketModeTimer] > timers[gameObject.bouncingModeTimer]) {
-                bullet = addBullet(
-                    gameObject.x, gameObject.y,
-                    gameObject.angle, gameObject.speedX,
-                    gameObject.speedY, 9, killObjectTypes, 120, 70,
-                );
-                bullet.bounce = false;
-                bullet.sprite = imgRocketVadim;
-                bullet.shootParticles = true;
-                bullet.damage = 2;
+            if (timers[gameObject.powerUpTimer] > 0) {
+                switch (gameObject.powerUpType) {
+                    case GAME_OBJECT_ROCKETPOWERUP: {
+                        bullet = addBullet(
+                            gameObject.x, gameObject.y,
+                            gameObject.angle, gameObject.speedX,
+                            gameObject.speedY, 9, killObjectTypes, 120, 70,
+                        );
+                        bullet.bounce = false;
+                        bullet.sprite = imgRocketVadim;
+                        bullet.shootParticles = true;
+                        bullet.damage = 2;
 
-                timers[gameObject.shootTimer] = 15;
-                playSound(sndRocket, 0.07);
-            } else if (beanModeOn & timers[gameObject.beanModeTimer] > timers[gameObject.rocketModeTimer] & timers[gameObject.beanModeTimer] > timers[gameObject.bouncingModeTimer]) {
-                bullet = addBullet(
-                    gameObject.x, gameObject.y,
-                    gameObject.angle, gameObject.speedX,
-                    gameObject.speedY, 3,
-                    killObjectTypes,
-                    800, 82,
-                );
-                bullet.bounce = false;
-                bullet.sprite = imgGiantShoot;
-                bullet.shootParticles = false;
-                bullet.damage = 0.2;
-                bullet.pierce = true;
+                        timers[gameObject.shootTimer] = 15;
+                        playSound(sndRocket, 0.07);
+                    } break;
+                    case GAME_OBJECT_BEANPOWERUP: {
+                        bullet = addBullet(
+                            gameObject.x, gameObject.y,
+                            gameObject.angle, gameObject.speedX,
+                            gameObject.speedY, 3,
+                            killObjectTypes,
+                            800, 82,
+                        );
+                        bullet.bounce = false;
+                        bullet.sprite = imgGiantShoot;
+                        bullet.shootParticles = false;
+                        bullet.damage = 0.2;
+                        bullet.pierce = true;
 
-                timers[gameObject.shootTimer] = 80;
-                playSound(sndMoon, 0.2);
-            } else if (bouncingModeOn & timers[gameObject.bouncingModeTimer] > timers[gameObject.beanModeTimer] & timers[gameObject.bouncingModeTimer] > timers[gameObject.rocketModeTimer]) {
-                bullet = addBullet(
-                    gameObject.x, gameObject.y,
-                    gameObject.angle, gameObject.speedX,
-                    gameObject.speedY, 10, killObjectTypes, 200, 15,
-                );
-                bullet.bounce = true;
-                bullet.sprite = imgBounce;
-                bullet.shootParticles = false;
-                bullet.damage = 1;
-                bullet.pierce = false;
+                        timers[gameObject.shootTimer] = 80;
+                        playSound(sndMoon, 0.2);
+                    } break;
+                    case GAME_OBJECT_BOUNCINGPOWERUP: {
+                        bullet = addBullet(
+                            gameObject.x, gameObject.y,
+                            gameObject.angle, gameObject.speedX,
+                            gameObject.speedY, 10, killObjectTypes, 200, 15,
+                        );
+                        bullet.bounce = true;
+                        bullet.sprite = imgBounce;
+                        bullet.shootParticles = false;
+                        bullet.damage = 1;
+                        bullet.pierce = false;
 
-                timers[gameObject.shootTimer] = 12;
-                playSound(sndGun, 0.07);
+                        timers[gameObject.shootTimer] = 12;
+                        playSound(sndGun, 0.07);
+                    } break;
+                }
             } else {
                 bullet = addBullet(
                     gameObject.x, gameObject.y,
@@ -704,7 +746,7 @@ function updateGameObject(gameObject) {
 
                 timers[gameObject.shootTimer] = 10;
                 playSound(sndGun, 0.07);
-            };
+            }
         }
 
         controlShip(gameObject, rightKey.isDown, leftKey.isDown, upKey.isDown);
@@ -872,32 +914,41 @@ function updateGameObject(gameObject) {
 
     if (gameObject.hitpoints <= 0) {
         timers[screenShakeTimer] = 20;
-        if (gameObject.type === GAME_OBJECT_ENEMY) {
-            if (getRandomFloat(0, 1) > 0.85) {
-                addHeal(gameObject.x, gameObject.y);
-            }
-            globalScore += 100;
-        } else if (gameObject.type === GAME_OBJECT_TRIPLESHOOTER) {
-            globalScore += 300;
-            if (getRandomFloat(0, 1) > 0.65) {
-                addBouncingPowerUp(gameObject.x, gameObject.y);
-            }
-        } else if (gameObject.type === GAME_OBJECT_ENEMY_ROCKETEER) {
-            globalScore += 500;
 
-            if (getRandomFloat(0, 1) > 0.65) {
-                addRocketPowerUp(gameObject.x, gameObject.y);
-            }
-        } else if (gameObject.type === GAME_OBJECT_ENEMY_TANK) {
-            globalScore += 1000;
-            if (getRandomFloat(0, 1) > 0.65) {
-                addBeanPowerUp(gameObject.x, gameObject.y);
-            }
-        } else if (gameObject.type === GAME_OBJECT_BOSS) {
-            globalScore += 10000;
-        } else if (gameObject.type === GAME_OBJECT_PLAYER) {
-            globalScore += 0;
+        switch (gameObject.type) {
+            case GAME_OBJECT_ENEMY: {
+                if (getRandomFloat(0, 1) > 0.85) {
+                    addHeal(gameObject.x, gameObject.y);
+                }
+                globalScore += 100;
+            } break;
+            case GAME_OBJECT_TRIPLESHOOTER: {
+                globalScore += 300;
+                if (getRandomFloat(0, 1) > 0.65) {
+                    addBouncingPowerUp(gameObject.x, gameObject.y);
+                }
+            } break;
+            case GAME_OBJECT_ENEMY_ROCKETEER: {
+                globalScore += 500;
+
+                if (getRandomFloat(0, 1) > 0.65) {
+                    addRocketPowerUp(gameObject.x, gameObject.y);
+                }
+            } break;
+            case GAME_OBJECT_ENEMY_TANK: {
+                globalScore += 1000;
+                if (getRandomFloat(0, 1) > 0.65) {
+                    addBeanPowerUp(gameObject.x, gameObject.y);
+                }
+            } break;
+            case GAME_OBJECT_BOSS: {
+                globalScore += 10000;
+            } break;
+            case GAME_OBJECT_PLAYER: {
+                globalScore += 0;
+            } break;
         }
+
 
         removeGameObject(gameObject);
         playSound(sndExplosion, 1);
@@ -921,42 +972,6 @@ function updateGameObject(gameObject) {
     gameObject.speedX *= gameObject.frictionConst;
     gameObject.speedY *= gameObject.frictionConst;
 
-    if (gameObject.x > camera.x + camera.width / 2 + 160) {
-        gameObject.angle = Math.PI;
-        gameObject.moveForward = true;
-        if (playerType = 1) {
-            gameObject.speedX -= 1;
-        } else {
-            gameObject.speedX -= 1;
-        }
-    }
-    if (gameObject.x < camera.x - camera.width / 2 - 160) {
-        gameObject.angle = 0;
-        gameObject.moveForward = true;
-        if (playerType = 1) {
-            gameObject.speedX += 1;
-        } else {
-            gameObject.speedX += 1;
-        }
-    }
-    if (gameObject.y > camera.y + camera.width / 2 + 160) {
-        gameObject.angle = 0.5 * Math.PI;
-        gameObject.moveForward = true;
-        if (playerType = 1) {
-            gameObject.speedY -= 1;
-        } else {
-            gameObject.speedY -= 1;
-        }
-    }
-    if (gameObject.y < camera.y - camera.width / 2 - 160) {
-        gameObject.angle = 1.5 * Math.PI;
-        gameObject.moveForward = true;
-        if (playerType = 1) {
-            gameObject.speedY += 1;
-        } else {
-            gameObject.speedY += 1;
-        }
-    }
 
     if (gameObject.bounce) {
         if (
