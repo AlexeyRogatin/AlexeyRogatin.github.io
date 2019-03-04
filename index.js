@@ -129,17 +129,19 @@ let imgEnemyBullet = loadImage('./sprites/enemy_bullet.png');
 let imgPlayerBullet = loadImage('./sprites/player_bullet.png');
 let imgStars = loadImage('./sprites/stars.png');
 let imgHeal = loadImage('./sprites/heal.png');
+let imgEnemyTank = loadImage('./sprites/Vadim/tank1.png');
 let imgGiantShoot = loadImage('./sprites/bean.png');
-let imgEnemyTank = loadImage('./sprites/Vadim/tank.png');
 let imgVolna = loadImage('./sprites/Vadim/volna.png');
 let imgBounce = loadImage('./sprites/bounce.png');
+let imgNothing = loadImage('./sprites/nothing.png');
 let imgShooter = loadImage('./sprites/Vadim/player4.png');
 let imgBoss = loadImage('./sprites/Vadim/deathstar.png');
 
 let imgEnemyVadim1 = loadImage('./sprites/Vadim/player3.png');
 let imgEnemyVadim = loadImage('./sprites/Vadim/player.png');
-let imgPlayerVadim1 = loadImage('./sprites/Vadim/player1.png');
-let imgPlayerVadim2 = loadImage('./sprites/Vadim/player2.png');
+let imgPlayerVadim1 = loadImage('./sprites/Vadim/tank.png');
+let imgPlayerVadim2 = loadImage('./sprites/Vadim/player1.png');
+let imgPlayerVadim3 = loadImage('./sprites/Vadim/player2.png');
 let imgRocketVadim = loadImage('./sprites/Vadim/rocket.png');
 
 var ctx = canvas.getContext("2d");
@@ -201,6 +203,8 @@ function addGameObject(type) {
         hitpoints: 0,
         maxHitpoints: 0,
         unhitableTimer: addTimer(),
+        shootTwice: false,
+        god: false,
 
         //bullet
         lifetime: addTimer(),
@@ -245,10 +249,10 @@ function addGameObject(type) {
 
 function addPlayer1() {
     let player = addGameObject(GAME_OBJECT_PLAYER);
-    player.width = 20;
-    player.accelConst = 0.5;
-    player.hitpoints = 4;
-    player.maxHitpoints = 4;
+    player.accelConst = 0.25;
+    player.rotationSpeed = 0.09;
+    player.hitpoints = 2;
+    player.maxHitpoints = 2;
     player.x = 0;
     player.y = 0;
     player.sprite = imgPlayerVadim1;
@@ -258,7 +262,6 @@ function addPlayer1() {
 
 function addPlayer2() {
     let player = addGameObject(GAME_OBJECT_PLAYER);
-    player.width = 20;
     player.x = 0;;
     player.y = 0;
     player.sprite = imgPlayerVadim2;
@@ -268,7 +271,31 @@ function addPlayer2() {
     return player;
 }
 
-let globalPlayer = 1;
+function addPlayer3() {
+    let player = addGameObject(GAME_OBJECT_PLAYER);
+    player.x = 0;
+    player.y = 0;
+    player.sprite = imgPlayerVadim3;
+    player.collisionRadius = 20;
+    player.hitpoints = 2;
+    player.maxHitpoints = 2;
+    player.shootTwice = true;
+    return player;
+}
+
+function addPlayerUlt() {
+    let player = addGameObject(GAME_OBJECT_PLAYER);;
+    player.x = 0;
+    player.y = 0;
+    player.sprite = imgPlayerVadim3;
+    player.collisionRadius = 100;
+    player.hitpoints = 9999999999999999999999999999999;
+    player.maxHitpoints = 3;
+    player.god = true;
+    return player;
+}
+
+let globalPlayer = null;
 
 function addPowerUp(type, sprite, x, y, powerUpTime, lifetime = 600) {
     let powerUp = addGameObject(type);
@@ -379,8 +406,11 @@ function addBoss() {
     enemy.collisionRadius = 140;
     enemy.sprite = imgBoss;
     enemy.angle = getRandomFloat(0, 2 * Math.PI);
-    enemy.hitpoints = 100;
-
+    if (!win) {
+        enemy.hitpoints = 100;
+    } else {
+        enemy.hitpoints = 500;
+    }
     return enemy;
 }
 
@@ -477,7 +507,7 @@ function rotateVector(x, y, angle) {
     let sin = Math.sin(angle);
     let cos = Math.cos(angle);
     let resultX = x * cos - y * sin;
-    let resultY = y * cos - x * sin;
+    let resultY = -y * cos - x * sin;
     return {
         x: resultX,
         y: resultY,
@@ -547,7 +577,7 @@ function bossProcessAI(gameObject) {
 
     let stateChanged = false;
 
-    let distance = distanceBetweenPoints(gameObject.x, gameObject.y, globalPlayer.x, globalPlayer.y)
+    let distance = distanceBetweenPoints(gameObject.x, gameObject.y, globalPlayer.x, globalPlayer.y);
     if (distance > HUNT_RADIUS) {
         gameObject.aiState = AI_STATE_HUNT;
     } else if (timers[gameObject.aiTimer] <= 0) {
@@ -598,7 +628,7 @@ function processAI(gameObject) {
     let rotateRight = false;
     let shoot = false;
 
-    let distance = distanceBetweenPoints(gameObject.x, gameObject.y, globalPlayer.x, globalPlayer.y)
+    let distance = distanceBetweenPoints(gameObject.x, gameObject.y, globalPlayer.x, globalPlayer.y);
     if (distance > HUNT_RADIUS) {
         gameObject.aiState = AI_STATE_HUNT;
     } else if (timers[gameObject.aiTimer] <= 0) {
@@ -656,7 +686,7 @@ function updateGameObject(gameObject) {
         let hitHeal = checkCollision(gameObject, [GAME_OBJECT_HEAL]);
         if (hitHeal !== null) {
             removeGameObject(hitHeal);
-            if (gameObject.hitpoints !== 3) {
+            if (gameObject.hitpoints !== gameObject.maxHitpoints) {
                 gameObject.hitpoints++;
             }
         }
@@ -700,7 +730,7 @@ function updateGameObject(gameObject) {
                         bullet.damage = 2;
 
                         timers[gameObject.shootTimer] = 15;
-                        playSound(sndRocket, 0.07);
+                        playSound(sndRocket, 0.2);
                     } break;
                     case GAME_OBJECT_BEANPOWERUP: {
                         bullet = addBullet(
@@ -713,11 +743,11 @@ function updateGameObject(gameObject) {
                         bullet.bounce = false;
                         bullet.sprite = imgGiantShoot;
                         bullet.shootParticles = false;
-                        bullet.damage = 0.2;
+                        bullet.damage = 0.3;
                         bullet.pierce = true;
 
                         timers[gameObject.shootTimer] = 80;
-                        playSound(sndMoon, 0.2);
+                        playSound(sndMoon, 0.5);
                     } break;
                     case GAME_OBJECT_BOUNCINGPOWERUP: {
                         bullet = addBullet(
@@ -732,20 +762,51 @@ function updateGameObject(gameObject) {
                         bullet.pierce = false;
 
                         timers[gameObject.shootTimer] = 12;
-                        playSound(sndGun, 0.07);
+                        playSound(sndGun, 0.2);
                     } break;
                 }
             } else {
-                bullet = addBullet(
-                    gameObject.x, gameObject.y,
-                    gameObject.angle, gameObject.speedX,
-                    gameObject.speedY, 10, killObjectTypes, 100, 15,
-                );
-                bullet.sprite = imgPlayerBullet;
-                bullet.damage = 1;
+                if (gameObject.god) {
+                    bullet = addBullet(
+                        gameObject.x, gameObject.y,
+                        gameObject.angle, gameObject.speedX,
+                        gameObject.speedY, 0, killObjectTypes, 1, 100000000000000000000000000000000000,
+                    );
+                    bullet.sprite = imgNothing;
+                    bullet.damage = 100000000000000000000000000;
+                } else {
+                    if (gameObject.shootTwice) {
+                        let bulletVector = rotateVector(0, -20, gameObject.angle);
+                        let bullet = addBullet(
+                            gameObject.x + bulletVector.x, gameObject.y + bulletVector.y,
+                            gameObject.angle, gameObject.speedX,
+                            gameObject.speedY, 10, killObjectTypes, 100, 15,
+                        );
+                        bullet.sprite = imgPlayerBullet;
+                        bullet.damage = 0.75;
 
-                timers[gameObject.shootTimer] = 10;
-                playSound(sndGun, 0.07);
+                        let bulletVector1 = rotateVector(0, 20, gameObject.angle);
+                        let bullet1 = addBullet(
+                            gameObject.x + bulletVector1.x, gameObject.y + bulletVector1.y,
+                            gameObject.angle, gameObject.speedX,
+                            gameObject.speedY, 10, killObjectTypes, 100, 15,
+                        );
+                        bullet1.sprite = imgPlayerBullet;
+                        bullet1.damage = 0.5;
+                        timers[gameObject.shootTimer] = 10;
+                    } else {
+                        let bullet = addBullet(
+                            gameObject.x, gameObject.y,
+                            gameObject.angle, gameObject.speedX,
+                            gameObject.speedY, 10, killObjectTypes, 100, 15,
+                        );
+                        timers[gameObject.shootTimer] = 10;
+                        bullet.sprite = imgPlayerBullet;
+                        bullet.damage = 1;
+                    }
+
+                    playSound(sndGun, 0.2);
+                }
             }
         }
 
@@ -912,6 +973,15 @@ function updateGameObject(gameObject) {
         }
     }
 
+    if (gameObject.type !== GAME_OBJECT_BOSS && gameObject.type !== GAME_OBJECT_BULLET
+        && gameObject.type !== GAME_OBJECT_ENEMY && gameObject.type !== GAME_OBJECT_ENEMY_ROCKETEER
+        && gameObject.type !== GAME_OBJECT_ENEMY_TANK && gameObject.type !== GAME_OBJECT_PLAYER
+        && gameObject.type !== GAME_OBJECT_TRIPLESHOOTER) {
+        if (timers[gameObject.lifetime] <= 100) {
+            timers[gameObject.unhitableTimer] = 100;
+        }
+    }
+
     if (gameObject.hitpoints <= 0) {
         timers[screenShakeTimer] = 20;
 
@@ -1012,8 +1082,10 @@ let globalTime = 0;
 let screenShakeTimer = addTimer();
 let gameTimer = addTimer();
 let tutorielTimer = addTimer();
+let winTimer = addTimer();
+let winIndex = 0;
 
-timers[gameTimer] = 0;
+timers[gameTimer] = 3600;
 timers[enemySpawnTimer] = 1;
 timers[tutorielTimer] = 300;
 let menuKey = 1;
@@ -1037,7 +1109,7 @@ function loop() {
 
         drawSprite(camera.x + camera.width / 2 - 150, camera.y + camera.height / 2 - 250, imgPlayerVadim1, 0);
 
-        drawSprite(camera.x + camera.width / 2 + 150, camera.y + camera.height / 2 - 250, imgPlayerVadim2, 0);
+        drawSprite(camera.x + camera.width / 2 + 150, camera.y + camera.height / 2 - 250, imgPlayerVadim3, 0);
 
         if (menuKey === 0 & playerType === 2) {
             drawText(camera.x + camera.width / 2 - 50, camera.y + camera.height / 2 - 250, '→  ', 'middle', 'center', '60px Arial', 'white');
@@ -1057,6 +1129,10 @@ function loop() {
 
         if (menuKey === 0 & leftKey.wentDown & playerType !== 1) {
             playerType--;
+        }
+
+        if (kKey.wentDown) {
+            playerType = 4;
         }
 
         if (menuKey === 1) {
@@ -1104,6 +1180,12 @@ function loop() {
             }
             if (playerType === 2) {
                 globalPlayer = addPlayer2();
+            }
+            if (playerType === 3) {
+                globalPlayer = addPlayer3();
+            }
+            if (playerType === 4) {
+                globalPlayer = addPlayerUlt();
             }
         }
 
@@ -1181,20 +1263,33 @@ function loop() {
         }
 
         if (!globalPlayer.exists && win === null) {
-            drawText(camera.x, camera.y - 30, 'Вы были расплющены Ваш счёт: ' + globalScore, 'middle', 'center', '60px Arial', 'white');
-            drawText(camera.x, camera.y + 30, 'Press F5 to restart', 'middle', 'center', '60px Arial', 'white');
             loose = true;
         }
 
         if (timers[gameTimer] <= 0 && !globalBoss.exists && loose === null) {
+            win = true;
+        }
+
+        if (loose & !win) {
+            drawText(camera.x, camera.y - 30, 'Вы были расплющены Ваш счёт: ' + globalScore, 'middle', 'center', '60px Arial', 'white');
+            drawText(camera.x, camera.y + 30, 'Press F5 to restart', 'middle', 'center', '60px Arial', 'white');
+        }
+
+        if (win & winIndex === 0) {
+            timers[winTimer] = 180;
+            timers[gameTimer] = 3600;
+            globalBoss = null;
+            winIndex--;
+        }
+
+        if (timers[winTimer] > 0) {
             drawText(camera.x, camera.y - 30, 'Вы выиграли) Ваш счёт: ' + globalScore, 'middle', 'center', '60px Arial', 'white');
             drawText(camera.x, camera.y + 30, 'Press F5 to restart', 'middle', 'center', '60px Arial', 'white');
-            win = true;
         }
 
         ctx.restore();
 
-        globalTime += 1;
+        globalTime += 50;
 
         updateTimers();
     }
