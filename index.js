@@ -136,6 +136,7 @@ let imgBounce = loadImage('./sprites/bounce.png');
 let imgNothing = loadImage('./sprites/nothing.png');
 let imgShooter = loadImage('./sprites/Vadim/player4.png');
 let imgBoss = loadImage('./sprites/Vadim/deathstar.png');
+let imgScreen = loadImage('./sprites/screen.png');
 
 let imgEnemyVadim1 = loadImage('./sprites/Vadim/player3.png');
 let imgEnemyVadim = loadImage('./sprites/Vadim/player.png');
@@ -429,12 +430,14 @@ function getRandomInt(start, end) {
     return result;
 }
 
-function drawSprite(x, y, sprite, angle) {
+function drawSprite(x, y, sprite, angle, width, height) {
     ctx.save();
     ctx.translate(x, y);
 
     ctx.rotate(-angle);
-    ctx.drawImage(sprite, -sprite.width / 2, -sprite.height / 2);
+    let compWidth = width || sprite.width;
+    let compHeight = height || sprite.height;
+    ctx.drawImage(sprite, -compWidth / 2, -compHeight / 2, compWidth, compHeight);
     ctx.restore();
 }
 
@@ -827,7 +830,7 @@ function updateGameObject(gameObject) {
         ctx.restore();
 
         //draw score
-        drawText(camera.x + camera.width / 2 - PADDING, camera.y - camera.height / 2 + PADDING, 'Score: ' + globalScore, 'top', 'right', '30px Arial', 'white');
+        drawText(camera.x + camera.width / 2 - PADDING, camera.y - camera.height / 2 + PADDING, 'Score: ' + globalScore, 'top', 'right', '30px Arial', 'yellow');
     };
 
     if (gameObject.type === GAME_OBJECT_ENEMY) {
@@ -1101,26 +1104,26 @@ function loop() {
         if (downKey.wentDown & menuKey !== 2) {
             menuKey++;
         }
-        drawRect(camera.x + camera.width / 2, camera.y + camera.height / 2, canvas.width, canvas.height, 0, 'black');
+        drawSprite(camera.width / 2, camera.height / 2, imgScreen, 0, canvas.width, canvas.height);
 
-        drawText(camera.x + camera.width / 2, camera.y + camera.height / 2 - 330, 'Выберите персонажа', 'middle', 'center', '60px Arial', 'white');
+        drawText(camera.x + camera.width / 2, camera.y + camera.height / 2 - 330, 'Выберите персонажа', 'middle', 'center', '60px Arial', 'yellow');
 
-        drawSprite(camera.x + camera.width / 2, camera.y + camera.height / 2 - 250, imgPlayerVadim2, 0);
+        drawSprite(camera.x + camera.width / 2, camera.y + camera.height / 2 - 250, imgPlayerVadim2, 0, ctx.width, ctx.height);
 
-        drawSprite(camera.x + camera.width / 2 - 150, camera.y + camera.height / 2 - 250, imgPlayerVadim1, 0);
+        drawSprite(camera.x + camera.width / 2 - 150, camera.y + camera.height / 2 - 250, imgPlayerVadim1, 0, ctx.width, ctx.height);
 
-        drawSprite(camera.x + camera.width / 2 + 150, camera.y + camera.height / 2 - 250, imgPlayerVadim3, 0);
+        drawSprite(camera.x + camera.width / 2 + 150, camera.y + camera.height / 2 - 250, imgPlayerVadim3, 0, ctx.width, ctx.height);
 
         if (menuKey === 0 & playerType === 2) {
-            drawText(camera.x + camera.width / 2 - 50, camera.y + camera.height / 2 - 250, '→  ', 'middle', 'center', '60px Arial', 'white');
+            drawText(camera.x + camera.width / 2 - 50, camera.y + camera.height / 2 - 250, '→  ', 'middle', 'center', '60px Arial', 'yellow');
         }
 
         if (menuKey === 0 & playerType === 1) {
-            drawText(camera.x + camera.width / 2 - 200, camera.y + camera.height / 2 - 250, '→  ', 'middle', 'center', '60px Arial', 'white');
+            drawText(camera.x + camera.width / 2 - 200, camera.y + camera.height / 2 - 250, '→  ', 'middle', 'center', '60px Arial', 'yellow');
         }
 
         if (menuKey === 0 & playerType === 3) {
-            drawText(camera.x + camera.width / 2 + 100, camera.y + camera.height / 2 - 250, '→  ', 'middle', 'center', '60px Arial', 'white');
+            drawText(camera.x + camera.width / 2 + 100, camera.y + camera.height / 2 - 250, '→  ', 'middle', 'center', '60px Arial', 'yellow');
         }
 
         if (menuKey === 0 & rightKey.wentDown & playerType !== 3) {
@@ -1136,27 +1139,27 @@ function loop() {
         }
 
         if (menuKey === 1) {
-            drawText(camera.x + camera.width / 2, camera.y + camera.height / 2 - 150, '→  Играть', 'middle', 'center', '60px Arial', 'white');
+            drawText(camera.x + camera.width / 2, camera.y + camera.height / 2 - 150, '→  Играть', 'middle', 'center', '60px Arial', 'yellow');
         } else {
-            drawText(camera.x + camera.width / 2, camera.y + camera.height / 2 - 150, '   Играть', 'middle', 'center', '60px Arial', 'white');
+            drawText(camera.x + camera.width / 2, camera.y + camera.height / 2 - 150, '   Играть', 'middle', 'center', '60px Arial', 'yellow');
         }
 
         if (menuKey === 2 & difficultKey === 1) {
-            drawText(camera.x + camera.width / 2, camera.y + camera.height / 2 - 100, '→  Норма', 'middle', 'center', '60px Arial', 'white');
+            drawText(camera.x + camera.width / 2, camera.y + camera.height / 2 - 100, '→  Норма', 'middle', 'center', '60px Arial', 'yellow');
             difficult = 1;
         } else {
             if (difficultKey === 1) {
-                drawText(camera.x + camera.width / 2, camera.y + camera.height / 2 - 100, '  Норма', 'middle', 'center', '60px Arial', 'white');
+                drawText(camera.x + camera.width / 2, camera.y + camera.height / 2 - 100, '  Норма', 'middle', 'center', '60px Arial', 'yellow');
                 difficult = 1;
             }
         }
 
         if (menuKey === 2 & difficultKey === 2) {
-            drawText(camera.x + camera.width / 2, camera.y + camera.height / 2 - 100, '→  Cложна', 'middle', 'center', '60px Arial', 'white');
+            drawText(camera.x + camera.width / 2, camera.y + camera.height / 2 - 100, '→  Cложна', 'middle', 'center', '60px Arial', 'yellow');
             difficult = 2;
         } else {
             if (difficultKey === 2) {
-                drawText(camera.x + camera.width / 2, camera.y + camera.height / 2 - 100, '  Сложна', 'middle', 'center', '60px Arial', 'white');
+                drawText(camera.x + camera.width / 2, camera.y + camera.height / 2 - 100, '  Сложна', 'middle', 'center', '60px Arial', 'yellow');
                 difficult = 2;
             }
         }
@@ -1169,7 +1172,7 @@ function loop() {
         }
 
         if (canBeginGame === false) {
-            drawText(camera.x + camera.width / 2, camera.y + camera.width / 2 - 90, 'Прогрузка...', 'middle', 'center', '60px Arial', 'white');
+            drawText(camera.x + camera.width / 2, camera.y + camera.width / 2 - 90, 'Прогрузка...', 'middle', 'center', '60px Arial', 'yellow');
         }
 
         if (spaceKey.wentDown & canBeginGame & menuKey === 1) {
@@ -1258,8 +1261,8 @@ function loop() {
         drawParticles();
 
         if (timers[tutorielTimer] > 0) {
-            drawText(camera.x, camera.y - 160, '        W                         ', 'middle', 'center', '60px Arial', 'white');
-            drawText(camera.x, camera.y - 100, 'Двигаться - A    D     Стрелять - Пробел', 'middle', 'center', '60px Arial', 'white');
+            drawText(camera.x, camera.y - 160, '        W                         ', 'middle', 'center', '60px Arial', 'yellow');
+            drawText(camera.x, camera.y - 100, 'Двигаться - A    D     Стрелять - Пробел', 'middle', 'center', '60px Arial', 'yellow');
         }
 
         if (!globalPlayer.exists && win === null) {
@@ -1271,8 +1274,8 @@ function loop() {
         }
 
         if (loose & !win) {
-            drawText(camera.x, camera.y - 30, 'Вы были расплющены Ваш счёт: ' + globalScore, 'middle', 'center', '60px Arial', 'white');
-            drawText(camera.x, camera.y + 30, 'Press F5 to restart', 'middle', 'center', '60px Arial', 'white');
+            drawText(camera.x, camera.y - 30, 'Вы были расплющены Ваш счёт: ' + globalScore, 'middle', 'center', '60px Arial', 'yellow');
+            drawText(camera.x, camera.y + 30, 'Press F5 to restart', 'middle', 'center', '60px Arial', 'yellow');
         }
 
         if (win & winIndex === 0) {
@@ -1283,8 +1286,8 @@ function loop() {
         }
 
         if (timers[winTimer] > 0) {
-            drawText(camera.x, camera.y - 30, 'Вы выиграли) Ваш счёт: ' + globalScore, 'middle', 'center', '60px Arial', 'white');
-            drawText(camera.x, camera.y + 30, 'Press F5 to restart', 'middle', 'center', '60px Arial', 'white');
+            drawText(camera.x, camera.y - 30, 'Вы выиграли) Ваш счёт: ' + globalScore, 'middle', 'center', '60px Arial', 'yellow');
+            drawText(camera.x, camera.y + 30, 'Press F5 to restart', 'middle', 'center', '60px Arial', 'yellow');
         }
 
         ctx.restore();
