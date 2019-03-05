@@ -330,10 +330,8 @@ function addBouncingPowerUp(x, y) {
 }
 
 function addEnemy() {
-    let chance = getRandomInt(1, 4);
     let enemy = addGameObject(GAME_OBJECT_ENEMY);
-    enemy.width = 20;
-    enemy.height = 40;
+    let chance = getRandomInt(1, 4);
     switch (chance) {
         case 1:
             {
@@ -356,30 +354,71 @@ function addEnemy() {
                 enemy.y = camera.y + camera.height / 2;
             } break;
     }
-
     enemy.color = 'green';
     enemy.collisionRadius = 15;
     enemy.sprite = imgEnemyVadim;
     enemy.angle = getRandomFloat(0, 2 * Math.PI);
-    enemy.hitpoints = 1;
+    enemy.hitpoints = 0.75;
     return enemy;
 }
 
 function addEnemyRocketeer() {
     let enemy = addGameObject(GAME_OBJECT_ENEMY_ROCKETEER);
-    enemy.x = camera.x - camera.width / 2;
-    enemy.y = camera.y - camera.height / 2;
+    let chance = getRandomInt(1, 4);
+    switch (chance) {
+        case 1:
+            {
+                enemy.x = camera.x - camera.width / 2;
+                enemy.y = camera.y - camera.height / 2;
+            } break;
+        case 2:
+            {
+                enemy.x = camera.x + camera.width / 2;
+                enemy.y = camera.y - camera.height / 2;
+            } break;
+        case 3:
+            {
+                enemy.x = camera.x - camera.width / 2;
+                enemy.y = camera.y + camera.height / 2;
+            } break;
+        case 4:
+            {
+                enemy.x = camera.x + camera.width / 2;
+                enemy.y = camera.y + camera.height / 2;
+            } break;
+    }
     enemy.collisionRadius = 15;
     enemy.sprite = imgEnemyVadim1;
     enemy.angle = getRandomFloat(0, 2 * Math.PI);
-    enemy.hitpoints = 2;
+    enemy.hitpoints = 1.5;
     return enemy;
 }
 
 function addEnemyTank() {
     let enemy = addGameObject(GAME_OBJECT_ENEMY_TANK);
-    enemy.x = camera.x - camera.width / 2;
-    enemy.y = camera.y - camera.height / 2;
+    let chance = getRandomInt(1, 4);
+    switch (chance) {
+        case 1:
+            {
+                enemy.x = camera.x - camera.width / 2;
+                enemy.y = camera.y - camera.height / 2;
+            } break;
+        case 2:
+            {
+                enemy.x = camera.x + camera.width / 2;
+                enemy.y = camera.y - camera.height / 2;
+            } break;
+        case 3:
+            {
+                enemy.x = camera.x - camera.width / 2;
+                enemy.y = camera.y + camera.height / 2;
+            } break;
+        case 4:
+            {
+                enemy.x = camera.x + camera.width / 2;
+                enemy.y = camera.y + camera.height / 2;
+            } break;
+    }
     enemy.collisionRadius = 40;
     enemy.sprite = imgEnemyTank;
     enemy.angle = getRandomFloat(0, 2 * Math.PI);
@@ -389,12 +428,33 @@ function addEnemyTank() {
 
 function addTripleShooter() {
     let enemy = addGameObject(GAME_OBJECT_TRIPLESHOOTER);
-    enemy.x = camera.x - camera.width / 2;
-    enemy.y = camera.y - camera.height / 2;
+    let chance = getRandomInt(1, 4);
+    switch (chance) {
+        case 1:
+            {
+                enemy.x = camera.x - camera.width / 2;
+                enemy.y = camera.y - camera.height / 2;
+            } break;
+        case 2:
+            {
+                enemy.x = camera.x + camera.width / 2;
+                enemy.y = camera.y - camera.height / 2;
+            } break;
+        case 3:
+            {
+                enemy.x = camera.x - camera.width / 2;
+                enemy.y = camera.y + camera.height / 2;
+            } break;
+        case 4:
+            {
+                enemy.x = camera.x + camera.width / 2;
+                enemy.y = camera.y + camera.height / 2;
+            } break;
+    }
     enemy.collisionRadius = 15;
     enemy.sprite = imgShooter;
     enemy.angle = getRandomFloat(0, 2 * Math.PI);
-    enemy.hitpoints = 2;
+    enemy.hitpoints = 1.5;
     return enemy;
 }
 
@@ -402,8 +462,29 @@ let globalBoss = null;
 
 function addBoss() {
     let enemy = addGameObject(GAME_OBJECT_BOSS);
-    enemy.x = camera.x - camera.width / 2;
-    enemy.y = camera.y - camera.height / 2;
+    let chance = getRandomInt(1, 4);
+    switch (chance) {
+        case 1:
+            {
+                enemy.x = camera.x - camera.width / 2;
+                enemy.y = camera.y - camera.height / 2;
+            } break;
+        case 2:
+            {
+                enemy.x = camera.x + camera.width / 2;
+                enemy.y = camera.y - camera.height / 2;
+            } break;
+        case 3:
+            {
+                enemy.x = camera.x - camera.width / 2;
+                enemy.y = camera.y + camera.height / 2;
+            } break;
+        case 4:
+            {
+                enemy.x = camera.x + camera.width / 2;
+                enemy.y = camera.y + camera.height / 2;
+            } break;
+    }
     enemy.collisionRadius = 140;
     enemy.sprite = imgBoss;
     enemy.angle = getRandomFloat(0, 2 * Math.PI);
@@ -813,24 +894,41 @@ function updateGameObject(gameObject) {
             }
         }
 
+        const width = 100;
+        const height = 30;
+        const powerUpTimeLeftPercentage = timers[gameObject.powerUpTimer] / 400;
+        const leftTimeWidth = width * powerUpTimeLeftPercentage;
+
+        if (timers[gameObject.powerUpTimer] > 0) {
+            switch (gameObject.powerUpType) {
+                case GAME_OBJECT_ROCKETPOWERUP: {
+                    drawRect(200 + leftTimeWidth / 2 + camera.x - camera.width / 2, 10 + height / 2 + camera.y - camera.height / 2, leftTimeWidth, height, 0, 'yellow');
+                } break;
+                case GAME_OBJECT_BEANPOWERUP: {
+                    drawRect(200 + leftTimeWidth / 2 + camera.x - camera.width / 2, 10 + height / 2 + camera.y - camera.height / 2, leftTimeWidth, height, 0, 'green');
+                } break;
+                case GAME_OBJECT_BOUNCINGPOWERUP: {
+                    drawRect(200 + leftTimeWidth / 2 + camera.x - camera.width / 2, 10 + height / 2 + camera.y - camera.height / 2, leftTimeWidth, height, 0, 'red');
+                } break;
+            }
+        }
+
         controlShip(gameObject, rightKey.isDown, leftKey.isDown, upKey.isDown);
 
         //draw hitpoints
+
         const hitpointsLeftPercentage = gameObject.hitpoints / gameObject.maxHitpoints;
-        const width = 100;
-        const height = 30;
         const leftWidth = width * hitpointsLeftPercentage;
 
         ctx.save();
         ctx.rotate(-camera.angle);
 
-        const PADDING = 10;
-        drawRect(PADDING + width / 2 + camera.x - camera.width / 2, PADDING + height / 2 + camera.y - camera.height / 2, width, height, 0, 'red');
-        drawRect(PADDING + leftWidth / 2 + camera.x - camera.width / 2, PADDING + height / 2 + camera.y - camera.height / 2, leftWidth, height, 0, 'green');
+        drawRect(10 + width / 2 + camera.x - camera.width / 2, 10 + height / 2 + camera.y - camera.height / 2, width, height, 0, 'red');
+        drawRect(10 + leftWidth / 2 + camera.x - camera.width / 2, 10 + height / 2 + camera.y - camera.height / 2, leftWidth, height, 0, 'green');
         ctx.restore();
 
         //draw score
-        drawText(camera.x + camera.width / 2 - PADDING, camera.y - camera.height / 2 + PADDING, 'Score: ' + globalScore, 'top', 'right', '30px Arial', 'yellow');
+        drawText(camera.x + camera.width / 2 - 10, camera.y - camera.height / 2 + 10, 'Score: ' + globalScore, 'top', 'right', '30px Arial', 'yellow');
     };
 
     if (gameObject.type === GAME_OBJECT_ENEMY) {
