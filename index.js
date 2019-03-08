@@ -821,13 +821,14 @@ function updateGameObject(gameObject) {
                             gameObject.x, gameObject.y,
                             gameObject.angle, gameObject.speedX,
                             gameObject.speedY, 3,
-                            killObjectTypes,
+                            [GAME_OBJECT_ENEMY, GAME_OBJECT_ENEMY_ROCKETEER,
+                                GAME_OBJECT_ENEMY_TANK, GAME_OBJECT_TRIPLESHOOTER],
                             800, 82,
                         );
                         bullet.bounce = false;
                         bullet.sprite = imgGiantShoot;
                         bullet.shootParticles = false;
-                        bullet.damage = 0.3;
+                        bullet.damage = 100000;
                         bullet.pierce = true;
 
                         timers[gameObject.shootTimer] = 80;
