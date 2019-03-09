@@ -820,10 +820,14 @@ function updateGameObject(gameObject) {
             if (playerType === 3) {
                 killBullet = true;
                 timers[skillTimer] -= 0.5;
-                if (cleanHeight < 2000) {
-                    drawSprite(camera.x, camera.y, imgCleaning, 0, cleanWidth, cleanHeight);
+                console.log(cleanWidth, cleanHeight)
+                if (cleanWidth < 1000) {
+                    drawSprite(gameObject.x, gameObject.y, imgCleaning, 0, cleanWidth, cleanHeight);
                     cleanHeight += 50;
                     cleanWidth += 50;
+                } else {
+                    cleanWidth = 30;
+                    cleanHeight = 30;
                 }
             }
         }
@@ -959,7 +963,7 @@ function updateGameObject(gameObject) {
         drawRect(400 + skillLeftTimeWidth / 2 + camera.x - camera.width / 2, 10 + height / 2 + camera.y - camera.height / 2, skillLeftTimeWidth, height, 0, 'white');
 
         if (timers[skillTimer] >= 600) {
-            drawText(camera.x - 80, camera.y - camera.height / 2 + 10, 'Press Q!!!', 'top', 'right', '30px Arial', 'yellow');
+            drawText(400 + skillLeftTimeWidth / 2 + camera.x - camera.width / 2 + 300, camera.y - camera.height / 2 + 10, 'Press Q!!!', 'top', 'right', '30px Arial', 'yellow');
         }
 
         //draw hitpoints
