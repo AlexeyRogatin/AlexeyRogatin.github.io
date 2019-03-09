@@ -1272,7 +1272,7 @@ let tutorielTimer = addTimer();
 let winTimer = addTimer();
 let winIndex = 0;
 
-timers[gameTimer] = 0;
+timers[gameTimer] = 3600;
 timers[enemySpawnTimer] = 1;
 timers[tutorielTimer] = 300;
 let menuKey = 1;
