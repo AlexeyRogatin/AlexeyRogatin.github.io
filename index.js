@@ -137,6 +137,10 @@ let imgBounce = loadImage('./sprites/bounce.png');
 let imgNothing = loadImage('./sprites/nothing.png');
 let imgShooter = loadImage('./sprites/Vadim/player4.png');
 let imgBoss = loadImage('./sprites/Vadim/deathstar.png');
+let imgBoss1 = loadImage('./sprites/Vadim/deathstar1.png');
+let imgBoss2 = loadImage('./sprites/Vadim/deathstar2.png');
+let imgBoss3 = loadImage('./sprites/Vadim/deathstar3.png');
+let imgBoss4 = loadImage('./sprites/Vadim/deathstar4.png');
 let imgScreen = loadImage('./sprites/screen.png');
 
 let imgEnemyVadim1 = loadImage('./sprites/Vadim/player3.png');
@@ -479,8 +483,10 @@ function addBoss() {
     enemy.angle = getRandomFloat(0, 2 * Math.PI);
     if (!win) {
         enemy.hitpoints = 100;
+        enemy.maxHitpoints = 100;
     } else {
         enemy.hitpoints = 500;
+        enemy.maxHitpoints = 500;
     }
     return enemy;
 }
@@ -820,7 +826,6 @@ function updateGameObject(gameObject) {
             if (playerType === 3) {
                 killBullet = true;
                 timers[skillTimer] -= 0.5;
-                console.log(cleanWidth, cleanHeight)
                 if (cleanWidth < 1000) {
                     drawSprite(gameObject.x, gameObject.y, imgCleaning, 0, cleanWidth, cleanHeight);
                     cleanHeight += 50;
@@ -1082,6 +1087,15 @@ function updateGameObject(gameObject) {
         let { moveForward, rotateLeft, rotateRight, shoot } = bossProcessAI(gameObject);
 
         let canShoot = timers[gameObject.shootTimer] <= 0;
+        if (gameObject.hitpoints <= gameObject.maxHitpoints * 0.10) {
+            gameObject.sprite = imgBoss4;
+        } else if (gameObject.hitpoints <= gameObject.maxHitpoints * 0.25) {
+            gameObject.sprite = imgBoss3;
+        } else if (gameObject.hitpoints <= gameObject.maxHitpoints * 0.50) {
+            gameObject.sprite = imgBoss2;
+        } else if (gameObject.hitpoints <= gameObject.maxHitpoints * 0.75) {
+            gameObject.sprite = imgBoss1;
+        }
         if (shoot && canShoot) {
             for (let bulletIndex = 0; bulletIndex < 15; bulletIndex++) {
                 let randomAngle = getRandomFloat(0, Math.PI * 2);
@@ -1129,12 +1143,14 @@ function updateGameObject(gameObject) {
         if (amIDead) {
             removeGameObject(gameObject);
             if (gameObject.shootParticles) {
-                burstParticles(gameObject.x, gameObject.y, 'orange', 15);
+                burstParticles(gameObject.x, gameObject.y, 'orange', 8);
+                burstParticles(gameObject.x, gameObject.y, 'yellow', 8);
             }
         }
 
         if (gameObject.shootParticles) {
-            burstParticles(gameObject.x, gameObject.y, 'orange', 2, 3, 5);
+            burstParticles(gameObject.x, gameObject.y, 'orange', 1, 3, 5);
+            burstParticles(gameObject.x, gameObject.y, 'yellow', 1, 3, 5);
         }
     }
 
@@ -1187,7 +1203,13 @@ function updateGameObject(gameObject) {
 
         removeGameObject(gameObject);
         playSound(sndExplosion, 1);
-        burstParticles(gameObject.x, gameObject.y, 'grey', 100);
+        if (gameObject.type === GAME_OBJECT_BOSS) {
+            burstParticles(gameObject.x, gameObject.y, 'green', 250, 10, 15);
+            burstParticles(gameObject.x, gameObject.y, 'orange', 250, 10, 15);
+        } else {
+            burstParticles(gameObject.x, gameObject.y, 'orange', 50);
+            burstParticles(gameObject.x, gameObject.y, 'yellow', 50);
+        }
     }
 
     if (
@@ -1250,7 +1272,7 @@ let tutorielTimer = addTimer();
 let winTimer = addTimer();
 let winIndex = 0;
 
-timers[gameTimer] = 3600;
+timers[gameTimer] = 0;
 timers[enemySpawnTimer] = 1;
 timers[tutorielTimer] = 300;
 let menuKey = 1;
