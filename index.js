@@ -142,6 +142,7 @@ let imgBoss2 = loadImage('./sprites/Vadim/deathstar2.png');
 let imgBoss3 = loadImage('./sprites/Vadim/deathstar3.png');
 let imgBoss4 = loadImage('./sprites/Vadim/deathstar4.png');
 let imgScreen = loadImage('./sprites/screen.png');
+let imgScreen1 = loadImage('./sprites/screen1.png');
 
 let imgEnemyVadim1 = loadImage('./sprites/Vadim/player3.png');
 let imgEnemyVadim = loadImage('./sprites/Vadim/player.png');
@@ -1288,26 +1289,29 @@ function loop() {
         if (downKey.wentDown & menuKey !== 2) {
             menuKey++;
         }
-        drawSprite(camera.width / 2, camera.height / 2, imgScreen, 0, canvas.width, canvas.height);
 
-        drawText(camera.x + camera.width / 2, camera.y + camera.height / 2 - 330, 'Выберите персонажа', 'middle', 'center', '60px Arial', 'yellow');
+        if (difficultKey === 1) {
+            drawSprite(camera.width / 2, camera.height / 2, imgScreen, 0, canvas.width, canvas.height);
+        } else {
+            drawSprite(camera.width / 2, camera.height / 2, imgScreen1, 0, canvas.width, canvas.height);
+        }
 
-        drawSprite(camera.x + camera.width / 2, camera.y + camera.height / 2 - 250, imgPlayerVadim2, 0, ctx.width, ctx.height);
+        drawSprite(camera.x + camera.width / 2, camera.y + camera.height / 2 - camera.width / 2 * 0.32, imgPlayerVadim2, 0, ctx.width, ctx.height);
 
-        drawSprite(camera.x + camera.width / 2 - 150, camera.y + camera.height / 2 - 250, imgPlayerVadim1, 0, ctx.width, ctx.height);
+        drawSprite(camera.x + camera.width / 2 - camera.width / 2 * 0.2, camera.y + camera.height / 2 - camera.width / 2 * 0.32, imgPlayerVadim1, 0, ctx.width, ctx.height);
 
-        drawSprite(camera.x + camera.width / 2 + 150, camera.y + camera.height / 2 - 250, imgPlayerVadim3, 0, ctx.width, ctx.height);
+        drawSprite(camera.x + camera.width / 2 + camera.width / 2 * 0.2, camera.y + camera.height / 2 - camera.width / 2 * 0.32, imgPlayerVadim3, 0, ctx.width, ctx.height);
 
         if (menuKey === 0 & playerType === 2) {
-            drawText(camera.x + camera.width / 2 - 50, camera.y + camera.height / 2 - 250, '→  ', 'middle', 'center', '60px Arial', 'yellow');
+            drawText(camera.x + camera.width / 2 - camera.width / 2 * 0.05, camera.y + camera.height / 2 - 250, '→  ', 'middle', 'center', '60px Arial', 'yellow');
         }
 
         if (menuKey === 0 & playerType === 1) {
-            drawText(camera.x + camera.width / 2 - 200, camera.y + camera.height / 2 - 250, '→  ', 'middle', 'center', '60px Arial', 'yellow');
+            drawText(camera.x + camera.width / 2 - camera.width / 2 * 0.28, camera.y + camera.height / 2 - 250, '→  ', 'middle', 'center', '60px Arial', 'yellow');
         }
 
         if (menuKey === 0 & playerType === 3) {
-            drawText(camera.x + camera.width / 2 + 100, camera.y + camera.height / 2 - 250, '→  ', 'middle', 'center', '60px Arial', 'yellow');
+            drawText(camera.x + camera.width / 2 + camera.width / 2 * 0.15, camera.y + camera.height / 2 - 250, '→  ', 'middle', 'center', '60px Arial', 'yellow');
         }
 
         if (menuKey === 0 & rightKey.wentDown & playerType !== 3) {
@@ -1319,32 +1323,20 @@ function loop() {
         }
 
         if (menuKey === 1) {
-            drawText(camera.x + camera.width / 2, camera.y + camera.height / 2 - 150, '→  Играть', 'middle', 'center', '60px Arial', 'yellow');
-        } else {
-            drawText(camera.x + camera.width / 2, camera.y + camera.height / 2 - 150, '   Играть', 'middle', 'center', '60px Arial', 'yellow');
+            drawText(camera.x + camera.width / 2 - camera.width / 2 * 0.3, camera.y + camera.height / 2 - camera.height / 2 * 0.4, '→ ', 'middle', 'center', '60px Arial', 'yellow');
         }
 
-        if (menuKey === 2 & difficultKey === 1) {
-            drawText(camera.x + camera.width / 2, camera.y + camera.height / 2 - 100, '→  Норма', 'middle', 'center', '60px Arial', 'yellow');
+        if (menuKey === 2 && difficultKey === 1) {
+            drawText(camera.x + camera.width / 2 - camera.width / 2 * 0.3, camera.y + camera.height / 2 - camera.height / 2 * 0.15, '→', 'middle', 'center', '60px Arial', 'yellow');
             difficult = 1;
-        } else {
-            if (difficultKey === 1) {
-                drawText(camera.x + camera.width / 2, camera.y + camera.height / 2 - 100, '  Норма', 'middle', 'center', '60px Arial', 'yellow');
-                difficult = 1;
-            }
         }
 
-        if (menuKey === 2 & difficultKey === 2) {
-            drawText(camera.x + camera.width / 2, camera.y + camera.height / 2 - 100, '→  Cложна', 'middle', 'center', '60px Arial', 'yellow');
+        if (menuKey === 2 && difficultKey === 2) {
+            drawText(camera.x + camera.width / 2 - camera.width / 2 * 0.3, camera.y + camera.height / 2 - camera.height / 2 * 0.15, '→', 'middle', 'center', '60px Arial', 'yellow');
             difficult = 2;
-        } else {
-            if (difficultKey === 2) {
-                drawText(camera.x + camera.width / 2, camera.y + camera.height / 2 - 100, '  Сложна', 'middle', 'center', '60px Arial', 'yellow');
-                difficult = 2;
-            }
         }
 
-        if (menuKey === 2 & spaceKey.wentDown) {
+        if (menuKey === 2 && spaceKey.wentDown) {
             difficultKey++;
             if (difficultKey > 2) {
                 difficultKey -= 2;
@@ -1352,7 +1344,7 @@ function loop() {
         }
 
         if (canBeginGame === false) {
-            drawText(camera.x + camera.width / 2, camera.y + camera.width / 2 - 90, 'Прогрузка...', 'middle', 'center', '60px Arial', 'yellow');
+            drawText(camera.x + camera.width / 2, camera.height - camera.height / 2 * 0.15, 'Прогрузка...', 'middle', 'center', '60px Arial', 'yellow');
         }
 
         if (spaceKey.wentDown & canBeginGame & menuKey === 1) {
