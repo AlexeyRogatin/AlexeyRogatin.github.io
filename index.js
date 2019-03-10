@@ -19,8 +19,8 @@ const HUNT_RADIUS = camera.width + 200;
 
 let particles = [];
 
-let loose = null;
-let win = null;
+let loose = false;
+let win = false;
 let playerType = 2;
 
 function drawRect(x, y, width, height, angle, color) {
@@ -142,7 +142,6 @@ let imgBoss2 = loadImage('./sprites/Vadim/deathstar2.png');
 let imgBoss3 = loadImage('./sprites/Vadim/deathstar3.png');
 let imgBoss4 = loadImage('./sprites/Vadim/deathstar4.png');
 let imgScreen = loadImage('./sprites/screen.png');
-let imgScreen1 = loadImage('./sprites/screen1.png');
 
 let imgEnemyVadim1 = loadImage('./sprites/Vadim/player3.png');
 let imgEnemyVadim = loadImage('./sprites/Vadim/player.png');
@@ -782,7 +781,7 @@ function updateGameObject(gameObject) {
             GAME_OBJECT_ROCKETPOWERUP,
         ]);
 
-        if (qKey.wentDown && timers[skillTimer] >= 600) {
+        if (shiftKey.wentDown && timers[skillTimer] >= 600) {
             skillMode = true;
         }
 
@@ -876,7 +875,7 @@ function updateGameObject(gameObject) {
                             gameObject.x, gameObject.y,
                             gameObject.angle, gameObject.speedX,
                             gameObject.speedY, 3,
-                            moonKillObjectTypes,
+                            killObjectTypes,
                             800, 82,
                         );
                         bullet.bounce = false;
@@ -1131,7 +1130,7 @@ function updateGameObject(gameObject) {
                 if (hitObject.type === GAME_OBJECT_PLAYER) {
                     timers[hitObject.unhitableTimer] = 2 * 60;
                 }
-                if (gameObject.pierce === false) {
+                if (gameObject.pierce === false || hitObject.type === GAME_OBJECT_BOSS) {
                     amIDead = true;
                 }
             }
@@ -1266,6 +1265,10 @@ function updateGameObject(gameObject) {
 let enemySpawnTimer = addTimer();
 let enemySpawnInterval = 2 * 60;
 let globalTime = 0;
+let recordScreen = false;
+let playersName = '';
+
+let records = [];
 
 let screenShakeTimer = addTimer();
 let gameTimer = addTimer();
@@ -1273,75 +1276,133 @@ let tutorielTimer = addTimer();
 let winTimer = addTimer();
 let winIndex = 0;
 
-timers[gameTimer] = 3600;
-timers[enemySpawnTimer] = 1;
-timers[tutorielTimer] = 300;
 let menuKey = 1;
 let playerKey = 1;
 let difficult = 1;
 let difficultKey = 1;
+let stringIndex = 0;
+
+const MENU_OPTION_SELECT_CHARACHTER = 0;
+const MENU_OPTION_PLAY = 1;
+const MENU_OPTION_DIFFICULTY = 2;
+const MENU_OPTION_NAME = 3;
+const MENU_OPTION_RECORDS = 4;
+
+const PLAYER_TYPE_FAST = 1;
+const PLAYER_TYPE_DEFAULT = 2;
+const PLAYER_TYPE_DOUBLE = 3;
+
+const DIFFICULTY_NORMAL = 1;
+const DIFFCULTY_HARD = 2;
 
 function loop() {
-    if (menu === true) {
-        if (upKey.wentDown & menuKey !== 0) {
+    if (rKey.wentDown) {
+        for (let gameObjectIndex = 0; gameObjectIndex < gameObjects.length; gameObjectIndex++) {
+            removeGameObject(gameObjects[gameObjectIndex]);
+        }
+        camera.x = 0;
+        camera.y = 0;
+        win = false;
+        loose = false;
+        globalBoss = false;
+        menu = true;
+        playersName = '';
+    }
+
+    if (menu && !recordScreen) {
+        if (upKey.wentDown && menuKey !== 0) {
             menuKey--;
         }
-        if (downKey.wentDown & menuKey !== 2) {
+        if (downKey.wentDown && menuKey !== 4) {
             menuKey++;
         }
 
-        if (difficultKey === 1) {
-            drawSprite(camera.width / 2, camera.height / 2, imgScreen, 0, canvas.width, canvas.height);
-        } else {
-            drawSprite(camera.width / 2, camera.height / 2, imgScreen1, 0, canvas.width, canvas.height);
+        //картинка
+        drawSprite(camera.width / 2, camera.height / 2, imgScreen, 0, canvas.width, canvas.height);
+
+        //Вибирите персонажа
+        drawText(camera.x + camera.width / 2, camera.y + camera.height / 2 - 350, 'Выбирите персонажа', 'middle', 'center', '60px Arial', 'yellow');
+
+        //спрайты персонажей
+        drawSprite(camera.x + camera.width / 2, camera.y + camera.height / 2 - 250, imgPlayerVadim2, 0, ctx.width, ctx.height);
+
+        drawSprite(camera.x + camera.width / 2 - 150, camera.y + camera.height / 2 - 250, imgPlayerVadim1, 0, ctx.width, ctx.height);
+
+        drawSprite(camera.x + camera.width / 2 + 150, camera.y + camera.height / 2 - 250, imgPlayerVadim3, 0, ctx.width, ctx.height);
+
+
+        if (menuKey === MENU_OPTION_SELECT_CHARACHTER & playerType === PLAYER_TYPE_DEFAULT) {
+            drawText(camera.x + camera.width / 2 - 50, camera.y + camera.height / 2 - 250, '→  ', 'middle', 'center', '60px Arial', 'yellow');
         }
 
-        drawSprite(camera.x + camera.width / 2, camera.y + camera.height / 2 - camera.width / 2 * 0.32, imgPlayerVadim2, 0, ctx.width, ctx.height);
-
-        drawSprite(camera.x + camera.width / 2 - camera.width / 2 * 0.2, camera.y + camera.height / 2 - camera.width / 2 * 0.32, imgPlayerVadim1, 0, ctx.width, ctx.height);
-
-        drawSprite(camera.x + camera.width / 2 + camera.width / 2 * 0.2, camera.y + camera.height / 2 - camera.width / 2 * 0.32, imgPlayerVadim3, 0, ctx.width, ctx.height);
-
-        if (menuKey === 0 & playerType === 2) {
-            drawText(camera.x + camera.width / 2 - camera.width / 2 * 0.05, camera.y + camera.height / 2 - 250, '→  ', 'middle', 'center', '60px Arial', 'yellow');
+        if (menuKey === MENU_OPTION_SELECT_CHARACHTER & playerType === PLAYER_TYPE_FAST) {
+            drawText(camera.x + camera.width / 2 - 200, camera.y + camera.height / 2 - 250, '→  ', 'middle', 'center', '60px Arial', 'yellow');
         }
 
-        if (menuKey === 0 & playerType === 1) {
-            drawText(camera.x + camera.width / 2 - camera.width / 2 * 0.28, camera.y + camera.height / 2 - 250, '→  ', 'middle', 'center', '60px Arial', 'yellow');
+        if (menuKey === MENU_OPTION_SELECT_CHARACHTER & playerType === PLAYER_TYPE_DOUBLE) {
+            drawText(camera.x + camera.width / 2 + 100, camera.y + camera.height / 2 - 250, '→  ', 'middle', 'center', '60px Arial', 'yellow');
         }
 
-        if (menuKey === 0 & playerType === 3) {
-            drawText(camera.x + camera.width / 2 + camera.width / 2 * 0.15, camera.y + camera.height / 2 - 250, '→  ', 'middle', 'center', '60px Arial', 'yellow');
-        }
-
-        if (menuKey === 0 & rightKey.wentDown & playerType !== 3) {
+        if (menuKey === MENU_OPTION_SELECT_CHARACHTER & rightKey.wentDown & playerType !== PLAYER_TYPE_DOUBLE) {
             playerType++;
         }
 
-        if (menuKey === 0 & leftKey.wentDown & playerType !== 1) {
+        if (menuKey === MENU_OPTION_SELECT_CHARACHTER & leftKey.wentDown & playerType !== PLAYER_TYPE_FAST) {
             playerType--;
         }
 
-        if (menuKey === 1) {
-            drawText(camera.x + camera.width / 2 - camera.width / 2 * 0.3, camera.y + camera.height / 2 - camera.height / 2 * 0.4, '→ ', 'middle', 'center', '60px Arial', 'yellow');
+        if (menuKey === MENU_OPTION_PLAY) {
+            drawText(camera.x + camera.width / 2, camera.y + camera.height / 2 - 150, '→ Играть', 'middle', 'center', '60px Arial', 'yellow');
+        } else {
+            drawText(camera.x + camera.width / 2, camera.y + camera.height / 2 - 150, '  Играть', 'middle', 'center', '60px Arial', 'yellow');
         }
 
-        if (menuKey === 2 && difficultKey === 1) {
-            drawText(camera.x + camera.width / 2 - camera.width / 2 * 0.3, camera.y + camera.height / 2 - camera.height / 2 * 0.15, '→', 'middle', 'center', '60px Arial', 'yellow');
-            difficult = 1;
+        if (menuKey === MENU_OPTION_DIFFICULTY && difficultKey === DIFFICULTY_NORMAL) {
+            stringIndex = 0;
+            drawText(camera.x + camera.width / 2, camera.y + camera.height / 2 - 75, '→ Нормально', 'middle', 'center', '60px Arial', 'yellow');
+            difficult = DIFFICULTY_NORMAL;
+        } else if (difficultKey === DIFFICULTY_NORMAL) {
+            drawText(camera.x + camera.width / 2, camera.y + camera.height / 2 - 75, '  Нормально', 'middle', 'center', '60px Arial', 'yellow');
         }
 
-        if (menuKey === 2 && difficultKey === 2) {
-            drawText(camera.x + camera.width / 2 - camera.width / 2 * 0.3, camera.y + camera.height / 2 - camera.height / 2 * 0.15, '→', 'middle', 'center', '60px Arial', 'yellow');
-            difficult = 2;
+        if (menuKey === MENU_OPTION_DIFFICULTY && difficultKey === DIFFCULTY_HARD) {
+            stringIndex = 0;
+            drawText(camera.x + camera.width / 2, camera.y + camera.height / 2 - 75, '→ Сложно', 'middle', 'center', '60px Arial', 'yellow');
+            difficult = DIFFCULTY_HARD;
+        } else if (difficultKey === DIFFCULTY_HARD) {
+            drawText(camera.x + camera.width / 2, camera.y + camera.height / 2 - 75, '  Сложно', 'middle', 'center', '60px Arial', 'yellow');
         }
 
-        if (menuKey === 2 && spaceKey.wentDown) {
+        if (menuKey === MENU_OPTION_DIFFICULTY && spaceKey.wentDown) {
             difficultKey++;
             if (difficultKey > 2) {
                 difficultKey -= 2;
             }
         }
+
+        if (menuKey === MENU_OPTION_NAME) {
+            if (stringIndex === 0) {
+                string = '';
+                stringIndex++;
+            }
+            if (spaceKey.wentDown) {
+                playersName = string;
+            }
+            drawText(camera.x + camera.width / 2, camera.y + camera.height / 2, string, 'middle', 'center', '60px Arial', 'yellow');
+        } else {
+            drawText(camera.x + camera.width / 2, camera.y + camera.height / 2, 'Имя', 'middle', 'center', '60px Arial', 'yellow');
+        }
+
+        if (menuKey === MENU_OPTION_RECORDS) {
+            drawText(camera.x + camera.width / 2, camera.y + camera.height / 2 + 75, '→  Рекорды', 'middle', 'center', '60px Arial', 'yellow');
+            if (spaceKey.wentDown) {
+                recordScreen = true;
+            }
+        } else {
+            drawText(camera.x + camera.width / 2, camera.y + camera.height / 2 + 75, 'Рекорды', 'middle', 'center', '60px Arial', 'yellow');
+        }
+
+        drawText(camera.x + camera.width / 2, camera.y + camera.height / 2 + 150, 'Space future 2D-3D super epic shooter', 'middle', 'center', '60px Arial', 'yellow');
 
         if (canBeginGame === false) {
             drawText(camera.x + camera.width / 2, camera.height - camera.height / 2 * 0.15, 'Прогрузка...', 'middle', 'center', '60px Arial', 'yellow');
@@ -1349,6 +1410,11 @@ function loop() {
 
         if (spaceKey.wentDown & canBeginGame & menuKey === 1) {
             menu = false;
+            timers[gameTimer] = 3600;
+            timers[enemySpawnTimer] = 1;
+            timers[tutorielTimer] = 300;
+            timers[skillTimer] = 0;
+            globalScore = 0;
             playSound(sndSong, 0.75, true);
             if (playerType === 1) {
                 globalPlayer = addPlayer1();
@@ -1360,7 +1426,17 @@ function loop() {
                 globalPlayer = addPlayer3();
             }
         }
+    } else if (recordScreen) {
+        drawSprite(camera.width / 2, camera.height / 2, imgScreen, 0, canvas.width, canvas.height);
 
+        const RECORD_HEIGHT = 40;
+        for (let recordIndex = 0; recordIndex.length > recordIndex; recordIndex++) {
+            let record = records[recordIndex];
+            drawText(camera.x + camera.width / 2, camera.x + camera.height / 2 + recordIndex * RECORD_HEIGHT, record.name + record.score, 'middle', 'center', '60px Arial', 'yellow');
+        }
+        if (escKey.wentDown) {
+            recordScreen = false;
+        }
     } else {
         if (imgStars.width > 0) {
             let minX = Math.floor((camera.x - camera.width) / imgStars.width);
@@ -1434,20 +1510,20 @@ function loop() {
             drawText(camera.x, camera.y - 100, 'Двигаться - A    D     Стрелять - Пробел', 'middle', 'center', '60px Arial', 'yellow');
         }
 
-        if (!globalPlayer.exists && win === null) {
+        if (!globalPlayer.exists && !win) {
             loose = true;
         }
 
-        if (timers[gameTimer] <= 0 && !globalBoss.exists && loose === null) {
+        if (timers[gameTimer] <= 0 && !globalBoss.exists && !loose) {
             win = true;
         }
 
-        if (loose & !win) {
+        if (loose) {
             drawText(camera.x, camera.y - 30, 'Вы были расплющены Ваш счёт: ' + globalScore, 'middle', 'center', '60px Arial', 'yellow');
-            drawText(camera.x, camera.y + 30, 'Press F5 to restart', 'middle', 'center', '60px Arial', 'yellow');
+            drawText(camera.x, camera.y + 30, 'Press R to restart', 'middle', 'center', '60px Arial', 'yellow');
         }
 
-        if (win & winIndex === 0) {
+        if (win && winIndex === 0) {
             timers[winTimer] = 180;
             timers[gameTimer] = 3600;
             globalBoss = null;
@@ -1456,7 +1532,11 @@ function loop() {
 
         if (timers[winTimer] > 0) {
             drawText(camera.x, camera.y - 30, 'Вы выиграли) Ваш счёт: ' + globalScore, 'middle', 'center', '60px Arial', 'yellow');
-            drawText(camera.x, camera.y + 30, 'Press F5 to restart', 'middle', 'center', '60px Arial', 'yellow');
+            drawText(camera.x, camera.y + 30, 'Press R to restart', 'middle', 'center', '60px Arial', 'yellow');
+        }
+
+        if (!globalPlayer.exists && win) {
+            drawText(camera.x, camera.y, 'Ваш счёт: ' + globalScore, 'middle', 'center', '60px Arial', 'yellow');
         }
 
         ctx.restore();
