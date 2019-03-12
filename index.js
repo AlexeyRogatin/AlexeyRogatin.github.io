@@ -1,4 +1,6 @@
 ﻿'use strict';
+const ROTATION_SPEED = 0.05;
+
 
 const MENU_OPTION_SELECT_CHARACHTER = 0;
 const MENU_OPTION_PLAY = 1;
@@ -40,17 +42,27 @@ const AI_STATE_SHOOT = 4;
 const AI_STATE_HUNT = 5;
 const TIME_UNTIL_BOSS = 3600;
 
-
+const SCREEN_RATIO = 16 / 9;
 const canvas = document.getElementById("canvas");
-const rect = canvas.getBoundingClientRect();
-canvas.width = window.innerWidth;
-canvas.height = window.innerHeight;
+
+function handleResize() {
+    const rect = canvas.getBoundingClientRect();
+    canvas.width = 1366;
+    canvas.height = 768;
+    canvas.style.height = (rect.width / SCREEN_RATIO) + 'px';
+}
+
+handleResize();
+window.addEventListener('resize', handleResize);
+
 const ctx = canvas.getContext("2d");
 
 
 let state = null;
 let globalRecords = [];
 
+
+const DEFAULT_PLAYER_NAME = 'player';
 
 function resetState() {
     state = {
@@ -74,13 +86,11 @@ function resetState() {
         cleanWidth: 30,
         enemySpawnInterval: 2 * 60,
         globalTime: 0,
-        playersName: '',
-        winIndex: 0,
-        menuKey: 1,
-        playerKey: 1,
-        difficult: 1,
-        difficultKey: 1,
-        stringIndex: 0,
+
+        inputInProgress: false,
+        playersName: DEFAULT_PLAYER_NAME,
+        menuKey: MENU_OPTION_PLAY,
+        difficulty: DIFFICULTY_NORMAL,
         currentScreen: SCREEN_MENU,
         bossDefeatCount: 0,
     };
@@ -678,10 +688,10 @@ function updateGameObject(gameObject) {
         ];
 
         if (state.skillMode) {
-            if (state.playerType === 1) {
+            if (state.playerType === PLAYER_TYPE_FAST) {
                 rateMultiplier = 0.5;
             }
-            if (state.playerType === 2) {
+            if (state.playerType === PLAYER_TYPE_DEFAULT) {
                 let shield = addBullet(
                     GAME_OBJECT_BULLET,
                     gameObject.x, gameObject.y, gameObject.angle,
@@ -693,7 +703,7 @@ function updateGameObject(gameObject) {
                 setTimer(gameObject.shootTimer, 1);
                 setTimer(gameObject.unhitableTimer, 1);
             }
-            if (state.playerType === 3) {
+            if (state.playerType === PLAYER_TYPE_DOUBLE) {
                 killBullet = true;
                 setTimer(state.skillTimer, getTimer(state.skillTimer) - 0.5);
                 if (cleanWidth < 1000) {
@@ -721,7 +731,6 @@ function updateGameObject(gameObject) {
         let canShoot = getTimer(gameObject.shootTimer) <= 0;
 
         if (spaceKey.isDown && canShoot) {
-
             if (getTimer(gameObject.powerUpTimer) > 0) {
                 let bullet = null;
                 let reloadTime = 0;
@@ -811,7 +820,6 @@ function updateGameObject(gameObject) {
                 bullet.sprite = imgPlayerBullet;
                 bullet.damage = 1;
             }
-
             playSound(sndGun, 0.2);
         }
 
@@ -1097,6 +1105,10 @@ function updateGameObject(gameObject) {
                 state.bossDefeatCount++;
             } break;
             case GAME_OBJECT_PLAYER: {
+                globalRecords.push({
+                    name: state.playersName,
+                    score: state.globalScore,
+                });
             } break;
         }
 
@@ -1155,25 +1167,31 @@ function clipValue(value, min, max) {
     return result;
 }
 
+const MENU_OFFSET_LEFT = 0.32 * state.camera.width;
+
+function drawMenuText(x, y, text, align = 'left') {
+    const camera = state.camera;
+    drawText(MENU_OFFSET_LEFT + x, camera.y + camera.height / 2 + y, text, 'middle', align, '60px Arial', 'yellow');
+}
+
 function loopMenu() {
     const camera = state.camera;
 
-    if (upKey.wentDown) {
-        state.menuKey--;
-    }
-    if (downKey.wentDown) {
-        state.menuKey++;
+    if (!state.inputInProgress) {
+        if (upKey.wentDown) {
+            state.menuKey--;
+        }
+        if (downKey.wentDown) {
+            state.menuKey++;
+        }
     }
     state.menuKey = clipValue(state.menuKey, MENU_OPTION_SELECT_CHARACHTER, MENU_OPTION_RECORDS);
 
     //картинка
     drawSprite(camera.width / 2, camera.height / 2, imgScreen, 0, canvas.width, canvas.height);
 
-    function drawMenuText(x, y, text) {
-        drawText(camera.x + camera.width / 2 + x, camera.y + camera.height / 2 + y, text, 'middle', 'center', '60px Arial', 'yellow');
-    }
     //Вибeрите персонажа
-    drawMenuText(0, - 350, 'Выберите персонажа');
+    drawMenuText(camera.width * 0.5 - MENU_OFFSET_LEFT, - 350, 'Выберите персонажа', 'center');
 
     //спрайты персонажей
     const playerSprites = [imgPlayerVadim1, imgPlayerVadim2, imgPlayerVadim3];
@@ -1185,92 +1203,90 @@ function loopMenu() {
         );
     }
 
-    switch (state.menuKey) {
-        case MENU_OPTION_SELECT_CHARACHTER: {
-            let arrowX = -200 + state.playerType * 150;
-            drawMenuText(arrowX, -250, '→  ');
+    if (state.menuKey === MENU_OPTION_SELECT_CHARACHTER) {
 
-            if (rightKey.wentDown) {
-                state.playerType++;
-            }
-            if (leftKey.wentDown) {
-                state.playerType--;
-            }
-            state.playerType = clipValue(state.playerType, PLAYER_TYPE_FAST, PLAYER_TYPE_DOUBLE);
-        } break;
-
-        case MENU_OPTION_PLAY: {
-            let text = 'Играть';
-            if (state.menuKey === MENU_OPTION_PLAY) {
-                text = '→ Играть';
-            }
-            drawMenuText(0, -150, text);
-        } break;
-    }
-
-    if (state.menuKey === MENU_OPTION_DIFFICULTY && state.difficultKey === DIFFICULTY_NORMAL) {
-        state.stringIndex = 0;
-        drawText(camera.x + camera.width / 2, camera.y + camera.height / 2 - 75, '→ Нормально', 'middle', 'center', '60px Arial', 'yellow');
-        state.difficult = DIFFICULTY_NORMAL;
-    } else if (state.difficultKey === DIFFICULTY_NORMAL) {
-        drawText(camera.x + camera.width / 2, camera.y + camera.height / 2 - 75, '  Нормально', 'middle', 'center', '60px Arial', 'yellow');
-    }
-
-    if (state.menuKey === MENU_OPTION_DIFFICULTY && state.difficultKey === DIFFCULTY_HARD) {
-        state.stringIndex = 0;
-        drawText(camera.x + camera.width / 2, camera.y + camera.height / 2 - 75, '→ Сложно', 'middle', 'center', '60px Arial', 'yellow');
-        state.difficult = DIFFCULTY_HARD;
-    } else if (state.difficultKey === DIFFCULTY_HARD) {
-        drawText(camera.x + camera.width / 2, camera.y + camera.height / 2 - 75, '  Сложно', 'middle', 'center', '60px Arial', 'yellow');
-    }
-
-    if (state.menuKey === MENU_OPTION_DIFFICULTY && spaceKey.wentDown) {
-        state.difficultKey++;
-        if (state.difficultKey > 2) {
-            state.difficultKey -= 2;
+        if (rightKey.wentDown) {
+            state.playerType++;
         }
+        if (leftKey.wentDown) {
+            state.playerType--;
+        }
+        state.playerType = clipValue(state.playerType, PLAYER_TYPE_FAST, PLAYER_TYPE_DOUBLE);
     }
 
-    if (state.menuKey === MENU_OPTION_NAME) {
-        if (state.stringIndex === 0) {
-            string = '';
-            state.stringIndex++;
-        }
-        if (spaceKey.wentDown) {
-            playersName = string;
-        }
-        drawText(camera.x + camera.width / 2, camera.y + camera.height / 2, string, 'middle', 'center', '60px Arial', 'yellow');
+    if (state.menuKey === MENU_OPTION_SELECT_CHARACHTER) {
+        let arrowX = state.playerType * 150;
+        drawMenuText(arrowX, -250, '→');
     } else {
-        drawText(camera.x + camera.width / 2, camera.y + camera.height / 2, 'Имя', 'middle', 'center', '60px Arial', 'yellow');
+        drawMenuText(-70, -225 + state.menuKey * 75, '→');
     }
 
-    if (state.menuKey === MENU_OPTION_RECORDS) {
-        drawText(camera.x + camera.width / 2, camera.y + camera.height / 2 + 75, '→  Рекорды', 'middle', 'center', '60px Arial', 'yellow');
-        if (spaceKey.wentDown) {
-            currentScreen = SCREEN_RECORDS;
-        }
-    } else {
-        drawText(camera.x + camera.width / 2, camera.y + camera.height / 2 + 75, 'Рекорды', 'middle', 'center', '60px Arial', 'yellow');
-    }
-
-    drawText(camera.x + camera.width / 2, camera.y + camera.height / 2 + 150, 'Space future 2D-3D super epic shooter', 'middle', 'center', '60px Arial', 'yellow');
-
-    if (canBeginGame === false) {
-        drawText(camera.x + camera.width / 2, camera.height - camera.height / 2 * 0.15, 'Прогрузка...', 'middle', 'center', '60px Arial', 'yellow');
-    }
-
-    if (spaceKey.wentDown & canBeginGame & state.menuKey === MENU_OPTION_PLAY) {
+    drawMenuText(0, -150, 'Играть');
+    if (spaceKey.wentDown && canBeginGame && state.menuKey === MENU_OPTION_PLAY) {
         state.currentScreen = SCREEN_GAME;
         playSound(sndSong, 0.75, true);
-        if (state.playerType === 1) {
+        if (state.playerType === PLAYER_TYPE_FAST) {
             state.globalPlayer = addPlayerFast();
         }
-        if (state.playerType === 2) {
+        if (state.playerType === PLAYER_TYPE_DEFAULT) {
             state.globalPlayer = addPlayerDefault();
         }
-        if (state.playerType === 3) {
+        if (state.playerType === PLAYER_TYPE_DOUBLE) {
             state.globalPlayer = addPlayerDouble();
         }
+    }
+
+    const difficultyTexts = ['Нормально', 'Сложно'];
+    drawMenuText(0, -75, difficultyTexts[state.difficulty]);
+    if (state.menuKey === MENU_OPTION_DIFFICULTY) {
+        if (spaceKey.wentDown) {
+            state.difficulty++;
+            if (state.difficulty > DIFFCULTY_HARD) {
+                state.difficulty = DIFFICULTY_NORMAL;
+            }
+        }
+    }
+
+    if (state.menuKey === MENU_OPTION_NAME && spaceKey.wentDown) {
+        if (state.inputInProgress) {
+            state.inputInProgress = false;
+        } else {
+            globalInputString = '';
+            state.inputInProgress = true;
+        }
+    }
+
+    if (!state.inputInProgress) {
+        let name = 'Имя';
+        if (state.playersName !== DEFAULT_PLAYER_NAME) {
+            name = state.playersName;
+        }
+        drawMenuText(0, 0, name);
+    } else {
+        state.playersName = globalInputString;
+        drawMenuText(0, 0, state.playersName);
+    }
+
+    drawMenuText(0, 75, 'Рекорды');
+
+    if (state.menuKey === MENU_OPTION_RECORDS && spaceKey.wentDown) {
+        state.currentScreen = SCREEN_RECORDS;
+    }
+
+
+    drawText(
+        camera.x + camera.width / 2,
+        camera.y + camera.height / 2 + 200,
+        'Space Future 2D-3D', 'middle', 'center', '80px Arial', 'yellow',
+    );
+    drawText(
+        camera.x + camera.width / 2,
+        camera.y + camera.height / 2 + 300,
+        'Super Epic Shooter', 'middle', 'center', '80px Arial', 'yellow',
+    );
+
+    if (!canBeginGame) {
+        drawMenuText(0, 400, 'Прогрузка...');
     }
 }
 
@@ -1313,10 +1329,10 @@ function loopGame() {
         }
 
         setTimer(state.enemySpawnTimer, state.enemySpawnInterval);
-        if (state.difficult === DIFFICULTY_NORMAL) {
+        if (state.difficulty === DIFFICULTY_NORMAL) {
             state.enemySpawnInterval = 1 / Math.sqrt(Math.sqrt(state.globalTime * 50 + 100)) * 700;
         }
-        if (state.difficult === DIFFCULTY_HARD) {
+        if (state.difficulty === DIFFCULTY_HARD) {
             state.enemySpawnInterval = 0;
         }
     }
@@ -1366,15 +1382,15 @@ function loopGame() {
 }
 
 function loopRecords() {
+    const camera = state.camera;
     drawSprite(camera.width / 2, camera.height / 2, imgScreen, 0, canvas.width, canvas.height);
-
     const RECORD_HEIGHT = 40;
-    for (let recordIndex = 0; recordIndex.length > recordIndex; recordIndex++) {
-        let record = records[recordIndex];
-        drawText(camera.x + camera.width / 2, camera.x + camera.height / 2 + recordIndex * RECORD_HEIGHT, record.name + record.score, 'middle', 'center', '60px Arial', 'yellow');
+    for (let recordIndex = 0; recordIndex < globalRecords.length; recordIndex++) {
+        let record = globalRecords[recordIndex];
+        drawMenuText(0, recordIndex * RECORD_HEIGHT, `${recordIndex + 1}. ${record.name} - ${record.score}`);
     }
     if (escKey.wentDown) {
-        currentScreen = SCREEN_MENU;
+        state.currentScreen = SCREEN_MENU;
     }
 }
 

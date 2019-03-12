@@ -5,10 +5,12 @@ let KEY_UP = 87;
 let KEY_SPACE = 32;
 let KEY_SHIFT = 16;
 let KEY_R = 82;
-const ROTATION_SPEED = 0.05;
 let KEY_ESC = 27;
+let KEY_A = 65;
+let KEY_Z = 90;
+let KEY_BACKSPACE = 8;
 
-let string = '';
+let globalInputString = '';
 
 function makeKey() {
     return {
@@ -57,7 +59,17 @@ window.onkeydown = function onkeydown(event) {
     handleKeyDown(event, KEY_SHIFT, shiftKey);
     handleKeyDown(event, KEY_R, rKey);
     handleKeyDown(event, KEY_ESC, escKey);
-    string += event.key;
+
+    if (
+        (event.keyCode >= KEY_A && event.keyCode <= KEY_Z) ||
+        event.keyCode === KEY_SPACE
+    ) {
+        globalInputString += event.key;
+    }
+
+    if (event.keyCode === KEY_BACKSPACE) {
+        globalInputString = globalInputString.substr(0, globalInputString.length - 1);
+    }
 };
 window.onkeyup = function onkeyup(event) {
     handleKeyUp(event, KEY_UP, upKey);
