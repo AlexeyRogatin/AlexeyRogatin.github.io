@@ -704,15 +704,15 @@ function updateGameObject(gameObject) {
                 setTimer(gameObject.unhitableTimer, 1);
             }
             if (state.playerType === PLAYER_TYPE_DOUBLE) {
-                killBullet = true;
+                state.killBullet = true;
                 setTimer(state.skillTimer, getTimer(state.skillTimer) - 0.5);
-                if (cleanWidth < 1000) {
-                    drawSprite(gameObject.x, gameObject.y, imgCleaning, 0, cleanWidth, cleanHeight);
-                    cleanHeight += 50;
-                    cleanWidth += 50;
+                if (state.cleanWidth < 1000) {
+                    drawSprite(gameObject.x, gameObject.y, imgCleaning, 0, state.cleanWidth, state.cleanHeight);
+                    state.cleanHeight += 50;
+                    state.cleanWidth += 50;
                 } else {
-                    cleanWidth = 30;
-                    cleanHeight = 30;
+                    state.cleanWidth = 30;
+                    state.cleanHeight = 30;
                 }
             }
         }
