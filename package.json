@@ -1,0 +1,15 @@
+{
+  "name": "mars-survival",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "dependencies": {
+    "typescript": "^3.6.4"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "start": "parcel code/test.ts"
+  },
+  "author": "",
+  "license": "ISC"
+}
