@@ -757,7 +757,7 @@ function updateGameObject(gameObject) {
                             gameObject.x, gameObject.y,
                             gameObject.angle, gameObject.speedX,
                             gameObject.speedY, 3,
-                            killObjectTypes,
+                            moonKillObjectTypes,
                             800, 82,
                         );
                         bullet.bounce = false;
@@ -897,7 +897,7 @@ function updateGameObject(gameObject) {
         if (shoot && canShoot) {
             let bullet = addBullet(GAME_OBJECT_ENEMY_BULLET,
                 gameObject.x, gameObject.y, gameObject.angle,
-                gameObject.speedX, gameObject.speedY, 7, [GAME_OBJECT_PLAYER], 100, 20
+                gameObject.speedX, gameObject.speedY, 7, [GAME_OBJECT_PLAYER], 150, 20
             );
             bullet.damage = 1;
             bullet.sprite = imgEnemyBullet;
