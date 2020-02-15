@@ -103,6 +103,8 @@ function resetState() {
     state.showWinTextTimer = addTimer();
 }
 
+let lap = 0;
+
 resetState();
 
 const HUNT_RADIUS = state.camera.width + 200;
@@ -1224,7 +1226,9 @@ function loopMenu() {
     drawMenuText(0, -150, 'Играть');
     if (spaceKey.wentDown && canBeginGame && state.menuKey === MENU_OPTION_PLAY) {
         state.currentScreen = SCREEN_GAME;
-        playSound(sndSong, 0.75, true);
+        if (lap === 0) {
+            playSound(sndSong, 0.75, true);
+        }
         if (state.playerType === PLAYER_TYPE_FAST) {
             state.globalPlayer = addPlayerFast();
         }
@@ -1396,6 +1400,7 @@ function loopRecords() {
 
 function loop() {
     if (rKey.wentDown) {
+        lap++;
         resetState();
     }
 
@@ -1419,7 +1424,6 @@ function loop() {
 
 function beginGame() {
     resetState();
-    playSound(sndSong, 0.75, true);
     requestAnimationFrame(loop);
     console.log('game started');
 }
