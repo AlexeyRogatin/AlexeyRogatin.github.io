@@ -47,8 +47,8 @@ const canvas = document.getElementById("canvas");
 
 function handleResize() {
     const rect = canvas.getBoundingClientRect();
-    canvas.width = 1366;
-    canvas.height = 768;
+    canvas.width = 1600;
+    canvas.height = 900;
     canvas.style.height = (rect.width / SCREEN_RATIO) + 'px';
 }
 
