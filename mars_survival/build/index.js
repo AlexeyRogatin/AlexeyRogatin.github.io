@@ -1,6 +1,6 @@
-System.register("drawing", [], function (exports_1, context_1) {
+System.register("resources", [], function (exports_1, context_1) {
     "use strict";
-    var SCREEN_RATIO, canvas, ctx, backBuffer, backCtx, camera, resourcesLoadedCount, resourcesWaitingForLoadCount, canBeginGame, Layer, DrawQueueType, DrawQueueItem, imgPlayer, imgNone, imgWheel1, imgWheel2, imgWheel3, imgWheel4, imgWheel5, imgWheel6, imgCamera, imgEarth1, imgEarth2, imgEarth3, imgGeyser, imgMountain, imgLava1, imgLava2, imgIron1, imgIron2, imgIron3, imgIron4, imgIron5, imgIronItem, imgArrow, imgCrafts, imgArrow1, imgMelter, imgIronIngot, imgAurit1, imgAurit2, imgAurit3, imgAurit4, imgAurit5, imgAuritItem, imgAuritIngot, imgCrystal1, imgCrystal2, imgCrystal3, imgCrystal4, imgCrystal5, imgCrystalItem, imgSplitter, imgToolkit, imgSunBatteryAdd, imgSunBatteryItem, imgSunBattery, imgSilicon1, imgSilicon2, imgSilicon3, imgSilicon4, imgSilicon5, imgSiliconItem, imgVolcano, imgMagmaBall, imgStorage, imgGoldenCamera, imgExtraSlot, imgExtraSlotItem, imgAlert, imgShockProofBody, imgMeteorite, imgIgneous, imgIgneousItem, imgIgneousIngot, imgMeteoriteStuff, imgBoss, imgArrow2, imgManipulator, imgMechanicalHand, imgEnergy, imgHp, imgBossReadyToAttack, imgBossReadyToAttack1, imgBossAttack, imgBossAttack1, imgLazer, imgLazer1, imgEdge1, imgEdge2_1, imgEdge2_2, imgEdge2_3, imgEdge3, imgEdge4, imgSide1;
+    var SCREEN_RATIO, canvas, ctx, backBuffer, backCtx, camera, resourcesLoadedCount, resourcesWaitingForLoadCount, canBeginGame, Layer, DrawQueueType, DrawQueueItem, sounds, imgPlayer, imgNone, imgWheel1, imgWheel2, imgWheel3, imgWheel4, imgWheel5, imgWheel6, imgCamera, imgEarth1, imgEarth2, imgEarth3, imgGeyser, imgMountain, imgLava1, imgLava2, imgIron1, imgIron2, imgIron3, imgIron4, imgIron5, imgIronItem, imgArrow, imgCrafts, imgArrow1, imgMelter, imgIronIngot, imgAurit1, imgAurit2, imgAurit3, imgAurit4, imgAurit5, imgAuritItem, imgAuritIngot, imgCrystal1, imgCrystal2, imgCrystal3, imgCrystal4, imgCrystal5, imgCrystalItem, imgSplitter, imgToolkit, imgSunBatteryAdd, imgSunBatteryItem, imgSunBattery, imgSilicon1, imgSilicon2, imgSilicon3, imgSilicon4, imgSilicon5, imgSiliconItem, imgVolcano, imgMagmaBall, imgStorage, imgGoldenCamera, imgExtraSlot, imgExtraSlotItem, imgAlert, imgShockProofBody, imgMeteorite, imgIgneous, imgIgneousItem, imgIgneousIngot, imgMeteoriteStuff, imgBoss, imgArrow2, imgManipulator, imgMechanicalHand, imgEnergy, imgHp, imgBossReadyToAttack, imgBossReadyToAttack1, imgBossAttack, imgBossAttack1, imgLazer, imgLazer1, imgEdge1, imgEdge2_1, imgEdge2_2, imgEdge2_3, imgEdge3, imgEdge4, imgSide1, imgMenu, sndMining, sndGeyser, sndVolcanoBoom, sndBoom;
     var __moduleName = context_1 && context_1.id;
     function handleResize() {
         var rect = canvas.getBoundingClientRect();
@@ -26,6 +26,26 @@ System.register("drawing", [], function (exports_1, context_1) {
         return img;
     }
     exports_1("loadImage", loadImage);
+    function loadSound(src) {
+        var sound = new Audio();
+        sound.src = src;
+        exports_1("resourcesWaitingForLoadCount", ++resourcesWaitingForLoadCount) - 1;
+        sound.oncanplay = function () { return resourceLoaded(src); };
+        return sound;
+    }
+    exports_1("loadSound", loadSound);
+    function playSound(sound, volume, loop) {
+        if (volume === void 0) { volume = 1; }
+        if (loop === void 0) { loop = false; }
+        var newSound = new Audio(sound.src);
+        newSound.volume = volume;
+        newSound.loop = loop;
+        newSound.oncanplay = function () {
+            newSound.play();
+        };
+        return newSound;
+    }
+    exports_1("playSound", playSound);
     function renderItem(item) {
         switch (item.type) {
             case DrawQueueType.IMAGE:
@@ -171,6 +191,7 @@ System.register("drawing", [], function (exports_1, context_1) {
                 return DrawQueueItem;
             }());
             exports_1("DrawQueueItem", DrawQueueItem);
+            sounds = [];
             exports_1("imgPlayer", imgPlayer = loadImage('../sprites/player_body.png'));
             exports_1("imgNone", imgNone = loadImage('../sprites/none.png'));
             exports_1("imgWheel1", imgWheel1 = loadImage('../sprites/weel1.png'));
@@ -254,12 +275,17 @@ System.register("drawing", [], function (exports_1, context_1) {
             exports_1("imgEdge3", imgEdge3 = loadImage('../sprites/edge3.png'));
             exports_1("imgEdge4", imgEdge4 = loadImage('../sprites/edge4.png'));
             exports_1("imgSide1", imgSide1 = loadImage('../sprites/side1.png'));
+            exports_1("imgMenu", imgMenu = loadImage('../sprites/menu.jpg'));
+            exports_1("sndMining", sndMining = loadSound('../sounds/mining.mp3'));
+            exports_1("sndGeyser", sndGeyser = loadSound('../sounds/geyser.mp3'));
+            exports_1("sndVolcanoBoom", sndVolcanoBoom = loadSound('../sounds/volcanoBoom.mp3'));
+            exports_1("sndBoom", sndBoom = loadSound('../sounds/boom.mp3'));
         }
     };
 });
-System.register("controls", ["drawing"], function (exports_2, context_2) {
+System.register("controls", ["resources"], function (exports_2, context_2) {
     "use strict";
-    var drawing_1, mouseX, mouseY, KeyCode, Key, Mouse, upKey, leftKey, downKey, rightKey, mouse, qKey, shiftKey, rKey, escKey;
+    var resources_1, mouseX, mouseY, KeyCode, Key, Mouse, upKey, leftKey, downKey, rightKey, mouse, qKey, shiftKey, rKey, escKey;
     var __moduleName = context_2 && context_2.id;
     function handleKeyDown(event, keyCode, key) {
         if (keyCode === event.keyCode) {
@@ -296,8 +322,8 @@ System.register("controls", ["drawing"], function (exports_2, context_2) {
     exports_2("clearAllKeys", clearAllKeys);
     return {
         setters: [
-            function (drawing_1_1) {
-                drawing_1 = drawing_1_1;
+            function (resources_1_1) {
+                resources_1 = resources_1_1;
             }
         ],
         execute: function () {
@@ -359,8 +385,8 @@ System.register("controls", ["drawing"], function (exports_2, context_2) {
                 handleKeyUp(event, KeyCode.ESC, escKey);
             };
             window.onmousemove = function onmousemove(event) {
-                var rect = drawing_1.canvas.getBoundingClientRect();
-                var scale = drawing_1.canvas.width / drawing_1.camera.width;
+                var rect = resources_1.canvas.getBoundingClientRect();
+                var scale = resources_1.canvas.width / resources_1.camera.width;
                 mouse.x = (event.clientX - rect.left) / scale;
                 mouse.y = (event.clientY - rect.top) / scale;
             };
@@ -379,9 +405,9 @@ System.register("controls", ["drawing"], function (exports_2, context_2) {
         }
     };
 });
-System.register("index", ["controls", "drawing"], function (exports_3, context_3) {
+System.register("index", ["controls", "resources"], function (exports_3, context_3) {
     "use strict";
-    var controls_1, drawing_2, InventorySlot, TileLayer, Tile, RecipePart, Recipe, GameObject, particle, Text, GameObjectType, GameState, TileType, Item, Event, TILE, MORNING_LENGTH, DAY_LENGTH, AFTERNOON_LENGTH, NIGHT_LENGTH, ONE_DAY, EVENT_LENGTH, VOLCANO_RADIUS, VOLCANO_HEIGHT, GRAVITATION, CAMERA_HEIGHT, MAGMA_BALL_SPEED, METEORITE_SPEED, LAVA_BALL_SPEED, METEOR_STUFF_COOLDOWN, MAX_RANGE, STORAGE_SLOT_COUNT, STRIPE_WIDTH, STRIPE_HEIGHT, timers, map, CHUNK_PROTOTYPES, RECIPES, GAME_LENGTH, slotCount, inventory, drawQueue, alpha, gameObjects, particles, globalPlayer, screenShakes, craftMode, pause, firstRecipeIndex, mainSlot, controlledStorage, dayTimer, gameTimer, event, timeBetweenEvents, eventEnd, hpShakeTimer, globalBoss, recentShake, gameState, menuTexts, playText;
+    var controls_1, resources_2, InventorySlot, TileLayer, Tile, RecipePart, Recipe, GameObject, particle, Text, GameObjectType, GameState, TileType, Item, Event, TILE, MORNING_LENGTH, DAY_LENGTH, AFTERNOON_LENGTH, NIGHT_LENGTH, ONE_DAY, EVENT_LENGTH, VOLCANO_RADIUS, VOLCANO_HEIGHT, GRAVITATION, CAMERA_HEIGHT, MAGMA_BALL_SPEED, METEORITE_SPEED, LAVA_BALL_SPEED, METEOR_STUFF_COOLDOWN, MAX_RANGE, STORAGE_SLOT_COUNT, STRIPE_WIDTH, STRIPE_HEIGHT, CHUNK_PROTOTYPES, RECIPES, GAME_LENGTH, timers, map, slotCount, inventory, drawQueue, alpha, gameObjects, particles, globalPlayer, screenShakes, craftMode, pause, firstRecipeIndex, mainSlot, controlledStorage, dayTimer, gameTimer, event, timeBetweenEvents, eventEnd, hpShakeTimer, globalBoss, recentShake, gameState, menuTexts, playText;
     var __moduleName = context_3 && context_3.id;
     function restate() {
         gameObjects = [];
@@ -554,65 +580,65 @@ System.register("index", ["controls", "drawing"], function (exports_3, context_3
         if (width === void 0) { width = 0; }
         if (height === void 0) { height = 0; }
         if (fromThePoint === void 0) { fromThePoint = false; }
-        if (layer === void 0) { layer = drawing_2.Layer.TILE; }
+        if (layer === void 0) { layer = resources_2.Layer.TILE; }
         var mainSide = width;
         if (height > width) {
             mainSide = height;
         }
         if (!fromThePoint) {
-            if (x > drawing_2.camera.x - drawing_2.camera.width * 0.5 - mainSide / 2 &&
-                x < drawing_2.camera.x + drawing_2.camera.width * 0.5 + mainSide / 2 &&
-                y > drawing_2.camera.y - drawing_2.camera.height * 0.5 - mainSide / 2 &&
-                y < drawing_2.camera.y + drawing_2.camera.height * 0.5 + mainSide / 2) {
-                drawQueue.push({ x: x, y: y, sprite: sprite, angle: angle, width: width, height: height, fromThePoint: fromThePoint, layer: layer, type: drawing_2.DrawQueueType.IMAGE });
+            if (x > resources_2.camera.x - resources_2.camera.width * 0.5 - mainSide / 2 &&
+                x < resources_2.camera.x + resources_2.camera.width * 0.5 + mainSide / 2 &&
+                y > resources_2.camera.y - resources_2.camera.height * 0.5 - mainSide / 2 &&
+                y < resources_2.camera.y + resources_2.camera.height * 0.5 + mainSide / 2) {
+                drawQueue.push({ x: x, y: y, sprite: sprite, angle: angle, width: width, height: height, fromThePoint: fromThePoint, layer: layer, type: resources_2.DrawQueueType.IMAGE });
             }
         }
         else {
-            if (x > drawing_2.camera.x - drawing_2.camera.width * 0.5 - mainSide * 4 &&
-                x < drawing_2.camera.x + drawing_2.camera.width * 0.5 + mainSide * 4 &&
-                y > drawing_2.camera.y - drawing_2.camera.height * 0.5 - mainSide * 4 &&
-                y < drawing_2.camera.y + drawing_2.camera.height * 0.5 + mainSide * 4) {
-                drawQueue.push({ x: x, y: y, sprite: sprite, angle: angle, width: width, height: height, fromThePoint: fromThePoint, layer: layer, type: drawing_2.DrawQueueType.IMAGE });
+            if (x > resources_2.camera.x - resources_2.camera.width * 0.5 - mainSide * 4 &&
+                x < resources_2.camera.x + resources_2.camera.width * 0.5 + mainSide * 4 &&
+                y > resources_2.camera.y - resources_2.camera.height * 0.5 - mainSide * 4 &&
+                y < resources_2.camera.y + resources_2.camera.height * 0.5 + mainSide * 4) {
+                drawQueue.push({ x: x, y: y, sprite: sprite, angle: angle, width: width, height: height, fromThePoint: fromThePoint, layer: layer, type: resources_2.DrawQueueType.IMAGE });
             }
         }
     }
     exports_3("drawSprite", drawSprite);
     function drawRect(x, y, width, height, angle, color, outlineOnly, layer) {
-        if (layer === void 0) { layer = drawing_2.Layer.TILE; }
-        if (x > drawing_2.camera.x - drawing_2.camera.width * 0.5 - width / 2 &&
-            x < drawing_2.camera.x + drawing_2.camera.width * 0.5 + width / 2 &&
-            y > drawing_2.camera.y - drawing_2.camera.height * 0.5 - height / 2 &&
-            y < drawing_2.camera.y + drawing_2.camera.height * 0.5 + height / 2) {
-            drawQueue.push({ x: x, y: y, width: width, height: height, color: [color], angle: angle, layer: layer, outlineOnly: outlineOnly, type: drawing_2.DrawQueueType.RECT });
+        if (layer === void 0) { layer = resources_2.Layer.TILE; }
+        if (x > resources_2.camera.x - resources_2.camera.width * 0.5 - width / 2 &&
+            x < resources_2.camera.x + resources_2.camera.width * 0.5 + width / 2 &&
+            y > resources_2.camera.y - resources_2.camera.height * 0.5 - height / 2 &&
+            y < resources_2.camera.y + resources_2.camera.height * 0.5 + height / 2) {
+            drawQueue.push({ x: x, y: y, width: width, height: height, color: [color], angle: angle, layer: layer, outlineOnly: outlineOnly, type: resources_2.DrawQueueType.RECT });
         }
     }
     exports_3("drawRect", drawRect);
     function drawCircle(x, y, radius, color, outlineOnly, layer) {
-        if (layer === void 0) { layer = drawing_2.Layer.TILE; }
-        if (x > drawing_2.camera.x - drawing_2.camera.width * 0.5 - radius &&
-            x < drawing_2.camera.x + drawing_2.camera.width * 0.5 + radius &&
-            y > drawing_2.camera.y - drawing_2.camera.height * 0.5 - radius &&
-            y < drawing_2.camera.y + drawing_2.camera.height * 0.5 + radius) {
-            drawQueue.push({ x: x, y: y, radius: radius, color: [color], layer: layer, outlineOnly: outlineOnly, type: drawing_2.DrawQueueType.CIRCLE });
+        if (layer === void 0) { layer = resources_2.Layer.TILE; }
+        if (x > resources_2.camera.x - resources_2.camera.width * 0.5 - radius &&
+            x < resources_2.camera.x + resources_2.camera.width * 0.5 + radius &&
+            y > resources_2.camera.y - resources_2.camera.height * 0.5 - radius &&
+            y < resources_2.camera.y + resources_2.camera.height * 0.5 + radius) {
+            drawQueue.push({ x: x, y: y, radius: radius, color: [color], layer: layer, outlineOnly: outlineOnly, type: resources_2.DrawQueueType.CIRCLE });
         }
     }
     exports_3("drawCircle", drawCircle);
     function drawText(x, y, color, text, textSize, layer) {
-        if (layer === void 0) { layer = drawing_2.Layer.UI; }
-        if (x > drawing_2.camera.x - drawing_2.camera.width * 0.5 - textSize / 2 &&
-            x < drawing_2.camera.x + drawing_2.camera.width * 0.5 + textSize / 2 &&
-            y > drawing_2.camera.y - drawing_2.camera.height * 0.5 - textSize / 2 &&
-            y < drawing_2.camera.y + drawing_2.camera.height * 0.5 + textSize / 2) {
-            drawQueue.push({ x: x, y: y, color: [color], text: text, layer: layer, type: drawing_2.DrawQueueType.TEXT, textSize: textSize });
+        if (layer === void 0) { layer = resources_2.Layer.UI; }
+        if (x > resources_2.camera.x - resources_2.camera.width * 0.5 - textSize / 2 &&
+            x < resources_2.camera.x + resources_2.camera.width * 0.5 + textSize / 2 &&
+            y > resources_2.camera.y - resources_2.camera.height * 0.5 - textSize / 2 &&
+            y < resources_2.camera.y + resources_2.camera.height * 0.5 + textSize / 2) {
+            drawQueue.push({ x: x, y: y, color: [color], text: text, layer: layer, type: resources_2.DrawQueueType.TEXT, textSize: textSize });
         }
     }
     exports_3("drawText", drawText);
     function drawLinearGradient(x, y, width, height, color, stop, layer) {
-        if (x > drawing_2.camera.x - drawing_2.camera.width * 0.5 - width / 2 &&
-            x < drawing_2.camera.x + drawing_2.camera.width * 0.5 + width / 2 &&
-            y > drawing_2.camera.y - drawing_2.camera.height * 0.5 - height / 2 &&
-            y < drawing_2.camera.y + drawing_2.camera.height * 0.5 + height / 2) {
-            drawQueue.push({ x: x, y: y, width: width, height: height, color: color, stop: stop, layer: layer, type: drawing_2.DrawQueueType.LINEAR_GRADIENT });
+        if (x > resources_2.camera.x - resources_2.camera.width * 0.5 - width / 2 &&
+            x < resources_2.camera.x + resources_2.camera.width * 0.5 + width / 2 &&
+            y > resources_2.camera.y - resources_2.camera.height * 0.5 - height / 2 &&
+            y < resources_2.camera.y + resources_2.camera.height * 0.5 + height / 2) {
+            drawQueue.push({ x: x, y: y, width: width, height: height, color: color, stop: stop, layer: layer, type: resources_2.DrawQueueType.LINEAR_GRADIENT });
         }
     }
     exports_3("drawLinearGradient", drawLinearGradient);
@@ -640,18 +666,18 @@ System.register("index", ["controls", "drawing"], function (exports_3, context_3
         else if (timers[dayTimer] <= NIGHT_TIME) {
             alpha = 1;
         }
-        if (x > drawing_2.camera.x - drawing_2.camera.width * 0.5 - radius &&
-            x < drawing_2.camera.x + drawing_2.camera.width * 0.5 + radius &&
-            y > drawing_2.camera.y - drawing_2.camera.height * 0.5 - radius &&
-            y < drawing_2.camera.y + drawing_2.camera.height * 0.5 + radius) {
-            drawing_2.backCtx.globalCompositeOperation = 'destination-out';
-            var X = x - drawing_2.camera.x + drawing_2.camera.width / 2;
-            var Y = y - drawing_2.camera.y + drawing_2.camera.height / 2;
-            var gradient = drawing_2.backCtx.createRadialGradient(X, Y, 0, X, Y, radius);
+        if (x > resources_2.camera.x - resources_2.camera.width * 0.5 - radius &&
+            x < resources_2.camera.x + resources_2.camera.width * 0.5 + radius &&
+            y > resources_2.camera.y - resources_2.camera.height * 0.5 - radius &&
+            y < resources_2.camera.y + resources_2.camera.height * 0.5 + radius) {
+            resources_2.backCtx.globalCompositeOperation = 'destination-out';
+            var X = x - resources_2.camera.x + resources_2.camera.width / 2;
+            var Y = y - resources_2.camera.y + resources_2.camera.height / 2;
+            var gradient = resources_2.backCtx.createRadialGradient(X, Y, 0, X, Y, radius);
             gradient.addColorStop(0, "white");
             gradient.addColorStop(1, 'transparent');
-            drawing_2.backCtx.fillStyle = gradient;
-            drawing_2.backCtx.fillRect(X - radius, Y - radius, 2 * radius, 2 * radius);
+            resources_2.backCtx.fillStyle = gradient;
+            resources_2.backCtx.fillRect(X - radius, Y - radius, 2 * radius, 2 * radius);
         }
     }
     exports_3("drawLight", drawLight);
@@ -672,17 +698,17 @@ System.register("index", ["controls", "drawing"], function (exports_3, context_3
             speed: 0,
             speedX: 0,
             speedY: 0,
-            speedLimit: 3,
+            speedLimit: 20,
             speedBackReduction: 0.5,
             friction: 0.95,
             accel: 0,
-            accelConst: 0.04,
+            accelConst: 0.1,
             rotationSpeed: 0.08,
             goForward: false,
             goBackward: false,
             goLeft: false,
             goRight: false,
-            sprite: drawing_2.imgNone,
+            sprite: resources_2.imgNone,
             leftWeel: 0,
             rightWeel: 0,
             hitpoints: 0,
@@ -702,7 +728,7 @@ System.register("index", ["controls", "drawing"], function (exports_3, context_3
             attack: null
         };
         if (gameObject.type === GameObjectType.PLAYER) {
-            gameObject.sprite = drawing_2.imgPlayer;
+            gameObject.sprite = resources_2.imgPlayer;
             gameObject.hitpoints = 100;
             gameObject.maxHitpoints = 100;
             gameObject.energy = addTimer(10800);
@@ -710,22 +736,22 @@ System.register("index", ["controls", "drawing"], function (exports_3, context_3
             gameObject.stuckable = true;
         }
         if (gameObject.type === GameObjectType.MAGMA_BALL) {
-            gameObject.sprite = drawing_2.imgMagmaBall;
+            gameObject.sprite = resources_2.imgMagmaBall;
             gameObject.angle = randomFloat(0, Math.PI * 2);
             gameObject.angleZ = randomFloat(0.25 * Math.PI, 0.5 * Math.PI);
         }
         if (gameObject.type === GameObjectType.METEORITE) {
-            gameObject.sprite = drawing_2.imgMeteorite;
+            gameObject.sprite = resources_2.imgMeteorite;
             gameObject.angle = randomFloat(0, Math.PI * 2);
             gameObject.angleZ = -randomFloat(0.25 * Math.PI, 0.5 * Math.PI);
         }
         if (gameObject.type === GameObjectType.LAVA_BALL) {
-            gameObject.sprite = drawing_2.imgMagmaBall;
+            gameObject.sprite = resources_2.imgMagmaBall;
             gameObject.angle = randomFloat(0, Math.PI * 2);
             gameObject.angleZ = randomFloat(0, 0.25 * Math.PI);
         }
         if (gameObject.type === GameObjectType.BOSS) {
-            gameObject.sprite = drawing_2.imgBoss;
+            gameObject.sprite = resources_2.imgBoss;
             gameObject.width = 800;
             gameObject.height = 600;
             gameObject.speedLimit = 15;
@@ -735,7 +761,7 @@ System.register("index", ["controls", "drawing"], function (exports_3, context_3
         if (gameObject.type === GameObjectType.MANIPULATOR) {
             gameObject.firstX = gameObject.x - globalBoss.x;
             gameObject.firstY = gameObject.y - globalBoss.y;
-            gameObject.sprite = drawing_2.imgMechanicalHand;
+            gameObject.sprite = resources_2.imgMechanicalHand;
             gameObject.width = 200;
             gameObject.height = 200;
             gameObject.speedLimit = globalBoss.speedLimit * 2;
@@ -926,7 +952,7 @@ System.register("index", ["controls", "drawing"], function (exports_3, context_3
                 removeParticle(particleIndex);
             }
             else {
-                drawCircle(particle_1.x, particle_1.y, particle_1.radius, particle_1.color, false, drawing_2.Layer.PARTICLES);
+                drawCircle(particle_1.x, particle_1.y, particle_1.radius, particle_1.color, false, resources_2.Layer.PARTICLES);
                 if (particle_1.color === 'red' || particle_1.color === "rgb(254,0,0,1)") {
                     drawLight(particle_1.x, particle_1.y, particle_1.radius * 4);
                 }
@@ -954,7 +980,7 @@ System.register("index", ["controls", "drawing"], function (exports_3, context_3
                 if (particle_1.color === 'red') {
                     if (globalPlayer.width / 2 + particle_1.radius >= distanceBetweenPoints(globalPlayer.x, globalPlayer.y, particle_1.x, particle_1.y) &&
                         timers[globalPlayer.unhitableTimer] <= 0) {
-                        globalPlayer.hitpoints -= 2 * particle_1.radius;
+                        globalPlayer.hitpoints -= 25;
                         timers[globalPlayer.unhitableTimer] = 180;
                     }
                 }
@@ -1000,7 +1026,7 @@ System.register("index", ["controls", "drawing"], function (exports_3, context_3
                         map[index] = {
                             baseLayer: { type: downTileType, variant: 1 }, upperLayer: { type: upTileType, variant: 1 }, x: x, y: y, specialTimer: null, toughness: null,
                             firstToughness: null, oreCount: 5, inventory: [], width: TILE.width, height: TILE.height,
-                            collisionWidth: TILE.width, collisionHeight: TILE.height
+                            collisionWidth: TILE.width, collisionHeight: TILE.height, sound: null
                         };
                         if (char === '0') {
                             downTileType = TileType.NONE;
@@ -1071,16 +1097,16 @@ System.register("index", ["controls", "drawing"], function (exports_3, context_3
     }
     function screenToWorld(x, y) {
         var result = [
-            x + drawing_2.camera.x - drawing_2.camera.width * 0.5,
-            y + drawing_2.camera.y - drawing_2.camera.height * 0.5,
+            x + resources_2.camera.x - resources_2.camera.width * 0.5,
+            y + resources_2.camera.y - resources_2.camera.height * 0.5,
         ];
         return result;
     }
     exports_3("screenToWorld", screenToWorld);
     function worldToScreen(x, y) {
         var result = [
-            x - drawing_2.camera.x + drawing_2.camera.width * 0.5,
-            y - drawing_2.camera.y + drawing_2.camera.height * 0.5,
+            x - resources_2.camera.x + resources_2.camera.width * 0.5,
+            y - resources_2.camera.y + resources_2.camera.height * 0.5,
         ];
         return result;
     }
@@ -1143,30 +1169,44 @@ System.register("index", ["controls", "drawing"], function (exports_3, context_3
         }
     }
     function updateTile(tileType, tile) {
-        var upSprite = drawing_2.imgNone;
-        var downSprite = drawing_2.imgNone;
+        var upSprite = resources_2.imgNone;
+        var downSprite = resources_2.imgNone;
         switch (tileType) {
             case TileType.GEYSER:
                 {
-                    downSprite = drawing_2.imgGeyser;
-                    if (tile.upperLayer.type === TileType.NONE) {
-                        if (tile.x * TILE.width > drawing_2.camera.x - drawing_2.camera.width / 2 - tile.width / 2
-                            && tile.x * TILE.width < drawing_2.camera.x + drawing_2.camera.width / 2 + tile.width / 2
-                            && tile.y * TILE.height > drawing_2.camera.y - drawing_2.camera.height / 2 - tile.height / 2
-                            && tile.y * TILE.height < drawing_2.camera.y + drawing_2.camera.height / 2 + tile.height / 2) {
-                            var burstMaxDuration = 300;
-                            var geyserMinRecharge = 500;
-                            var geyserMaxRecharge = 1500;
-                            if (globalPlayer.cameraLvl === 1 && timers[tile.specialTimer] < burstMaxDuration + 50 && timers[tile.specialTimer] > burstMaxDuration) {
-                                drawSprite(tile.x * tile.width, tile.y * tile.height, drawing_2.imgAlert, 0, tile.width, tile.height, false, drawing_2.Layer.UPPER_TILE);
+                    downSprite = resources_2.imgGeyser;
+                    var burstDuration = 250;
+                    var geyserMinRecharge = 500;
+                    var geyserMaxRecharge = 1500;
+                    if (tile.upperLayer.type === TileType.NONE && !pause) {
+                        if (timers[tile.specialTimer] === burstDuration) {
+                            tile.sound = resources_2.playSound(resources_2.sndGeyser);
+                        }
+                        if (tile.sound) {
+                            var maxDistance = resources_2.camera.width * 0.75;
+                            var volume = void 0;
+                            if (distanceBetweenPoints(globalPlayer.x, globalPlayer.y, tile.x * TILE.width, tile.y * TILE.height) <= maxDistance) {
+                                volume = 1 - distanceBetweenPoints(globalPlayer.x, globalPlayer.y, tile.x * TILE.width, tile.y * TILE.height) / maxDistance;
+                            }
+                            else {
+                                volume = 0;
+                            }
+                            tile.sound.volume = volume * 0.5;
+                        }
+                        if (tile.x * TILE.width > resources_2.camera.x - resources_2.camera.width / 2 - tile.width / 2
+                            && tile.x * TILE.width < resources_2.camera.x + resources_2.camera.width / 2 + tile.width / 2
+                            && tile.y * TILE.height > resources_2.camera.y - resources_2.camera.height / 2 - tile.height / 2
+                            && tile.y * TILE.height < resources_2.camera.y + resources_2.camera.height / 2 + tile.height / 2) {
+                            if (globalPlayer.cameraLvl === 1 && timers[tile.specialTimer] < burstDuration + 50 && timers[tile.specialTimer] > burstDuration) {
+                                drawSprite(tile.x * tile.width, tile.y * tile.height, resources_2.imgAlert, 0, tile.width, tile.height, false, resources_2.Layer.UPPER_TILE);
                             }
                             if (timers[tile.specialTimer] <= 0) {
                                 timers[tile.specialTimer] = randomInt(geyserMinRecharge, geyserMaxRecharge);
                             }
-                            if (timers[tile.specialTimer] === burstMaxDuration) {
-                                timers[tile.specialTimer] = randomInt(burstMaxDuration / 10, burstMaxDuration);
+                            if (timers[tile.specialTimer] > burstDuration && particles.length > 150) {
+                                timers[tile.specialTimer]++;
                             }
-                            if (timers[tile.specialTimer] <= burstMaxDuration && !pause) {
+                            if (timers[tile.specialTimer] <= burstDuration && timers[tile.specialTimer] % 2 === 0) {
                                 var color = void 0;
                                 if (distanceBetweenPoints(globalPlayer.x, globalPlayer.y, tile.x * TILE.width, tile.y * TILE.height) < 100 * globalPlayer.speedLimit) {
                                     color = 'red';
@@ -1179,11 +1219,16 @@ System.register("index", ["controls", "drawing"], function (exports_3, context_3
                                     y: tile.y * TILE.height,
                                     color: color,
                                     speed: 5,
-                                    size: 40,
+                                    size: 45,
                                     decrease: 1,
                                     accel: -0.05,
                                     count: 1
                                 });
+                            }
+                        }
+                        else {
+                            if (timers[tile.specialTimer] > 300) {
+                                timers[tile.specialTimer]++;
                             }
                         }
                     }
@@ -1192,13 +1237,13 @@ System.register("index", ["controls", "drawing"], function (exports_3, context_3
             case TileType.EARTH:
                 {
                     if (tile.baseLayer.variant === 1) {
-                        downSprite = drawing_2.imgEarth1;
+                        downSprite = resources_2.imgEarth1;
                     }
                     else if (tile.baseLayer.variant === 2) {
-                        downSprite = drawing_2.imgEarth2;
+                        downSprite = resources_2.imgEarth2;
                     }
                     else {
-                        downSprite = drawing_2.imgEarth3;
+                        downSprite = resources_2.imgEarth3;
                     }
                 }
                 break;
@@ -1206,10 +1251,10 @@ System.register("index", ["controls", "drawing"], function (exports_3, context_3
                 {
                     drawLight(tile.x * TILE.width, tile.y * TILE.height, TILE.width * 1.2);
                     if (tile.baseLayer.variant === 1) {
-                        downSprite = drawing_2.imgLava1;
+                        downSprite = resources_2.imgLava1;
                     }
                     else {
-                        downSprite = drawing_2.imgLava2;
+                        downSprite = resources_2.imgLava2;
                     }
                     var rightTile = {
                         x: tile.x + 1,
@@ -1276,94 +1321,94 @@ System.register("index", ["controls", "drawing"], function (exports_3, context_3
                         uprightTile.isLava = true;
                     }
                     if (!upTile.isLava && !downTile.isLava && !leftTile.isLava && !rightTile.isLava) {
-                        drawSprite(tile.x * TILE.width, tile.y * TILE.height, drawing_2.imgEdge4, 0, tile.width, tile.width, false, drawing_2.Layer.ON_TILE);
+                        drawSprite(tile.x * TILE.width, tile.y * TILE.height, resources_2.imgEdge4, 0, tile.width, tile.width, false, resources_2.Layer.ON_TILE);
                     }
                     if (!upTile.isLava && !downTile.isLava && !leftTile.isLava && rightTile.isLava) {
-                        drawSprite(tile.x * TILE.width, tile.y * TILE.height, drawing_2.imgEdge3, 0, tile.width, tile.width, false, drawing_2.Layer.ON_TILE);
+                        drawSprite(tile.x * TILE.width, tile.y * TILE.height, resources_2.imgEdge3, 0, tile.width, tile.width, false, resources_2.Layer.ON_TILE);
                     }
                     if (upTile.isLava && !downTile.isLava && !leftTile.isLava && !rightTile.isLava) {
-                        drawSprite(tile.x * TILE.width, tile.y * TILE.height, drawing_2.imgEdge3, -Math.PI / 2, tile.width, tile.width, false, drawing_2.Layer.ON_TILE);
+                        drawSprite(tile.x * TILE.width, tile.y * TILE.height, resources_2.imgEdge3, -Math.PI / 2, tile.width, tile.width, false, resources_2.Layer.ON_TILE);
                     }
                     if (!upTile.isLava && !downTile.isLava && leftTile.isLava && !rightTile.isLava) {
-                        drawSprite(tile.x * TILE.width, tile.y * TILE.height, drawing_2.imgEdge3, Math.PI, tile.width, tile.width, false, drawing_2.Layer.ON_TILE);
+                        drawSprite(tile.x * TILE.width, tile.y * TILE.height, resources_2.imgEdge3, Math.PI, tile.width, tile.width, false, resources_2.Layer.ON_TILE);
                     }
                     if (!upTile.isLava && downTile.isLava && !leftTile.isLava && !rightTile.isLava) {
-                        drawSprite(tile.x * TILE.width, tile.y * TILE.height, drawing_2.imgEdge3, Math.PI / 2, tile.width, tile.width, false, drawing_2.Layer.ON_TILE);
+                        drawSprite(tile.x * TILE.width, tile.y * TILE.height, resources_2.imgEdge3, Math.PI / 2, tile.width, tile.width, false, resources_2.Layer.ON_TILE);
                     }
                     if (!upTile.isLava && downTile.isLava && !leftTile.isLava && rightTile.isLava) {
                         if (downrightTile.isLava) {
-                            drawSprite(tile.x * TILE.width, tile.y * TILE.height, drawing_2.imgEdge2_1, 0, tile.width, tile.width, false, drawing_2.Layer.ON_TILE);
+                            drawSprite(tile.x * TILE.width, tile.y * TILE.height, resources_2.imgEdge2_1, 0, tile.width, tile.width, false, resources_2.Layer.ON_TILE);
                         }
                         else {
-                            drawSprite(tile.x * TILE.width, tile.y * TILE.height, drawing_2.imgEdge2_3, 0, tile.width, tile.width, false, drawing_2.Layer.ON_TILE);
+                            drawSprite(tile.x * TILE.width, tile.y * TILE.height, resources_2.imgEdge2_3, 0, tile.width, tile.width, false, resources_2.Layer.ON_TILE);
                         }
                     }
                     if (!upTile.isLava && downTile.isLava && leftTile.isLava && !rightTile.isLava) {
                         if (downleftTile.isLava) {
-                            drawSprite(tile.x * TILE.width, tile.y * TILE.height, drawing_2.imgEdge2_1, Math.PI / 2, tile.width, tile.width, false, drawing_2.Layer.ON_TILE);
+                            drawSprite(tile.x * TILE.width, tile.y * TILE.height, resources_2.imgEdge2_1, Math.PI / 2, tile.width, tile.width, false, resources_2.Layer.ON_TILE);
                         }
                         else {
-                            drawSprite(tile.x * TILE.width, tile.y * TILE.height, drawing_2.imgEdge2_3, Math.PI / 2, tile.width, tile.width, false, drawing_2.Layer.ON_TILE);
+                            drawSprite(tile.x * TILE.width, tile.y * TILE.height, resources_2.imgEdge2_3, Math.PI / 2, tile.width, tile.width, false, resources_2.Layer.ON_TILE);
                         }
                     }
                     if (upTile.isLava && !downTile.isLava && leftTile.isLava && !rightTile.isLava) {
                         if (upleftTile.isLava) {
-                            drawSprite(tile.x * TILE.width, tile.y * TILE.height, drawing_2.imgEdge2_1, Math.PI, tile.width, tile.width, false, drawing_2.Layer.ON_TILE);
+                            drawSprite(tile.x * TILE.width, tile.y * TILE.height, resources_2.imgEdge2_1, Math.PI, tile.width, tile.width, false, resources_2.Layer.ON_TILE);
                         }
                         else {
-                            drawSprite(tile.x * TILE.width, tile.y * TILE.height, drawing_2.imgEdge2_3, Math.PI, tile.width, tile.width, false, drawing_2.Layer.ON_TILE);
+                            drawSprite(tile.x * TILE.width, tile.y * TILE.height, resources_2.imgEdge2_3, Math.PI, tile.width, tile.width, false, resources_2.Layer.ON_TILE);
                         }
                     }
                     if (upTile.isLava && !downTile.isLava && !leftTile.isLava && rightTile.isLava) {
                         if (uprightTile.isLava) {
-                            drawSprite(tile.x * TILE.width, tile.y * TILE.height, drawing_2.imgEdge2_1, Math.PI * 1.5, tile.width, tile.width, false, drawing_2.Layer.ON_TILE);
+                            drawSprite(tile.x * TILE.width, tile.y * TILE.height, resources_2.imgEdge2_1, Math.PI * 1.5, tile.width, tile.width, false, resources_2.Layer.ON_TILE);
                         }
                         else {
-                            drawSprite(tile.x * TILE.width, tile.y * TILE.height, drawing_2.imgEdge2_3, Math.PI * 1.5, tile.width, tile.width, false, drawing_2.Layer.ON_TILE);
+                            drawSprite(tile.x * TILE.width, tile.y * TILE.height, resources_2.imgEdge2_3, Math.PI * 1.5, tile.width, tile.width, false, resources_2.Layer.ON_TILE);
                         }
                     }
                     if (upTile.isLava && downTile.isLava && !leftTile.isLava && !rightTile.isLava) {
-                        drawSprite(tile.x * TILE.width, tile.y * TILE.height, drawing_2.imgEdge2_2, Math.PI / 2, tile.width, tile.width, false, drawing_2.Layer.ON_TILE);
+                        drawSprite(tile.x * TILE.width, tile.y * TILE.height, resources_2.imgEdge2_2, Math.PI / 2, tile.width, tile.width, false, resources_2.Layer.ON_TILE);
                     }
                     if (!upTile.isLava && !downTile.isLava && leftTile.isLava && rightTile.isLava) {
-                        drawSprite(tile.x * TILE.width, tile.y * TILE.height, drawing_2.imgEdge2_2, 0, tile.width, tile.width, false, drawing_2.Layer.ON_TILE);
+                        drawSprite(tile.x * TILE.width, tile.y * TILE.height, resources_2.imgEdge2_2, 0, tile.width, tile.width, false, resources_2.Layer.ON_TILE);
                     }
                     if (upTile.isLava && downTile.isLava && leftTile.isLava && !rightTile.isLava) {
-                        drawSprite(tile.x * TILE.width, tile.y * TILE.height, drawing_2.imgEdge1, 0, tile.width, tile.width, false, drawing_2.Layer.ON_TILE);
+                        drawSprite(tile.x * TILE.width, tile.y * TILE.height, resources_2.imgEdge1, 0, tile.width, tile.width, false, resources_2.Layer.ON_TILE);
                     }
                     if (!upTile.isLava && downTile.isLava && leftTile.isLava && rightTile.isLava) {
-                        drawSprite(tile.x * TILE.width, tile.y * TILE.height, drawing_2.imgEdge1, -Math.PI / 2, tile.width, tile.width, false, drawing_2.Layer.ON_TILE);
+                        drawSprite(tile.x * TILE.width, tile.y * TILE.height, resources_2.imgEdge1, -Math.PI / 2, tile.width, tile.width, false, resources_2.Layer.ON_TILE);
                     }
                     if (upTile.isLava && downTile.isLava && !leftTile.isLava && rightTile.isLava) {
-                        drawSprite(tile.x * TILE.width, tile.y * TILE.height, drawing_2.imgEdge1, Math.PI, tile.width, tile.width, false, drawing_2.Layer.ON_TILE);
+                        drawSprite(tile.x * TILE.width, tile.y * TILE.height, resources_2.imgEdge1, Math.PI, tile.width, tile.width, false, resources_2.Layer.ON_TILE);
                     }
                     if (upTile.isLava && !downTile.isLava && leftTile.isLava && rightTile.isLava) {
-                        drawSprite(tile.x * TILE.width, tile.y * TILE.height, drawing_2.imgEdge1, Math.PI / 2, tile.width, tile.width, false, drawing_2.Layer.ON_TILE);
+                        drawSprite(tile.x * TILE.width, tile.y * TILE.height, resources_2.imgEdge1, Math.PI / 2, tile.width, tile.width, false, resources_2.Layer.ON_TILE);
                     }
                     if (rightTile.isLava && downTile.isLava &&
                         !downrightTile.isLava) {
-                        drawSprite(tile.x * TILE.width, tile.y * TILE.height, drawing_2.imgSide1, 0, tile.width, tile.width, false, drawing_2.Layer.ON_TILE);
+                        drawSprite(tile.x * TILE.width, tile.y * TILE.height, resources_2.imgSide1, 0, tile.width, tile.width, false, resources_2.Layer.ON_TILE);
                     }
                     if (leftTile.isLava && downTile.isLava &&
                         !downleftTile.isLava) {
-                        drawSprite(tile.x * TILE.width, tile.y * TILE.height, drawing_2.imgSide1, Math.PI / 2, tile.width, tile.width, false, drawing_2.Layer.ON_TILE);
+                        drawSprite(tile.x * TILE.width, tile.y * TILE.height, resources_2.imgSide1, Math.PI / 2, tile.width, tile.width, false, resources_2.Layer.ON_TILE);
                     }
                     if (leftTile.isLava && upTile.isLava &&
                         !upleftTile.isLava) {
-                        drawSprite(tile.x * TILE.width, tile.y * TILE.height, drawing_2.imgSide1, Math.PI, tile.width, tile.width, false, drawing_2.Layer.ON_TILE);
+                        drawSprite(tile.x * TILE.width, tile.y * TILE.height, resources_2.imgSide1, Math.PI, tile.width, tile.width, false, resources_2.Layer.ON_TILE);
                     }
                     if (rightTile.isLava && upTile.isLava &&
                         !uprightTile.isLava) {
-                        drawSprite(tile.x * TILE.width, tile.y * TILE.height, drawing_2.imgSide1, -Math.PI / 2, tile.width, tile.width, false, drawing_2.Layer.ON_TILE);
+                        drawSprite(tile.x * TILE.width, tile.y * TILE.height, resources_2.imgSide1, -Math.PI / 2, tile.width, tile.width, false, resources_2.Layer.ON_TILE);
                     }
                 }
                 break;
             case TileType.MELTER:
                 {
                     drawLight(tile.x * TILE.width, tile.y * TILE.height, TILE.width * 0.75);
-                    upSprite = drawing_2.imgMelter;
+                    upSprite = resources_2.imgMelter;
                     if (timers[tile.specialTimer] > 0) {
-                        drawText(tile.x * TILE.width - 10, tile.y * TILE.height, 'blue', "" + Math.round(timers[tile.specialTimer] / 60), 30, drawing_2.Layer.UI);
+                        drawText(tile.x * TILE.width - 10, tile.y * TILE.height, 'blue', "" + Math.round(timers[tile.specialTimer] / 60), 30, resources_2.Layer.UI);
                     }
                     if (!controls_1.mouse.isDown) {
                         tile.toughness = tile.firstToughness;
@@ -1372,7 +1417,7 @@ System.register("index", ["controls", "drawing"], function (exports_3, context_3
                 break;
             case TileType.SPLITTER:
                 {
-                    upSprite = drawing_2.imgSplitter;
+                    upSprite = resources_2.imgSplitter;
                     if (!controls_1.mouse.isDown) {
                         tile.toughness = tile.firstToughness;
                     }
@@ -1380,88 +1425,88 @@ System.register("index", ["controls", "drawing"], function (exports_3, context_3
                 break;
             case TileType.SUN_BATERY:
                 {
-                    upSprite = drawing_2.imgSunBattery;
+                    upSprite = resources_2.imgSunBattery;
                 }
                 break;
             case TileType.IRON:
                 {
                     if (tile.toughness <= tile.firstToughness && tile.toughness > tile.firstToughness / 5 * 4) {
-                        downSprite = drawing_2.imgIron1;
+                        downSprite = resources_2.imgIron1;
                     }
                     if (tile.toughness <= tile.firstToughness / 5 * 4 && tile.toughness > tile.firstToughness / 5 * 3) {
-                        downSprite = drawing_2.imgIron2;
+                        downSprite = resources_2.imgIron2;
                     }
                     if (tile.toughness <= tile.firstToughness / 5 * 3 && tile.toughness > tile.firstToughness / 5 * 2) {
-                        downSprite = drawing_2.imgIron3;
+                        downSprite = resources_2.imgIron3;
                     }
                     if (tile.toughness <= tile.firstToughness / 5 * 2 && tile.toughness > tile.firstToughness / 5 * 1) {
-                        downSprite = drawing_2.imgIron4;
+                        downSprite = resources_2.imgIron4;
                     }
                     if (tile.toughness <= tile.firstToughness / 5 * 1 && tile.toughness > 0) {
-                        downSprite = drawing_2.imgIron5;
+                        downSprite = resources_2.imgIron5;
                     }
                 }
                 break;
             case TileType.AURIT:
                 {
                     if (tile.toughness <= tile.firstToughness && tile.toughness > tile.firstToughness / 5 * 4) {
-                        downSprite = drawing_2.imgAurit1;
+                        downSprite = resources_2.imgAurit1;
                     }
                     if (tile.toughness <= tile.firstToughness / 5 * 4 && tile.toughness > tile.firstToughness / 5 * 3) {
-                        downSprite = drawing_2.imgAurit2;
+                        downSprite = resources_2.imgAurit2;
                     }
                     if (tile.toughness <= tile.firstToughness / 5 * 3 && tile.toughness > tile.firstToughness / 5 * 2) {
-                        downSprite = drawing_2.imgAurit3;
+                        downSprite = resources_2.imgAurit3;
                     }
                     if (tile.toughness <= tile.firstToughness / 5 * 2 && tile.toughness > tile.firstToughness / 5 * 1) {
-                        downSprite = drawing_2.imgAurit4;
+                        downSprite = resources_2.imgAurit4;
                     }
                     if (tile.toughness <= tile.firstToughness / 5 * 1 && tile.toughness > 0) {
-                        downSprite = drawing_2.imgAurit5;
+                        downSprite = resources_2.imgAurit5;
                     }
                 }
                 break;
             case TileType.CRYSTAL:
                 {
                     if (tile.toughness <= tile.firstToughness && tile.toughness > tile.firstToughness / 5 * 4) {
-                        downSprite = drawing_2.imgCrystal1;
+                        downSprite = resources_2.imgCrystal1;
                     }
                     if (tile.toughness <= tile.firstToughness / 5 * 4 && tile.toughness > tile.firstToughness / 5 * 3) {
-                        downSprite = drawing_2.imgCrystal2;
+                        downSprite = resources_2.imgCrystal2;
                     }
                     if (tile.toughness <= tile.firstToughness / 5 * 3 && tile.toughness > tile.firstToughness / 5 * 2) {
-                        downSprite = drawing_2.imgCrystal3;
+                        downSprite = resources_2.imgCrystal3;
                     }
                     if (tile.toughness <= tile.firstToughness / 5 * 2 && tile.toughness > tile.firstToughness / 5 * 1) {
-                        downSprite = drawing_2.imgCrystal4;
+                        downSprite = resources_2.imgCrystal4;
                     }
                     if (tile.toughness <= tile.firstToughness / 5 * 1 && tile.toughness > 0) {
-                        downSprite = drawing_2.imgCrystal5;
+                        downSprite = resources_2.imgCrystal5;
                     }
                 }
                 break;
             case TileType.SILIKON:
                 {
                     if (tile.toughness <= tile.firstToughness && tile.toughness > tile.firstToughness / 5 * 4) {
-                        downSprite = drawing_2.imgSilicon1;
+                        downSprite = resources_2.imgSilicon1;
                     }
                     if (tile.toughness <= tile.firstToughness / 5 * 4 && tile.toughness > tile.firstToughness / 5 * 3) {
-                        downSprite = drawing_2.imgSilicon2;
+                        downSprite = resources_2.imgSilicon2;
                     }
                     if (tile.toughness <= tile.firstToughness / 5 * 3 && tile.toughness > tile.firstToughness / 5 * 2) {
-                        downSprite = drawing_2.imgSilicon3;
+                        downSprite = resources_2.imgSilicon3;
                     }
                     if (tile.toughness <= tile.firstToughness / 5 * 2 && tile.toughness > tile.firstToughness / 5 * 1) {
-                        downSprite = drawing_2.imgSilicon4;
+                        downSprite = resources_2.imgSilicon4;
                     }
                     if (tile.toughness <= tile.firstToughness / 5 * 1 && tile.toughness > 0) {
-                        downSprite = drawing_2.imgSilicon5;
+                        downSprite = resources_2.imgSilicon5;
                     }
                 }
                 break;
             case TileType.IGNEOUS:
                 {
-                    downSprite = drawing_2.imgIgneous;
+                    downSprite = resources_2.imgIgneous;
                     drawLight(tile.x * TILE.width, tile.y * TILE.height, tile.width * 1.2);
                     if (distanceBetweenPoints(globalPlayer.x, globalPlayer.y, tile.x * TILE.width, tile.y * TILE.height) < 100 && timers[globalPlayer.unhitableTimer] <= 0) {
                         globalPlayer.hitpoints -= 0.2;
@@ -1470,24 +1515,43 @@ System.register("index", ["controls", "drawing"], function (exports_3, context_3
                 break;
             case TileType.MOUNTAIN:
                 {
-                    upSprite = drawing_2.imgMountain;
+                    upSprite = resources_2.imgMountain;
                 }
                 break;
             case TileType.VOLCANO:
                 {
-                    downSprite = drawing_2.imgVolcano;
+                    downSprite = resources_2.imgVolcano;
                     drawLight(tile.x * TILE.width, tile.y * TILE.height, tile.width * 0.6);
-                    if (distanceBetweenPoints(drawing_2.camera.x, drawing_2.camera.y, tile.x * TILE.width, tile.y * TILE.width) < VOLCANO_RADIUS) {
-                        if (timers[tile.specialTimer] === 0 && !pause) {
-                            addGameObject(GameObjectType.MAGMA_BALL, tile.x * TILE.width, tile.y * TILE.height);
-                            timers[tile.specialTimer] = randomInt(60, 240);
+                    if (timers[tile.specialTimer] === 40) {
+                        tile.sound = resources_2.playSound(resources_2.sndVolcanoBoom, 1);
+                    }
+                    if (distanceBetweenPoints(resources_2.camera.x, resources_2.camera.y, tile.x * TILE.width, tile.y * TILE.width) < VOLCANO_RADIUS) {
+                        if (!pause) {
+                            if (timers[tile.specialTimer] === 0) {
+                                addGameObject(GameObjectType.MAGMA_BALL, tile.x * TILE.width, tile.y * TILE.height);
+                                timers[tile.specialTimer] = randomInt(60, 240);
+                            }
+                            if (tile.sound) {
+                                var maxDistance = VOLCANO_RADIUS;
+                                var volume = void 0;
+                                if (distanceBetweenPoints(globalPlayer.x, globalPlayer.y, tile.x * TILE.width, tile.y * TILE.height) <= maxDistance) {
+                                    volume = 1 - distanceBetweenPoints(globalPlayer.x, globalPlayer.y, tile.x * TILE.width, tile.y * TILE.height) / maxDistance;
+                                }
+                                else {
+                                    volume = 0;
+                                }
+                                tile.sound.volume = volume * 0.75;
+                            }
                         }
+                    }
+                    else {
+                        timers[tile.specialTimer]++;
                     }
                 }
                 break;
             case TileType.STORAGE:
                 {
-                    upSprite = drawing_2.imgStorage;
+                    upSprite = resources_2.imgStorage;
                     if (!controls_1.mouse.isDown) {
                         tile.toughness = tile.firstToughness;
                     }
@@ -1510,10 +1574,10 @@ System.register("index", ["controls", "drawing"], function (exports_3, context_3
         }
         var _a = tilesToPixels(tile.x, tile.y), spriteX = _a[0], spriteY = _a[1];
         if (downSprite) {
-            drawSprite(spriteX, spriteY, downSprite, 0, tile.width, tile.height, false, drawing_2.Layer.TILE);
+            drawSprite(spriteX, spriteY, downSprite, 0, tile.width, tile.height, false, resources_2.Layer.TILE);
         }
         if (upSprite) {
-            drawSprite(spriteX, spriteY, upSprite, 0, tile.width, tile.height, false, drawing_2.Layer.UPPER_TILE);
+            drawSprite(spriteX, spriteY, upSprite, 0, tile.width, tile.height, false, resources_2.Layer.UPPER_TILE);
         }
     }
     function updateTileMap() {
@@ -1535,22 +1599,22 @@ System.register("index", ["controls", "drawing"], function (exports_3, context_3
         }
         if (gameObject.type === GameObjectType.PLAYER) {
             if (!gameObject.doNotDraw) {
-                drawSprite(gameObject.x, gameObject.y, gameObject.sprite, gameObject.angle, gameObject.width, gameObject.height, false, drawing_2.Layer.PLAYER);
+                drawSprite(gameObject.x, gameObject.y, gameObject.sprite, gameObject.angle, gameObject.width, gameObject.height, false, resources_2.Layer.PLAYER);
             }
             controlGameObject(gameObject);
             drawLight(gameObject.x, gameObject.y, gameObject.width * 2.5);
             if (globalBoss &&
-                !(globalBoss.x > drawing_2.camera.x - drawing_2.camera.width / 2 &&
-                    globalBoss.x < drawing_2.camera.x + drawing_2.camera.width / 2 &&
-                    globalBoss.y > drawing_2.camera.y - drawing_2.camera.height / 2 &&
-                    globalBoss.y < drawing_2.camera.y + drawing_2.camera.height / 2)) {
-                var angle_1 = angleBetweenPoints(drawing_2.camera.x, drawing_2.camera.y, globalBoss.x, globalBoss.y);
-                drawSprite(drawing_2.camera.x, drawing_2.camera.y, drawing_2.imgArrow2, angle_1, drawing_2.camera.height, drawing_2.camera.height, false, drawing_2.Layer.UI);
+                !(globalBoss.x > resources_2.camera.x - resources_2.camera.width / 2 &&
+                    globalBoss.x < resources_2.camera.x + resources_2.camera.width / 2 &&
+                    globalBoss.y > resources_2.camera.y - resources_2.camera.height / 2 &&
+                    globalBoss.y < resources_2.camera.y + resources_2.camera.height / 2)) {
+                var angle_1 = angleBetweenPoints(resources_2.camera.x, resources_2.camera.y, globalBoss.x, globalBoss.y);
+                drawSprite(resources_2.camera.x, resources_2.camera.y, resources_2.imgArrow2, angle_1, resources_2.camera.height, resources_2.camera.height, false, resources_2.Layer.UI);
             }
             for (var slotIndex = 0; slotIndex < slotCount; slotIndex++) {
-                drawRect(drawing_2.camera.x - slotCount * 40 / 2 + slotIndex * 50, drawing_2.camera.y + drawing_2.camera.height / 2 - 50, 50, 50, 0, 'grey', true, drawing_2.Layer.UI);
+                drawRect(resources_2.camera.x - slotCount * 40 / 2 + slotIndex * 50, resources_2.camera.y + resources_2.camera.height / 2 - 50, 50, 50, 0, 'grey', true, resources_2.Layer.UI);
             }
-            drawSprite(drawing_2.camera.x - drawing_2.camera.width / 2 + 10, drawing_2.camera.y - drawing_2.camera.height / 4, drawing_2.imgArrow, 0, 30, 50, false, drawing_2.Layer.UI);
+            drawSprite(resources_2.camera.x - resources_2.camera.width / 2 + 10, resources_2.camera.y - resources_2.camera.height / 4, resources_2.imgArrow, 0, 30, 50, false, resources_2.Layer.UI);
             var width = gameObject.hitpoints / gameObject.maxHitpoints * STRIPE_WIDTH;
             if (timers[hpShakeTimer] <= 0) {
                 timers[hpShakeTimer] = width / STRIPE_WIDTH * 800;
@@ -1564,21 +1628,21 @@ System.register("index", ["controls", "drawing"], function (exports_3, context_3
                 shakeX = randomInt(-5, 5);
                 shakeY = randomInt(-5, 5);
             }
-            drawLinearGradient(drawing_2.camera.x - drawing_2.camera.width / 2 + width / 2 + 50 + shakeX, drawing_2.camera.y - drawing_2.camera.height / 2 + 50 + shakeY, width, STRIPE_HEIGHT, ['red', "rgb(" + (1 - width / STRIPE_WIDTH) * 255 + "," + width / STRIPE_WIDTH * 255 + ",0,1)"], [0, 1], drawing_2.Layer.UI);
-            drawSprite(drawing_2.camera.x - drawing_2.camera.width / 2 + 50 + STRIPE_WIDTH / 2 + shakeX, drawing_2.camera.y - drawing_2.camera.height / 2 + 50 + shakeY, drawing_2.imgHp, 0, STRIPE_WIDTH, STRIPE_HEIGHT, false, drawing_2.Layer.UI);
+            drawLinearGradient(resources_2.camera.x - resources_2.camera.width / 2 + width / 2 + 50 + shakeX, resources_2.camera.y - resources_2.camera.height / 2 + 50 + shakeY, width, STRIPE_HEIGHT, ['red', "rgb(" + (1 - width / STRIPE_WIDTH) * 255 + "," + width / STRIPE_WIDTH * 255 + ",0,1)"], [0, 1], resources_2.Layer.UI);
+            drawSprite(resources_2.camera.x - resources_2.camera.width / 2 + 50 + STRIPE_WIDTH / 2 + shakeX, resources_2.camera.y - resources_2.camera.height / 2 + 50 + shakeY, resources_2.imgHp, 0, STRIPE_WIDTH, STRIPE_HEIGHT, false, resources_2.Layer.UI);
             width = timers[gameObject.energy] / gameObject.maxEnergy * STRIPE_WIDTH;
-            drawLinearGradient(drawing_2.camera.x - drawing_2.camera.width / 2 + width / 2 + 300, drawing_2.camera.y - drawing_2.camera.height / 2 + 50, width, STRIPE_HEIGHT, ['white', "rgb(" + (1 - width / STRIPE_WIDTH) * 255 + "," + (1 - width / STRIPE_WIDTH) * 255 + "," + (width / STRIPE_WIDTH * 255 + 255) + ",1)"], [0, 1], drawing_2.Layer.UI);
-            drawSprite(drawing_2.camera.x - drawing_2.camera.width / 2 + 300 + STRIPE_WIDTH / 2, drawing_2.camera.y - drawing_2.camera.height / 2 + 50, drawing_2.imgEnergy, 0, STRIPE_WIDTH * 1.05, STRIPE_HEIGHT, false, drawing_2.Layer.UI);
+            drawLinearGradient(resources_2.camera.x - resources_2.camera.width / 2 + width / 2 + 300, resources_2.camera.y - resources_2.camera.height / 2 + 50, width, STRIPE_HEIGHT, ['white', "rgb(" + (1 - width / STRIPE_WIDTH) * 255 + "," + (1 - width / STRIPE_WIDTH) * 255 + "," + (width / STRIPE_WIDTH * 255 + 255) + ",1)"], [0, 1], resources_2.Layer.UI);
+            drawSprite(resources_2.camera.x - resources_2.camera.width / 2 + 300 + STRIPE_WIDTH / 2, resources_2.camera.y - resources_2.camera.height / 2 + 50, resources_2.imgEnergy, 0, STRIPE_WIDTH * 1.05, STRIPE_HEIGHT, false, resources_2.Layer.UI);
             var hour = ONE_DAY / (24 + 37 / 60);
             var minute = hour / 60;
-            drawText(drawing_2.camera.x + drawing_2.camera.width / 2 - 100, drawing_2.camera.y - drawing_2.camera.height / 2 + 50, 'blue', Math.floor((ONE_DAY - timers[dayTimer]) / hour) + " : " + Math.floor((ONE_DAY - timers[dayTimer]) / minute) % 60, 25, drawing_2.Layer.UI);
-            drawText(drawing_2.camera.x + drawing_2.camera.width / 2 - 100, drawing_2.camera.y - drawing_2.camera.height / 2 + 100, 'blue', "x: " + Math.round((gameObject.x) / TILE.width), 25, drawing_2.Layer.UI);
-            drawText(drawing_2.camera.x + drawing_2.camera.width / 2 - 100, drawing_2.camera.y - drawing_2.camera.height / 2 + 130, 'blue', "y: " + Math.round((gameObject.y) / TILE.height), 25, drawing_2.Layer.UI);
+            drawText(resources_2.camera.x + resources_2.camera.width / 2 - 100, resources_2.camera.y - resources_2.camera.height / 2 + 50, 'blue', Math.floor((ONE_DAY - timers[dayTimer]) / hour) + " : " + Math.floor((ONE_DAY - timers[dayTimer]) / minute) % 60, 25, resources_2.Layer.UI);
+            drawText(resources_2.camera.x + resources_2.camera.width / 2 - 100, resources_2.camera.y - resources_2.camera.height / 2 + 100, 'blue', "x: " + Math.round((gameObject.x) / TILE.width), 25, resources_2.Layer.UI);
+            drawText(resources_2.camera.x + resources_2.camera.width / 2 - 100, resources_2.camera.y - resources_2.camera.height / 2 + 130, 'blue', "y: " + Math.round((gameObject.y) / TILE.height), 25, resources_2.Layer.UI);
             if (controls_1.qKey.wentDown) {
                 inventory[mainSlot] = { item: Item.NONE, count: 0, cooldown: addTimer(0) };
             }
             if (isInventoryFullForItem(Item.NONE)) {
-                drawText(drawing_2.camera.x + drawing_2.camera.width / 8, drawing_2.camera.y + drawing_2.camera.height / 2 - 40, 'green', 'Нажмите на Q, чтобы выбросить вещь', 25, drawing_2.Layer.UI);
+                drawText(resources_2.camera.x + resources_2.camera.width / 8, resources_2.camera.y + resources_2.camera.height / 2 - 40, 'green', 'Нажмите на Q, чтобы выбросить вещь', 25, resources_2.Layer.UI);
             }
             if (controls_1.escKey.wentDown) {
                 if (!pause) {
@@ -1589,8 +1653,8 @@ System.register("index", ["controls", "drawing"], function (exports_3, context_3
                 }
             }
             if (pause) {
-                drawText(drawing_2.camera.x - 90, drawing_2.camera.y - 50, 'green', 'Пауза', 60, drawing_2.Layer.UI);
-                drawText(drawing_2.camera.x - 250, drawing_2.camera.y, 'green', 'Если хотите перезагрузить, нажмите R', 30, drawing_2.Layer.UI);
+                drawText(resources_2.camera.x - 90, resources_2.camera.y - 50, 'green', 'Пауза', 60, resources_2.Layer.UI);
+                drawText(resources_2.camera.x - 250, resources_2.camera.y, 'green', 'Если хотите перезагрузить, нажмите R', 30, resources_2.Layer.UI);
             }
             var vector1 = rotateVector(20, 0, gameObject.angle + Math.PI / 4);
             var vector2 = rotateVector(20, 0, gameObject.angle + Math.PI * 3 / 4);
@@ -1607,79 +1671,79 @@ System.register("index", ["controls", "drawing"], function (exports_3, context_3
             }
             for (var itemIndex = 0; itemIndex <= inventory.length; itemIndex++) {
                 if (inventory[itemIndex]) {
-                    var x = drawing_2.camera.x - slotCount * 20;
-                    var y = drawing_2.camera.y + drawing_2.camera.height / 2 - 50;
+                    var x = resources_2.camera.x - slotCount * 20;
+                    var y = resources_2.camera.y + resources_2.camera.height / 2 - 50;
                     var sprite = null;
                     if (inventory[itemIndex].item === Item.NONE) {
-                        sprite = drawing_2.imgNone;
+                        sprite = resources_2.imgNone;
                     }
                     if (inventory[itemIndex].item === Item.IRON) {
-                        sprite = drawing_2.imgIronItem;
+                        sprite = resources_2.imgIronItem;
                     }
                     if (inventory[itemIndex].item === Item.MELTER) {
-                        sprite = drawing_2.imgMelter;
+                        sprite = resources_2.imgMelter;
                     }
                     if (inventory[itemIndex].item === Item.IRON_INGOT) {
-                        sprite = drawing_2.imgIronIngot;
+                        sprite = resources_2.imgIronIngot;
                     }
                     if (inventory[itemIndex].item === Item.AURIT) {
-                        sprite = drawing_2.imgAuritItem;
+                        sprite = resources_2.imgAuritItem;
                     }
                     if (inventory[itemIndex].item === Item.AURIT_INGOT) {
-                        sprite = drawing_2.imgAuritIngot;
+                        sprite = resources_2.imgAuritIngot;
                     }
                     if (inventory[itemIndex].item === Item.CRYSTAL) {
-                        sprite = drawing_2.imgCrystalItem;
+                        sprite = resources_2.imgCrystalItem;
                     }
                     if (inventory[itemIndex].item === Item.SPLITTER) {
-                        sprite = drawing_2.imgSplitter;
+                        sprite = resources_2.imgSplitter;
                     }
                     if (inventory[itemIndex].item === Item.TOOLKIT) {
-                        sprite = drawing_2.imgToolkit;
+                        sprite = resources_2.imgToolkit;
                     }
                     if (inventory[itemIndex].item === Item.SUN_BATERY) {
-                        sprite = drawing_2.imgSunBatteryItem;
+                        sprite = resources_2.imgSunBatteryItem;
                     }
                     if (inventory[itemIndex].item === Item.SILIKON) {
-                        sprite = drawing_2.imgSiliconItem;
+                        sprite = resources_2.imgSiliconItem;
                     }
                     if (inventory[itemIndex].item === Item.STORAGE) {
-                        sprite = drawing_2.imgStorage;
+                        sprite = resources_2.imgStorage;
                     }
                     if (inventory[itemIndex].item === Item.GOLDEN_CAMERA) {
-                        sprite = drawing_2.imgGoldenCamera;
+                        sprite = resources_2.imgGoldenCamera;
                     }
                     if (inventory[itemIndex].item === Item.EXTRA_SLOT) {
-                        sprite = drawing_2.imgExtraSlotItem;
+                        sprite = resources_2.imgExtraSlotItem;
                     }
                     if (inventory[itemIndex].item === Item.SHOCKPROOF_BODY) {
-                        sprite = drawing_2.imgShockProofBody;
+                        sprite = resources_2.imgShockProofBody;
                     }
                     if (inventory[itemIndex].item === Item.IGNEOUS) {
-                        sprite = drawing_2.imgIgneousItem;
+                        sprite = resources_2.imgIgneousItem;
                     }
                     if (inventory[itemIndex].item === Item.IGNEOUS_INGOT) {
-                        sprite = drawing_2.imgIgneousIngot;
+                        sprite = resources_2.imgIgneousIngot;
                     }
                     if (inventory[itemIndex].item === Item.METEORITE_STUFF) {
-                        sprite = drawing_2.imgMeteoriteStuff;
+                        sprite = resources_2.imgMeteoriteStuff;
                     }
                     if (itemIndex === mainSlot) {
-                        drawRect(x + 50 * itemIndex, y, 50, 50, 0, 'green', true, drawing_2.Layer.UI);
+                        drawRect(x + 50 * itemIndex, y, 50, 50, 0, 'green', true, resources_2.Layer.UI);
                     }
-                    drawSprite(x + 50 * itemIndex, y, sprite, 0, 40, 40, false, drawing_2.Layer.UI);
+                    drawSprite(x + 50 * itemIndex, y, sprite, 0, 40, 40, false, resources_2.Layer.UI);
                     if (inventory[itemIndex].count > 1) {
-                        drawText(x - 5 + 50 * itemIndex, y - 34, 'green', "" + inventory[itemIndex].count, 25, drawing_2.Layer.UI);
+                        drawText(x - 5 + 50 * itemIndex, y - 34, 'green', "" + inventory[itemIndex].count, 25, resources_2.Layer.UI);
                     }
                     var STRIPE_HEIGHT_1 = 10;
                     var STRIPE_WIDTH_1 = 30;
                     width = timers[inventory[mainSlot].cooldown] / METEOR_STUFF_COOLDOWN * STRIPE_WIDTH_1;
-                    drawRect(x, y + 30, width, STRIPE_HEIGHT_1, 0, 'white', false, drawing_2.Layer.UI);
+                    drawRect(x, y + 30, width, STRIPE_HEIGHT_1, 0, 'white', false, resources_2.Layer.UI);
                 }
             }
             for (var slotIndex = 0; slotIndex < slotCount; slotIndex++) {
-                var slotX = drawing_2.camera.x - slotCount * 40 / 2 + slotIndex * 50;
-                var slotY = drawing_2.camera.y + drawing_2.camera.height / 2 - 50;
+                var slotX = resources_2.camera.x - slotCount * 40 / 2 + slotIndex * 50;
+                var slotY = resources_2.camera.y + resources_2.camera.height / 2 - 50;
                 if (controls_1.mouse.wentDown &&
                     controls_1.mouse.worldX > slotX - 20 &&
                     controls_1.mouse.worldX < slotX + 20 &&
@@ -1695,48 +1759,48 @@ System.register("index", ["controls", "drawing"], function (exports_3, context_3
             if (controls_1.upKey.isDown || controls_1.downKey.isDown || controls_1.rightKey.isDown || controls_1.leftKey.isDown) {
                 craftMode = false;
             }
-            if (craftMode && controls_1.mouse.wentDown && controls_1.mouse.worldX > drawing_2.camera.x - drawing_2.camera.width / 2 + 130 &&
-                controls_1.mouse.worldX < drawing_2.camera.x - drawing_2.camera.width / 2 + 170 &&
-                controls_1.mouse.worldY > drawing_2.camera.y - drawing_2.camera.height / 4 + 2 &&
-                controls_1.mouse.worldY < drawing_2.camera.y - drawing_2.camera.height / 4 + 30 &&
+            if (craftMode && controls_1.mouse.wentDown && controls_1.mouse.worldX > resources_2.camera.x - resources_2.camera.width / 2 + 130 &&
+                controls_1.mouse.worldX < resources_2.camera.x - resources_2.camera.width / 2 + 170 &&
+                controls_1.mouse.worldY > resources_2.camera.y - resources_2.camera.height / 4 + 2 &&
+                controls_1.mouse.worldY < resources_2.camera.y - resources_2.camera.height / 4 + 30 &&
                 RECIPES[firstRecipeIndex - 1]) {
                 firstRecipeIndex--;
             }
-            if (craftMode && controls_1.mouse.wentDown && controls_1.mouse.worldX > drawing_2.camera.x - drawing_2.camera.width / 2 + 130 &&
-                controls_1.mouse.worldX < drawing_2.camera.x - drawing_2.camera.width / 2 + 170 &&
-                controls_1.mouse.worldY > drawing_2.camera.y - drawing_2.camera.height / 4 + 422 &&
-                controls_1.mouse.worldY < drawing_2.camera.y - drawing_2.camera.height / 4 + 450 &&
+            if (craftMode && controls_1.mouse.wentDown && controls_1.mouse.worldX > resources_2.camera.x - resources_2.camera.width / 2 + 130 &&
+                controls_1.mouse.worldX < resources_2.camera.x - resources_2.camera.width / 2 + 170 &&
+                controls_1.mouse.worldY > resources_2.camera.y - resources_2.camera.height / 4 + 422 &&
+                controls_1.mouse.worldY < resources_2.camera.y - resources_2.camera.height / 4 + 450 &&
                 RECIPES[firstRecipeIndex + 3]) {
                 firstRecipeIndex++;
             }
-            if (controls_1.mouse.wentDown && controls_1.mouse.worldX > drawing_2.camera.x - drawing_2.camera.width / 2 - 10 &&
-                controls_1.mouse.worldX < drawing_2.camera.x - drawing_2.camera.width / 2 + 25 &&
-                controls_1.mouse.worldY > drawing_2.camera.y - drawing_2.camera.height / 4 - 25 &&
-                controls_1.mouse.worldY < drawing_2.camera.y - drawing_2.camera.height / 4 + 25) {
+            if (controls_1.mouse.wentDown && controls_1.mouse.worldX > resources_2.camera.x - resources_2.camera.width / 2 - 10 &&
+                controls_1.mouse.worldX < resources_2.camera.x - resources_2.camera.width / 2 + 25 &&
+                controls_1.mouse.worldY > resources_2.camera.y - resources_2.camera.height / 4 - 25 &&
+                controls_1.mouse.worldY < resources_2.camera.y - resources_2.camera.height / 4 + 25) {
                 craftMode = !craftMode;
             }
             else if (craftMode) {
-                drawSprite(drawing_2.camera.x - drawing_2.camera.width / 2 + 150, drawing_2.camera.y - drawing_2.camera.height / 4 + 200 + 25, drawing_2.imgCrafts, 0, 300, 400, false, drawing_2.Layer.UI);
-                drawSprite(drawing_2.camera.x - drawing_2.camera.width / 2 + 150, drawing_2.camera.y - drawing_2.camera.height / 4 + 15, drawing_2.imgArrow1, 0, 40, 26, false, drawing_2.Layer.UI);
-                drawSprite(drawing_2.camera.x - drawing_2.camera.width / 2 + 150, drawing_2.camera.y - drawing_2.camera.height / 4 + 435, drawing_2.imgArrow1, 1 * Math.PI, 40, 26, false, drawing_2.Layer.UI);
+                drawSprite(resources_2.camera.x - resources_2.camera.width / 2 + 150, resources_2.camera.y - resources_2.camera.height / 4 + 200 + 25, resources_2.imgCrafts, 0, 300, 400, false, resources_2.Layer.UI);
+                drawSprite(resources_2.camera.x - resources_2.camera.width / 2 + 150, resources_2.camera.y - resources_2.camera.height / 4 + 15, resources_2.imgArrow1, 0, 40, 26, false, resources_2.Layer.UI);
+                drawSprite(resources_2.camera.x - resources_2.camera.width / 2 + 150, resources_2.camera.y - resources_2.camera.height / 4 + 435, resources_2.imgArrow1, 1 * Math.PI, 40, 26, false, resources_2.Layer.UI);
                 for (var itemIndex = 0; itemIndex < 3; itemIndex++) {
-                    drawSprite(drawing_2.camera.x - drawing_2.camera.width / 2 + 60, drawing_2.camera.y - drawing_2.camera.height / 4 + 90 + 133 * itemIndex, RECIPES[firstRecipeIndex + itemIndex].sprite, 0, 70, 70, false, drawing_2.Layer.UI);
-                    drawText(drawing_2.camera.x - drawing_2.camera.width / 2 + 100, drawing_2.camera.y - drawing_2.camera.height / 4 + 50 + 133 * itemIndex, 'black', RECIPES[firstRecipeIndex + itemIndex].name, 25, drawing_2.Layer.UI);
+                    drawSprite(resources_2.camera.x - resources_2.camera.width / 2 + 60, resources_2.camera.y - resources_2.camera.height / 4 + 90 + 133 * itemIndex, RECIPES[firstRecipeIndex + itemIndex].sprite, 0, 70, 70, false, resources_2.Layer.UI);
+                    drawText(resources_2.camera.x - resources_2.camera.width / 2 + 100, resources_2.camera.y - resources_2.camera.height / 4 + 50 + 133 * itemIndex, 'black', RECIPES[firstRecipeIndex + itemIndex].name, 25, resources_2.Layer.UI);
                     for (var partIndex = 0; partIndex < RECIPES[firstRecipeIndex + itemIndex].parts.length; partIndex++) {
                         var row = 0;
                         if (partIndex > 2) {
                             row = 1;
                         }
-                        drawSprite(drawing_2.camera.x - drawing_2.camera.width / 2 + 130 + 50 * partIndex - 150 * row, drawing_2.camera.y - drawing_2.camera.height / 4 + 90 + 133 * itemIndex + 50 * row, RECIPES[firstRecipeIndex + itemIndex].parts[partIndex].sprite, 0, 30, 30, false, drawing_2.Layer.UI);
-                        drawText(drawing_2.camera.x - drawing_2.camera.width / 2 + 120 + 50 * partIndex - 150 * row, drawing_2.camera.y - drawing_2.camera.height / 4 + 70 + 133 * itemIndex + 50 * row, 'black', "" + RECIPES[firstRecipeIndex + itemIndex].parts[partIndex].count, 15, drawing_2.Layer.UI);
+                        drawSprite(resources_2.camera.x - resources_2.camera.width / 2 + 130 + 50 * partIndex - 150 * row, resources_2.camera.y - resources_2.camera.height / 4 + 90 + 133 * itemIndex + 50 * row, RECIPES[firstRecipeIndex + itemIndex].parts[partIndex].sprite, 0, 30, 30, false, resources_2.Layer.UI);
+                        drawText(resources_2.camera.x - resources_2.camera.width / 2 + 120 + 50 * partIndex - 150 * row, resources_2.camera.y - resources_2.camera.height / 4 + 70 + 133 * itemIndex + 50 * row, 'black', "" + RECIPES[firstRecipeIndex + itemIndex].parts[partIndex].count, 15, resources_2.Layer.UI);
                     }
-                    if (controls_1.mouse.worldX >= drawing_2.camera.x - drawing_2.camera.width / 2 &&
-                        controls_1.mouse.worldX <= drawing_2.camera.x - drawing_2.camera.width / 2 + 300 &&
-                        controls_1.mouse.worldY >= drawing_2.camera.y - drawing_2.camera.height / 4 + 25 + 133 * itemIndex &&
-                        controls_1.mouse.worldY <= drawing_2.camera.y - drawing_2.camera.height / 4 + 133 + 25 + 133 * itemIndex) {
-                        drawText(drawing_2.camera.x + drawing_2.camera.width / 2 - 425, drawing_2.camera.y - 50, 'green', RECIPES[firstRecipeIndex + itemIndex].description1, 25, drawing_2.Layer.UI);
-                        drawText(drawing_2.camera.x + drawing_2.camera.width / 2 - 425, drawing_2.camera.y, 'green', RECIPES[firstRecipeIndex + itemIndex].description2, 25, drawing_2.Layer.UI);
-                        drawText(drawing_2.camera.x + drawing_2.camera.width / 2 - 425, drawing_2.camera.y + 50, 'green', RECIPES[firstRecipeIndex + itemIndex].description3, 25, drawing_2.Layer.UI);
+                    if (controls_1.mouse.worldX >= resources_2.camera.x - resources_2.camera.width / 2 &&
+                        controls_1.mouse.worldX <= resources_2.camera.x - resources_2.camera.width / 2 + 300 &&
+                        controls_1.mouse.worldY >= resources_2.camera.y - resources_2.camera.height / 4 + 25 + 133 * itemIndex &&
+                        controls_1.mouse.worldY <= resources_2.camera.y - resources_2.camera.height / 4 + 133 + 25 + 133 * itemIndex) {
+                        drawText(resources_2.camera.x + resources_2.camera.width / 2 - 425, resources_2.camera.y - 50, 'green', RECIPES[firstRecipeIndex + itemIndex].description1, 25, resources_2.Layer.UI);
+                        drawText(resources_2.camera.x + resources_2.camera.width / 2 - 425, resources_2.camera.y, 'green', RECIPES[firstRecipeIndex + itemIndex].description2, 25, resources_2.Layer.UI);
+                        drawText(resources_2.camera.x + resources_2.camera.width / 2 - 425, resources_2.camera.y + 50, 'green', RECIPES[firstRecipeIndex + itemIndex].description3, 25, resources_2.Layer.UI);
                         if (controls_1.mouse.wentDown) {
                             craftRecipe(RECIPES[firstRecipeIndex + itemIndex]);
                         }
@@ -1832,10 +1896,10 @@ System.register("index", ["controls", "drawing"], function (exports_3, context_3
                             }
                         }
                         else if (inventory[mainSlot].item === Item.SHOCKPROOF_BODY) {
-                            if (gameObject.sprite !== drawing_2.imgShockProofBody) {
+                            if (gameObject.sprite !== resources_2.imgShockProofBody) {
                                 gameObject.hitpoints = 150;
                                 gameObject.maxHitpoints = 150;
-                                gameObject.sprite = drawing_2.imgShockProofBody;
+                                gameObject.sprite = resources_2.imgShockProofBody;
                                 removeItem(Item.SHOCKPROOF_BODY, 1);
                             }
                         }
@@ -1853,14 +1917,14 @@ System.register("index", ["controls", "drawing"], function (exports_3, context_3
                     distanceBetweenPoints(gameObject.x, gameObject.y, mouseTile.x * TILE.width, mouseTile.y * TILE.height)
                         <= TILE.width + gameObject.width + 50 &&
                     !(craftMode &&
-                        controls_1.mouse.worldX >= drawing_2.camera.x - drawing_2.camera.width / 2 &&
-                        controls_1.mouse.worldX <= drawing_2.camera.x - drawing_2.camera.width / 2 + 300 &&
-                        controls_1.mouse.worldY >= drawing_2.camera.y - drawing_2.camera.height / 4 + 25 + 133 * 3 &&
-                        controls_1.mouse.worldY <= drawing_2.camera.y - drawing_2.camera.height / 4 + 133 + 25 + 133 * 3) &&
-                    !(controls_1.mouse.worldX >= drawing_2.camera.x - 145 &&
-                        controls_1.mouse.worldX <= drawing_2.camera.x + 145 &&
-                        controls_1.mouse.worldY >= drawing_2.camera.y + drawing_2.camera.height / 2 - 70 &&
-                        controls_1.mouse.worldY <= drawing_2.camera.y + drawing_2.camera.height / 2 - 30)) {
+                        controls_1.mouse.worldX >= resources_2.camera.x - resources_2.camera.width / 2 &&
+                        controls_1.mouse.worldX <= resources_2.camera.x - resources_2.camera.width / 2 + 300 &&
+                        controls_1.mouse.worldY >= resources_2.camera.y - resources_2.camera.height / 4 + 25 + 133 * 3 &&
+                        controls_1.mouse.worldY <= resources_2.camera.y - resources_2.camera.height / 4 + 133 + 25 + 133 * 3) &&
+                    !(controls_1.mouse.worldX >= resources_2.camera.x - 145 &&
+                        controls_1.mouse.worldX <= resources_2.camera.x + 145 &&
+                        controls_1.mouse.worldY >= resources_2.camera.y + resources_2.camera.height / 2 - 70 &&
+                        controls_1.mouse.worldY <= resources_2.camera.y + resources_2.camera.height / 2 - 30)) {
                     if (!(gameObject.x >= mouseTile.x * TILE.width - TILE.width / 2 - gameObject.width / 2 &&
                         gameObject.x <= mouseTile.x * TILE.width + TILE.width / 2 + gameObject.width / 2 &&
                         gameObject.y >= mouseTile.y * TILE.height - TILE.height / 2 - gameObject.height / 2 &&
@@ -1910,6 +1974,9 @@ System.register("index", ["controls", "drawing"], function (exports_3, context_3
                             }
                         }
                         if (!isThereAnItem) {
+                            if (mouseTile.toughness % 80 === 0 || mouseTile.toughness === 0) {
+                                resources_2.playSound(resources_2.sndMining, randomFloat(0.25, 0.8));
+                            }
                             if (mouseTile.upperLayer.type === TileType.IRON && !isInventoryFullForItem(Item.IRON)) {
                                 mouseTile.toughness--;
                             }
@@ -1991,7 +2058,7 @@ System.register("index", ["controls", "drawing"], function (exports_3, context_3
                     }
                     var stripeWidth = 300;
                     var width_1 = stripeWidth * (mouseTile.toughness / mouseTile.firstToughness);
-                    drawRect(drawing_2.camera.x + width_1 / 2 - 150, drawing_2.camera.y + drawing_2.camera.height / 4, width_1, 50, 0, 'green', false, drawing_2.Layer.UI);
+                    drawRect(resources_2.camera.x + width_1 / 2 - 150, resources_2.camera.y + resources_2.camera.height / 4, width_1, 50, 0, 'green', false, resources_2.Layer.UI);
                 }
             }
             if (controlledStorage) {
@@ -1999,72 +2066,72 @@ System.register("index", ["controls", "drawing"], function (exports_3, context_3
                     var x = void 0;
                     var y = void 0;
                     if (slotIndex <= Math.round(STORAGE_SLOT_COUNT / 2 - 1)) {
-                        x = drawing_2.camera.x + drawing_2.camera.width / 2 - 50 * STORAGE_SLOT_COUNT / 2 - 20 + slotIndex * 50;
-                        y = drawing_2.camera.y;
+                        x = resources_2.camera.x + resources_2.camera.width / 2 - 50 * STORAGE_SLOT_COUNT / 2 - 20 + slotIndex * 50;
+                        y = resources_2.camera.y;
                     }
                     else {
-                        x = drawing_2.camera.x + drawing_2.camera.width / 2 - 50 * STORAGE_SLOT_COUNT / 2 - 20 + slotIndex * 50 - 50 * STORAGE_SLOT_COUNT / 2;
-                        y = drawing_2.camera.y + 100;
+                        x = resources_2.camera.x + resources_2.camera.width / 2 - 50 * STORAGE_SLOT_COUNT / 2 - 20 + slotIndex * 50 - 50 * STORAGE_SLOT_COUNT / 2;
+                        y = resources_2.camera.y + 100;
                     }
-                    drawRect(x, y, 50, 50, 0, 'grey', true, drawing_2.Layer.UI);
+                    drawRect(x, y, 50, 50, 0, 'grey', true, resources_2.Layer.UI);
                     var sprite = null;
                     if (controlledStorage.inventory[slotIndex].item === Item.NONE) {
-                        sprite = drawing_2.imgNone;
+                        sprite = resources_2.imgNone;
                     }
                     if (controlledStorage.inventory[slotIndex].item === Item.IRON) {
-                        sprite = drawing_2.imgIronItem;
+                        sprite = resources_2.imgIronItem;
                     }
                     if (controlledStorage.inventory[slotIndex].item === Item.MELTER) {
-                        sprite = drawing_2.imgMelter;
+                        sprite = resources_2.imgMelter;
                     }
                     if (controlledStorage.inventory[slotIndex].item === Item.IRON_INGOT) {
-                        sprite = drawing_2.imgIronIngot;
+                        sprite = resources_2.imgIronIngot;
                     }
                     if (controlledStorage.inventory[slotIndex].item === Item.AURIT) {
-                        sprite = drawing_2.imgAuritItem;
+                        sprite = resources_2.imgAuritItem;
                     }
                     if (controlledStorage.inventory[slotIndex].item === Item.AURIT_INGOT) {
-                        sprite = drawing_2.imgAuritIngot;
+                        sprite = resources_2.imgAuritIngot;
                     }
                     if (controlledStorage.inventory[slotIndex].item === Item.CRYSTAL) {
-                        sprite = drawing_2.imgCrystalItem;
+                        sprite = resources_2.imgCrystalItem;
                     }
                     if (controlledStorage.inventory[slotIndex].item === Item.SPLITTER) {
-                        sprite = drawing_2.imgSplitter;
+                        sprite = resources_2.imgSplitter;
                     }
                     if (controlledStorage.inventory[slotIndex].item === Item.TOOLKIT) {
-                        sprite = drawing_2.imgToolkit;
+                        sprite = resources_2.imgToolkit;
                     }
                     if (controlledStorage.inventory[slotIndex].item === Item.SUN_BATERY) {
-                        sprite = drawing_2.imgSunBatteryItem;
+                        sprite = resources_2.imgSunBatteryItem;
                     }
                     if (controlledStorage.inventory[slotIndex].item === Item.SILIKON) {
-                        sprite = drawing_2.imgSiliconItem;
+                        sprite = resources_2.imgSiliconItem;
                     }
                     if (controlledStorage.inventory[slotIndex].item === Item.STORAGE) {
-                        sprite = drawing_2.imgStorage;
+                        sprite = resources_2.imgStorage;
                     }
                     if (controlledStorage.inventory[slotIndex].item === Item.GOLDEN_CAMERA) {
-                        sprite = drawing_2.imgGoldenCamera;
+                        sprite = resources_2.imgGoldenCamera;
                     }
                     if (controlledStorage.inventory[slotIndex].item === Item.EXTRA_SLOT) {
-                        sprite = drawing_2.imgExtraSlotItem;
+                        sprite = resources_2.imgExtraSlotItem;
                     }
                     if (controlledStorage.inventory[slotIndex].item === Item.SHOCKPROOF_BODY) {
-                        sprite = drawing_2.imgShockProofBody;
+                        sprite = resources_2.imgShockProofBody;
                     }
                     if (controlledStorage.inventory[slotIndex].item === Item.IGNEOUS) {
-                        sprite = drawing_2.imgIgneousItem;
+                        sprite = resources_2.imgIgneousItem;
                     }
                     if (controlledStorage.inventory[slotIndex].item === Item.IGNEOUS_INGOT) {
-                        sprite = drawing_2.imgIgneousIngot;
+                        sprite = resources_2.imgIgneousIngot;
                     }
                     if (controlledStorage.inventory[slotIndex].item === Item.METEORITE_STUFF) {
-                        sprite = drawing_2.imgMeteoriteStuff;
+                        sprite = resources_2.imgMeteoriteStuff;
                     }
-                    drawSprite(x, y, sprite, 0, 40, 40, false, drawing_2.Layer.UI);
+                    drawSprite(x, y, sprite, 0, 40, 40, false, resources_2.Layer.UI);
                     if (controlledStorage.inventory[slotIndex].count !== 0) {
-                        drawText(x, y - 50, 'green', "" + controlledStorage.inventory[slotIndex].count, 25, drawing_2.Layer.UI);
+                        drawText(x, y - 50, 'green', "" + controlledStorage.inventory[slotIndex].count, 25, resources_2.Layer.UI);
                     }
                     if (controls_1.mouse.wentDown &&
                         controls_1.mouse.worldX > x - 20 &&
@@ -2079,18 +2146,18 @@ System.register("index", ["controls", "drawing"], function (exports_3, context_3
                 }
             }
             if (!gameObject.doNotDraw && gameObject.sunBateryLvl === 1) {
-                drawSprite(gameObject.x, gameObject.y, drawing_2.imgSunBatteryAdd, gameObject.angle, gameObject.width, gameObject.height, false, drawing_2.Layer.PLAYER);
+                drawSprite(gameObject.x, gameObject.y, resources_2.imgSunBatteryAdd, gameObject.angle, gameObject.width, gameObject.height, false, resources_2.Layer.PLAYER);
             }
             var angle = angleBetweenPoints(gameObject.x, gameObject.y, controls_1.mouse.worldX, controls_1.mouse.worldY);
-            var cameraSprite = drawing_2.imgNone;
+            var cameraSprite = resources_2.imgNone;
             if (gameObject.cameraLvl === 0) {
-                cameraSprite = drawing_2.imgCamera;
+                cameraSprite = resources_2.imgCamera;
             }
             if (gameObject.cameraLvl === 1) {
-                cameraSprite = drawing_2.imgGoldenCamera;
+                cameraSprite = resources_2.imgGoldenCamera;
             }
             if (!gameObject.doNotDraw) {
-                drawSprite(gameObject.x, gameObject.y, cameraSprite, angle, 30, 30, false, drawing_2.Layer.PLAYER);
+                drawSprite(gameObject.x, gameObject.y, cameraSprite, angle, 30, 30, false, resources_2.Layer.PLAYER);
             }
             var staticWheelPositions = [
                 [46, 40],
@@ -2134,21 +2201,21 @@ System.register("index", ["controls", "drawing"], function (exports_3, context_3
                 gameObject.rightWeel = 5;
             }
             var wheelFrames = [
-                drawing_2.imgWheel1,
-                drawing_2.imgWheel2,
-                drawing_2.imgWheel3,
-                drawing_2.imgWheel4,
-                drawing_2.imgWheel5,
-                drawing_2.imgWheel6,
+                resources_2.imgWheel1,
+                resources_2.imgWheel2,
+                resources_2.imgWheel3,
+                resources_2.imgWheel4,
+                resources_2.imgWheel5,
+                resources_2.imgWheel6,
             ];
             if (!gameObject.doNotDraw) {
                 var wheelSprite = wheelFrames[gameObject.leftWeel];
                 for (var posIndex = 0; posIndex < 3; posIndex++) {
-                    drawSprite(gameObject.x + wheelPositions[posIndex][0], gameObject.y + wheelPositions[posIndex][1], wheelSprite, gameObject.angle, 25, 12, false, drawing_2.Layer.PLAYER);
+                    drawSprite(gameObject.x + wheelPositions[posIndex][0], gameObject.y + wheelPositions[posIndex][1], wheelSprite, gameObject.angle, 25, 12, false, resources_2.Layer.PLAYER);
                 }
                 wheelSprite = wheelFrames[gameObject.rightWeel];
                 for (var posIndex = 3; posIndex < 6; posIndex++) {
-                    drawSprite(gameObject.x + wheelPositions[posIndex][0], gameObject.y + wheelPositions[posIndex][1], wheelSprite, gameObject.angle, 25, 12, false, drawing_2.Layer.PLAYER);
+                    drawSprite(gameObject.x + wheelPositions[posIndex][0], gameObject.y + wheelPositions[posIndex][1], wheelSprite, gameObject.angle, 25, 12, false, resources_2.Layer.PLAYER);
                 }
             }
             if (!pause) {
@@ -2168,7 +2235,7 @@ System.register("index", ["controls", "drawing"], function (exports_3, context_3
             }
         }
         if (gameObject.type === GameObjectType.MAGMA_BALL) {
-            drawSprite(gameObject.x, gameObject.y, gameObject.sprite, gameObject.angle + Math.PI / 180 * gameObject.lifeTime, gameObject.width, gameObject.height, false, drawing_2.Layer.METEORITE);
+            drawSprite(gameObject.x, gameObject.y, gameObject.sprite, gameObject.angle + Math.PI / 180 * gameObject.lifeTime, gameObject.width, gameObject.height, false, resources_2.Layer.METEORITE);
             drawLight(gameObject.x, gameObject.y, gameObject.width * 1.2);
             if (!pause) {
                 gameObject.x += gameObject.speedX;
@@ -2183,13 +2250,25 @@ System.register("index", ["controls", "drawing"], function (exports_3, context_3
                 var range = MAGMA_BALL_SPEED * MAGMA_BALL_SPEED * Math.sin(2 * gameObject.angleZ) / GRAVITATION;
                 var rangeProjections = rotateVector(range, 0, gameObject.angle);
                 if (globalPlayer.cameraLvl === 1) {
-                    drawCircle(gameObject.firstX + rangeProjections[0], gameObject.firstY + rangeProjections[1], 50, 'red', true, drawing_2.Layer.UPPER_TILE);
-                    drawSprite(gameObject.firstX + rangeProjections[0], gameObject.firstY + rangeProjections[1], drawing_2.imgAlert, 0, 90, 90, false, drawing_2.Layer.UPPER_TILE);
+                    drawCircle(gameObject.firstX + rangeProjections[0], gameObject.firstY + rangeProjections[1], 50, 'red', true, resources_2.Layer.UPPER_TILE);
+                    drawSprite(gameObject.firstX + rangeProjections[0], gameObject.firstY + rangeProjections[1], resources_2.imgAlert, 0, 90, 90, false, resources_2.Layer.UPPER_TILE);
                 }
                 gameObject.width = (100 + height);
                 gameObject.height = (100 + height);
                 if (height <= 0) {
                     gameObject.exists = false;
+                    var maxDistance = VOLCANO_RADIUS;
+                    var volume = void 0;
+                    if (distanceBetweenPoints(globalPlayer.x, globalPlayer.y, gameObject.x, gameObject.y) <= maxDistance) {
+                        volume = 1 - distanceBetweenPoints(globalPlayer.x, globalPlayer.y, gameObject.x, gameObject.y) / maxDistance;
+                    }
+                    else {
+                        volume = 0;
+                    }
+                    console.log(volume);
+                    var strength = volume * 15;
+                    makeScreenShake(strength, 15);
+                    resources_2.playSound(resources_2.sndBoom, volume * 0.5);
                     burstParticles({ x: gameObject.x, y: gameObject.y, color: 'red', speed: 5, size: 45, count: 15, decrease: 0.75, accel: 0 });
                     var x = Math.round(gameObject.x / TILE.width);
                     var y = Math.round(gameObject.y / TILE.height);
@@ -2218,7 +2297,7 @@ System.register("index", ["controls", "drawing"], function (exports_3, context_3
         }
         if (gameObject.type === GameObjectType.METEORITE) {
             drawLight(gameObject.x, gameObject.y, gameObject.width * 1.2);
-            drawSprite(gameObject.x, gameObject.y, gameObject.sprite, gameObject.angle + Math.PI / 180 * gameObject.lifeTime, gameObject.width, gameObject.height, false, drawing_2.Layer.METEORITE);
+            drawSprite(gameObject.x, gameObject.y, gameObject.sprite, gameObject.angle + Math.PI / 180 * gameObject.lifeTime, gameObject.width, gameObject.height, false, resources_2.Layer.METEORITE);
             if (!pause) {
                 gameObject.x += gameObject.speedX;
                 gameObject.y += gameObject.speedY;
@@ -2262,7 +2341,7 @@ System.register("index", ["controls", "drawing"], function (exports_3, context_3
             }
         }
         if (gameObject.type === GameObjectType.LAVA_BALL) {
-            drawSprite(gameObject.x, gameObject.y, gameObject.sprite, gameObject.angle + Math.PI / 180 * gameObject.lifeTime, gameObject.width, gameObject.height, false, drawing_2.Layer.METEORITE);
+            drawSprite(gameObject.x, gameObject.y, gameObject.sprite, gameObject.angle + Math.PI / 180 * gameObject.lifeTime, gameObject.width, gameObject.height, false, resources_2.Layer.METEORITE);
             drawLight(gameObject.x, gameObject.y, gameObject.width * 1.2);
             if (!pause) {
                 gameObject.x += gameObject.speedX;
@@ -2277,8 +2356,8 @@ System.register("index", ["controls", "drawing"], function (exports_3, context_3
                 var range = LAVA_BALL_SPEED * LAVA_BALL_SPEED * Math.sin(2 * gameObject.angleZ) / GRAVITATION;
                 var rangeProjections = rotateVector(range, 0, gameObject.angle);
                 if (globalPlayer.cameraLvl === 1) {
-                    drawCircle(gameObject.firstX + rangeProjections[0], gameObject.firstY + rangeProjections[1], 10, 'red', true, drawing_2.Layer.UPPER_TILE);
-                    drawSprite(gameObject.firstX + rangeProjections[0], gameObject.firstY + rangeProjections[1], drawing_2.imgAlert, 0, 18, 18, false, drawing_2.Layer.UPPER_TILE);
+                    drawCircle(gameObject.firstX + rangeProjections[0], gameObject.firstY + rangeProjections[1], 10, 'red', true, resources_2.Layer.UPPER_TILE);
+                    drawSprite(gameObject.firstX + rangeProjections[0], gameObject.firstY + rangeProjections[1], resources_2.imgAlert, 0, 18, 18, false, resources_2.Layer.UPPER_TILE);
                 }
                 gameObject.width = (20 + height);
                 gameObject.height = (20 + height);
@@ -2297,14 +2376,14 @@ System.register("index", ["controls", "drawing"], function (exports_3, context_3
             }
         }
         if (gameObject.type === GameObjectType.BOSS) {
-            drawSprite(gameObject.x, gameObject.y, gameObject.sprite, gameObject.angle, gameObject.width, gameObject.height, false, drawing_2.Layer.BOSS);
+            drawSprite(gameObject.x, gameObject.y, gameObject.sprite, gameObject.angle, gameObject.width, gameObject.height, false, resources_2.Layer.BOSS);
             if (!pause) {
                 if (distanceBetweenPoints(gameObject.x, gameObject.y, globalPlayer.x, globalPlayer.y) <= gameObject.height / 2 && timers[globalPlayer.unhitableTimer] === 0) {
                     globalPlayer.hitpoints -= 50;
                     timers[globalPlayer.unhitableTimer] = 150;
                 }
                 if (timers[gameObject.specialTimer] === 0) {
-                    if (distanceBetweenPoints(globalBoss.x, globalBoss.y, globalPlayer.x, globalPlayer.y) > drawing_2.camera.width * 4) {
+                    if (distanceBetweenPoints(globalBoss.x, globalBoss.y, globalPlayer.x, globalPlayer.y) > resources_2.camera.width * 4) {
                         gameObject.attack = 0;
                     }
                     else {
@@ -2320,7 +2399,7 @@ System.register("index", ["controls", "drawing"], function (exports_3, context_3
                         timers[gameObject.specialTimer] = 600;
                     }
                     gameObject.rotationSpeed = 0.01;
-                    gameObject.sprite = drawing_2.imgBoss;
+                    gameObject.sprite = resources_2.imgBoss;
                 }
                 if (gameObject.attack === 0) {
                     var angle = angleBetweenPoints(gameObject.x, gameObject.y, globalPlayer.x, globalPlayer.y);
@@ -2367,10 +2446,10 @@ System.register("index", ["controls", "drawing"], function (exports_3, context_3
                 if (gameObject.attack === 2) {
                     if (timers[gameObject.specialTimer] >= 300) {
                         if (timers[gameObject.specialTimer] % 2 === 0) {
-                            gameObject.sprite = drawing_2.imgBossReadyToAttack1;
+                            gameObject.sprite = resources_2.imgBossReadyToAttack1;
                         }
                         else {
-                            gameObject.sprite = drawing_2.imgBossReadyToAttack;
+                            gameObject.sprite = resources_2.imgBossReadyToAttack;
                         }
                     }
                     else {
@@ -2392,35 +2471,35 @@ System.register("index", ["controls", "drawing"], function (exports_3, context_3
                         var lazerLength = 1500;
                         var vector = rotateVector(gameObject.width / 3 + lazerLength / 2, 1, -gameObject.angle);
                         if (timers[gameObject.specialTimer] % 2 === 0) {
-                            gameObject.sprite = drawing_2.imgBossAttack;
-                            drawSprite(gameObject.x + vector[0], gameObject.y + vector[1], drawing_2.imgLazer, gameObject.angle, lazerLength, 286 / 796 * gameObject.height, false, drawing_2.Layer.BOSS);
+                            gameObject.sprite = resources_2.imgBossAttack;
+                            drawSprite(gameObject.x + vector[0], gameObject.y + vector[1], resources_2.imgLazer, gameObject.angle, lazerLength, 286 / 796 * gameObject.height, false, resources_2.Layer.BOSS);
                         }
                         else {
-                            gameObject.sprite = drawing_2.imgBossAttack1;
-                            drawSprite(gameObject.x + vector[0], gameObject.y + vector[1], drawing_2.imgLazer1, gameObject.angle, lazerLength, 286 / 796 * gameObject.height, false, drawing_2.Layer.BOSS);
+                            gameObject.sprite = resources_2.imgBossAttack1;
+                            drawSprite(gameObject.x + vector[0], gameObject.y + vector[1], resources_2.imgLazer1, gameObject.angle, lazerLength, 286 / 796 * gameObject.height, false, resources_2.Layer.BOSS);
                         }
                         var distanceFromPlayer = distanceBetweenPoints(globalPlayer.x, globalPlayer.y, gameObject.x + vector[0], gameObject.y + vector[1]);
                         var rotatedDistanceFromPlayer = rotateVector(distanceFromPlayer, 0, angleBetweenPoints(gameObject.x + vector[0], gameObject.y + vector[1], globalPlayer.x, globalPlayer.y) - globalBoss.angle);
-                        drawing_2.ctx.save();
-                        drawing_2.ctx.translate(gameObject.x + vector[0], gameObject.y + vector[1]);
+                        resources_2.ctx.save();
+                        resources_2.ctx.translate(gameObject.x + vector[0], gameObject.y + vector[1]);
                         if (-286 / 796 * gameObject.height / 2 < rotatedDistanceFromPlayer[1] && 286 / 796 * gameObject.height / 2 > rotatedDistanceFromPlayer[1]
                             && -lazerLength / 2 < rotatedDistanceFromPlayer[0] && lazerLength / 2 > rotatedDistanceFromPlayer[0]) {
                             globalPlayer.hitpoints -= 0.5;
                         }
-                        drawing_2.ctx.restore();
+                        resources_2.ctx.restore();
                     }
                 }
                 moveGameObject(gameObject);
             }
         }
         if (gameObject.type === GameObjectType.MANIPULATOR) {
-            drawSprite(gameObject.x, gameObject.y, gameObject.sprite, gameObject.angle, gameObject.width, gameObject.height, false, drawing_2.Layer.MANIPULATOR);
+            drawSprite(gameObject.x, gameObject.y, gameObject.sprite, gameObject.angle, gameObject.width, gameObject.height, false, resources_2.Layer.MANIPULATOR);
             gameObject.angle = globalBoss.angle;
             var angle = angleBetweenPoints(globalBoss.x + gameObject.firstX, globalBoss.y + gameObject.firstY, globalBoss.x, globalBoss.y);
-            drawSprite(globalBoss.x, globalBoss.y, drawing_2.imgManipulator, globalBoss.angle + angle, 270, 60, true, drawing_2.Layer.BOSS_LEG);
+            drawSprite(globalBoss.x, globalBoss.y, resources_2.imgManipulator, globalBoss.angle + angle, 270, 60, true, resources_2.Layer.BOSS_LEG);
             var legVector = rotateVector(250, 0, -globalBoss.angle - angle + Math.PI);
             angle = angleBetweenPoints(gameObject.x, gameObject.y, globalBoss.x + legVector[0], globalBoss.y + legVector[1]);
-            drawSprite(globalBoss.x + legVector[0], globalBoss.y + legVector[1], drawing_2.imgManipulator, angle, distanceBetweenPoints(globalBoss.x + legVector[0], globalBoss.y + legVector[1], gameObject.x, gameObject.y), 60, true, drawing_2.Layer.BOSS_LEG);
+            drawSprite(globalBoss.x + legVector[0], globalBoss.y + legVector[1], resources_2.imgManipulator, angle, distanceBetweenPoints(globalBoss.x + legVector[0], globalBoss.y + legVector[1], gameObject.x, gameObject.y), 60, true, resources_2.Layer.BOSS_LEG);
             if (!pause) {
                 var legDistance = 140;
                 var firstCoordsAngle = Math.PI - angleBetweenPoints(gameObject.firstX, gameObject.firstY, 0, 0);
@@ -2452,7 +2531,7 @@ System.register("index", ["controls", "drawing"], function (exports_3, context_3
                         gameObject.neededX = null;
                         gameObject.neededY = null;
                         var distance = distanceBetweenPoints(gameObject.x, gameObject.y, globalPlayer.x, globalPlayer.y);
-                        var strength = 1 / distance * drawing_2.camera.width;
+                        var strength = 1 / distance * resources_2.camera.width;
                         makeScreenShake(strength, 5);
                         if (distance < gameObject.width / 2 + globalPlayer.width / 2 && timers[globalPlayer.unhitableTimer] === 0) {
                             globalPlayer.hitpoints -= 20;
@@ -2497,7 +2576,7 @@ System.register("index", ["controls", "drawing"], function (exports_3, context_3
             color: color,
             size: size,
             layer: layer,
-            wasClicked: false,
+            mouseOn: false,
             exists: true
         };
         var textIndex = 0;
@@ -2513,25 +2592,33 @@ System.register("index", ["controls", "drawing"], function (exports_3, context_3
             if (controls_1.mouse.worldX > text.x &&
                 controls_1.mouse.worldX < text.x + text.width &&
                 controls_1.mouse.worldY > text.y - text.height / 2 &&
-                controls_1.mouse.worldY < text.y + text.height / 2 && controls_1.mouse.wentDown) {
-                text.wasClicked = true;
+                controls_1.mouse.worldY < text.y + text.height / 2) {
+                text.mouseOn = true;
             }
             drawText(text.x, text.y, text.color, text.text, text.size, text.layer);
         }
     }
     function resetClicks() {
         for (var textIndex = 0; textIndex < menuTexts.length; textIndex++) {
-            menuTexts[textIndex].wasClicked = false;
+            menuTexts[textIndex].mouseOn = false;
         }
     }
     function loopMenu() {
-        drawing_2.camera.x = 0;
-        drawing_2.camera.y = 0;
+        resources_2.camera.x = 0;
+        resources_2.camera.y = 0;
+        drawSprite(resources_2.camera.x, resources_2.camera.y, resources_2.imgMenu, 0, resources_2.camera.width, resources_2.camera.height, false, resources_2.Layer.TILE);
+        drawText(resources_2.camera.x - resources_2.camera.width / 2 + 5, resources_2.camera.y - resources_2.camera.height / 2 + 200, 'white', 'MEGA MARS 2D-3D SUPER EPIC SOMEWHAT SURVIVAL', 71, resources_2.Layer.ON_TILE);
         updateClickableTexts();
-        if (playText.wasClicked) {
-            gameState = GameState.GAME;
-            restate();
-            buildMap();
+        if (playText.mouseOn && resources_2.canBeginGame) {
+            playText.text = 'ИГРАТЬ';
+            if (controls_1.mouse.wentDown) {
+                gameState = GameState.GAME;
+                restate();
+                buildMap();
+            }
+        }
+        else {
+            playText.text = 'играть';
         }
         resetClicks();
     }
@@ -2562,14 +2649,14 @@ System.register("index", ["controls", "drawing"], function (exports_3, context_3
             timers[dayTimer] = ONE_DAY;
         }
         if (timers[gameTimer] === 1) {
-            var y = drawing_2.camera.y;
-            var x = drawing_2.camera.x;
-            while (x > drawing_2.camera.x - drawing_2.camera.width &&
-                x < drawing_2.camera.x + drawing_2.camera.width &&
-                y > drawing_2.camera.x - drawing_2.camera.height &&
-                y < drawing_2.camera.y + drawing_2.camera.height) {
-                x = randomInt(drawing_2.camera.x - drawing_2.camera.width * 3, drawing_2.camera.y + drawing_2.camera.width * 3);
-                y = randomInt(drawing_2.camera.y - drawing_2.camera.height * 3, drawing_2.camera.y + drawing_2.camera.height * 3);
+            var y = resources_2.camera.y;
+            var x = resources_2.camera.x;
+            while (x > resources_2.camera.x - resources_2.camera.width &&
+                x < resources_2.camera.x + resources_2.camera.width &&
+                y > resources_2.camera.x - resources_2.camera.height &&
+                y < resources_2.camera.y + resources_2.camera.height) {
+                x = randomInt(resources_2.camera.x - resources_2.camera.width * 3, resources_2.camera.y + resources_2.camera.width * 3);
+                y = randomInt(resources_2.camera.y - resources_2.camera.height * 3, resources_2.camera.y + resources_2.camera.height * 3);
             }
             globalBoss = addGameObject(GameObjectType.BOSS, x, y);
             var distanceFromManipulators = 500;
@@ -2586,7 +2673,7 @@ System.register("index", ["controls", "drawing"], function (exports_3, context_3
             var hand4Vector = rotateVector(distanceFromManipulators, 0, hand4Angle);
             addGameObject(GameObjectType.MANIPULATOR, globalBoss.x + hand4Vector[0], globalBoss.y + hand4Vector[1]);
         }
-        drawSprite(drawing_2.camera.x, drawing_2.camera.y, drawing_2.backBuffer, 0, drawing_2.camera.width, drawing_2.camera.height, false, drawing_2.Layer.FORGROUND);
+        drawSprite(resources_2.camera.x, resources_2.camera.y, resources_2.backBuffer, 0, resources_2.camera.width, resources_2.camera.height, false, resources_2.Layer.FORGROUND);
         if (timers[recentShake.duration] <= 0) {
             recentShake = { strength: 0, duration: addTimer(0) };
         }
@@ -2596,44 +2683,44 @@ System.register("index", ["controls", "drawing"], function (exports_3, context_3
                 recentShake = shake;
             }
         }
-        drawing_2.camera.x = globalPlayer.x;
-        drawing_2.camera.y = globalPlayer.y;
+        resources_2.camera.x = globalPlayer.x;
+        resources_2.camera.y = globalPlayer.y;
         if (timers[recentShake.duration] > 0 && recentShake.strength > 0 && !pause) {
-            drawing_2.camera.x += randomInt(-recentShake.strength, recentShake.strength);
-            drawing_2.camera.y += randomInt(-recentShake.strength, recentShake.strength);
+            resources_2.camera.x += randomInt(-recentShake.strength, recentShake.strength);
+            resources_2.camera.y += randomInt(-recentShake.strength, recentShake.strength);
         }
-        while (drawing_2.camera.x < TILE.firstX - TILE.width / 2 + drawing_2.camera.width / 2) {
-            drawing_2.camera.x = TILE.firstX - TILE.width / 2 + drawing_2.camera.width / 2;
+        while (resources_2.camera.x < TILE.firstX - TILE.width / 2 + resources_2.camera.width / 2) {
+            resources_2.camera.x = TILE.firstX - TILE.width / 2 + resources_2.camera.width / 2;
         }
-        while (drawing_2.camera.y < TILE.firstY - TILE.height / 2 + drawing_2.camera.height / 2) {
-            drawing_2.camera.y = TILE.firstY - TILE.height / 2 + drawing_2.camera.height / 2;
+        while (resources_2.camera.y < TILE.firstY - TILE.height / 2 + resources_2.camera.height / 2) {
+            resources_2.camera.y = TILE.firstY - TILE.height / 2 + resources_2.camera.height / 2;
         }
-        while (drawing_2.camera.x > TILE.firstX - TILE.width / 2 + TILE.chunkSizeX * TILE.chunkCountX * TILE.width - drawing_2.camera.width / 2) {
-            drawing_2.camera.x = TILE.firstX - TILE.width / 2 + TILE.chunkSizeX * TILE.chunkCountX * TILE.width - drawing_2.camera.width / 2;
+        while (resources_2.camera.x > TILE.firstX - TILE.width / 2 + TILE.chunkSizeX * TILE.chunkCountX * TILE.width - resources_2.camera.width / 2) {
+            resources_2.camera.x = TILE.firstX - TILE.width / 2 + TILE.chunkSizeX * TILE.chunkCountX * TILE.width - resources_2.camera.width / 2;
         }
-        while (drawing_2.camera.y > TILE.firstY - TILE.height / 2 + TILE.chunkSizeY * TILE.chunkCountY * TILE.width - drawing_2.camera.height / 2) {
-            drawing_2.camera.y = TILE.firstY - TILE.height / 2 + TILE.chunkSizeY * TILE.chunkCountY * TILE.width - drawing_2.camera.height / 2;
+        while (resources_2.camera.y > TILE.firstY - TILE.height / 2 + TILE.chunkSizeY * TILE.chunkCountY * TILE.width - resources_2.camera.height / 2) {
+            resources_2.camera.y = TILE.firstY - TILE.height / 2 + TILE.chunkSizeY * TILE.chunkCountY * TILE.width - resources_2.camera.height / 2;
         }
         if (controls_1.rKey.wentDown) {
             gameState = GameState.MENU;
-            playText = addMenuText(-drawing_2.camera.width / 2 + 100, -drawing_2.camera.height / 2 + 200, 130, 40, 'Играть', 'black', 40, drawing_2.Layer.UI);
+            playText = addMenuText(-resources_2.camera.width / 2 + 100, -resources_2.camera.height / 2 + 400, 130, 60, 'играть', 'White', 40, resources_2.Layer.UI);
         }
     }
     function loop() {
         var _a;
         drawQueue = [];
-        drawing_2.ctx.save();
-        drawing_2.backCtx.save();
+        resources_2.ctx.save();
+        resources_2.backCtx.save();
         _a = screenToWorld(controls_1.mouse.x, controls_1.mouse.y), controls_1.mouse.worldX = _a[0], controls_1.mouse.worldY = _a[1];
-        drawing_2.ctx.clearRect(0, 0, drawing_2.canvas.width, drawing_2.canvas.height);
-        drawing_2.backCtx.clearRect(0, 0, drawing_2.canvas.width, drawing_2.canvas.height);
-        drawing_2.backCtx.fillStyle = "rgba(0,0,0," + alpha + ")";
-        drawing_2.backCtx.fillRect(0, 0, drawing_2.canvas.width, drawing_2.canvas.height);
-        var scale = drawing_2.canvas.width / drawing_2.camera.width;
-        drawing_2.backCtx.scale(scale, scale);
-        drawing_2.ctx.scale(scale, scale);
-        drawing_2.ctx.rotate(-drawing_2.camera.angle);
-        drawing_2.ctx.translate(-drawing_2.camera.x + drawing_2.camera.width / 2, -drawing_2.camera.y + drawing_2.camera.height / 2);
+        resources_2.ctx.clearRect(0, 0, resources_2.canvas.width, resources_2.canvas.height);
+        resources_2.backCtx.clearRect(0, 0, resources_2.canvas.width, resources_2.canvas.height);
+        resources_2.backCtx.fillStyle = "rgba(0,0,0," + alpha + ")";
+        resources_2.backCtx.fillRect(0, 0, resources_2.canvas.width, resources_2.canvas.height);
+        var scale = resources_2.canvas.width / resources_2.camera.width;
+        resources_2.backCtx.scale(scale, scale);
+        resources_2.ctx.scale(scale, scale);
+        resources_2.ctx.rotate(-resources_2.camera.angle);
+        resources_2.ctx.translate(-resources_2.camera.x + resources_2.camera.width / 2, -resources_2.camera.y + resources_2.camera.height / 2);
         if (gameState === GameState.MENU) {
             loopMenu();
         }
@@ -2646,10 +2733,10 @@ System.register("index", ["controls", "drawing"], function (exports_3, context_3
         drawQueue.sort(function (a, b) { return b.layer - a.layer; });
         for (var itemIndex = 0; itemIndex < drawQueue.length; itemIndex++) {
             var item = drawQueue[itemIndex];
-            drawing_2.renderItem(item);
+            resources_2.renderItem(item);
         }
-        drawing_2.backCtx.restore();
-        drawing_2.ctx.restore();
+        resources_2.backCtx.restore();
+        resources_2.ctx.restore();
         controls_1.clearAllKeys();
         requestAnimationFrame(loop);
     }
@@ -2658,8 +2745,8 @@ System.register("index", ["controls", "drawing"], function (exports_3, context_3
             function (controls_1_1) {
                 controls_1 = controls_1_1;
             },
-            function (drawing_2_1) {
-                drawing_2 = drawing_2_1;
+            function (resources_2_1) {
+                resources_2 = resources_2_1;
             }
         ],
         execute: function () {
@@ -2789,8 +2876,6 @@ System.register("index", ["controls", "drawing"], function (exports_3, context_3
             STORAGE_SLOT_COUNT = 10;
             STRIPE_WIDTH = 200;
             STRIPE_HEIGHT = 50;
-            timers = [];
-            map = [];
             CHUNK_PROTOTYPES = [
                 [
                     '  @!  ##',
@@ -2856,8 +2941,8 @@ System.register("index", ["controls", "drawing"], function (exports_3, context_3
             RECIPES = [
                 {
                     result: Item.MELTER,
-                    parts: [{ item: Item.IRON, count: 20, sprite: drawing_2.imgIronItem },],
-                    sprite: drawing_2.imgMelter,
+                    parts: [{ item: Item.IRON, count: 20, sprite: resources_2.imgIronItem },],
+                    sprite: resources_2.imgMelter,
                     name: 'Плавильня',
                     description1: 'Бегать с железом - это одно,',
                     description2: 'а с железными слитками - другое.',
@@ -2865,8 +2950,8 @@ System.register("index", ["controls", "drawing"], function (exports_3, context_3
                 },
                 {
                     result: Item.SPLITTER,
-                    parts: [{ item: Item.IRON_INGOT, count: 5, sprite: drawing_2.imgIronIngot }, { item: Item.CRYSTAL, count: 10, sprite: drawing_2.imgCrystalItem }],
-                    sprite: drawing_2.imgSplitter,
+                    parts: [{ item: Item.IRON_INGOT, count: 5, sprite: resources_2.imgIronIngot }, { item: Item.CRYSTAL, count: 10, sprite: resources_2.imgCrystalItem }],
+                    sprite: resources_2.imgSplitter,
                     name: 'Расщепитель',
                     description1: 'Если сломать кристалл пополам,',
                     description2: 'много энергии не выделится.',
@@ -2874,8 +2959,8 @@ System.register("index", ["controls", "drawing"], function (exports_3, context_3
                 },
                 {
                     result: Item.STORAGE,
-                    parts: [{ item: Item.IRON_INGOT, count: 20, sprite: drawing_2.imgIronIngot }],
-                    sprite: drawing_2.imgStorage,
+                    parts: [{ item: Item.IRON_INGOT, count: 20, sprite: resources_2.imgIronIngot }],
+                    sprite: resources_2.imgStorage,
                     name: 'Хранилище',
                     description1: 'Это сундук из Майнкрафта,',
                     description2: 'ни больше, ни меньше.',
@@ -2883,8 +2968,8 @@ System.register("index", ["controls", "drawing"], function (exports_3, context_3
                 },
                 {
                     result: Item.TOOLKIT,
-                    parts: [{ item: Item.IRON_INGOT, count: 5, sprite: drawing_2.imgIronIngot }],
-                    sprite: drawing_2.imgToolkit,
+                    parts: [{ item: Item.IRON_INGOT, count: 5, sprite: resources_2.imgIronIngot }],
+                    sprite: resources_2.imgToolkit,
                     name: 'Ремнабор',
                     description1: 'Все травмы можно залатать,',
                     description2: 'если они не душевные.',
@@ -2892,8 +2977,8 @@ System.register("index", ["controls", "drawing"], function (exports_3, context_3
                 },
                 {
                     result: Item.EXTRA_SLOT,
-                    parts: [{ item: Item.IRON_INGOT, count: 40, sprite: drawing_2.imgIronIngot }],
-                    sprite: drawing_2.imgExtraSlotItem,
+                    parts: [{ item: Item.IRON_INGOT, count: 40, sprite: resources_2.imgIronIngot }],
+                    sprite: resources_2.imgExtraSlotItem,
                     name: 'Допслот',
                     description1: 'Как же замечательно иметь ещё',
                     description2: 'чуть-чуть места под рукой! Сюда',
@@ -2901,8 +2986,8 @@ System.register("index", ["controls", "drawing"], function (exports_3, context_3
                 },
                 {
                     result: Item.SUN_BATERY,
-                    parts: [{ item: Item.SILIKON, count: 15, sprite: drawing_2.imgSiliconItem }, { item: Item.CRYSTAL, count: 30, sprite: drawing_2.imgCrystalItem }],
-                    sprite: drawing_2.imgSunBatteryItem,
+                    parts: [{ item: Item.SILIKON, count: 15, sprite: resources_2.imgSiliconItem }, { item: Item.CRYSTAL, count: 30, sprite: resources_2.imgCrystalItem }],
+                    sprite: resources_2.imgSunBatteryItem,
                     name: 'Сол панель ур.1',
                     description1: 'Без батарей, как без рук!',
                     description2: 'Позволяет получать энергию днём;',
@@ -2910,8 +2995,8 @@ System.register("index", ["controls", "drawing"], function (exports_3, context_3
                 },
                 {
                     result: Item.GOLDEN_CAMERA,
-                    parts: [{ item: Item.AURIT_INGOT, count: 40, sprite: drawing_2.imgAuritIngot }],
-                    sprite: drawing_2.imgGoldenCamera,
+                    parts: [{ item: Item.AURIT_INGOT, count: 40, sprite: resources_2.imgAuritIngot }],
+                    sprite: resources_2.imgGoldenCamera,
                     name: 'Зоркая камера',
                     description1: 'Действительно ауритовая вещь!',
                     description2: 'Позволяет видеть опасности,',
@@ -2919,9 +3004,9 @@ System.register("index", ["controls", "drawing"], function (exports_3, context_3
                 },
                 {
                     result: Item.SHOCKPROOF_BODY,
-                    parts: [{ item: Item.SILIKON, count: 30, sprite: drawing_2.imgSiliconItem },
-                        { item: Item.AURIT_INGOT, count: 30, sprite: drawing_2.imgAuritIngot }],
-                    sprite: drawing_2.imgShockProofBody,
+                    parts: [{ item: Item.SILIKON, count: 30, sprite: resources_2.imgSiliconItem },
+                        { item: Item.AURIT_INGOT, count: 30, sprite: resources_2.imgAuritIngot }],
+                    sprite: resources_2.imgShockProofBody,
                     name: 'Крепкое тело',
                     description1: 'Красивый ауритовый корпус говорит',
                     description2: 'о непрочности, но слой силикона',
@@ -2929,8 +3014,8 @@ System.register("index", ["controls", "drawing"], function (exports_3, context_3
                 },
                 {
                     result: Item.METEORITE_STUFF,
-                    parts: [{ item: Item.IGNEOUS_INGOT, count: 20, sprite: drawing_2.imgIgneousIngot }],
-                    sprite: drawing_2.imgMeteoriteStuff,
+                    parts: [{ item: Item.IGNEOUS_INGOT, count: 20, sprite: resources_2.imgIgneousIngot }],
+                    sprite: resources_2.imgMeteoriteStuff,
                     name: 'Метеопосох',
                     description1: 'Эта вещь может вызвать метеорит,',
                     description2: 'который упадёт на выбранную ',
@@ -2938,6 +3023,8 @@ System.register("index", ["controls", "drawing"], function (exports_3, context_3
                 },
             ];
             GAME_LENGTH = 10000000000;
+            timers = [];
+            map = [];
             slotCount = 5;
             inventory = [];
             drawQueue = [];
@@ -2959,14 +3046,14 @@ System.register("index", ["controls", "drawing"], function (exports_3, context_3
             hpShakeTimer = addTimer(0);
             globalBoss = null;
             recentShake = { strength: 0, duration: addTimer(0) };
-            gameState = GameState.GAME;
+            gameState = GameState.MENU;
             menuTexts = [];
-            drawing_2.handleResize();
+            resources_2.handleResize();
             for (var i = 0; i < slotCount; i++) {
                 inventory.push(new InventorySlot());
             }
             buildMap();
-            playText = addMenuText(-drawing_2.camera.width / 2 + 100, -drawing_2.camera.height / 2 + 200, 130, 40, 'Играть', 'black', 40, drawing_2.Layer.UI);
+            playText = addMenuText(-resources_2.camera.width / 2 + 100, -resources_2.camera.height / 2 + 400, 130, 60, 'играть', 'White', 40, resources_2.Layer.UI);
             requestAnimationFrame(loop);
         }
     };
