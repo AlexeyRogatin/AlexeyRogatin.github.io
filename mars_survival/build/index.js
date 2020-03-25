@@ -698,8 +698,8 @@ System.register("index", ["controls", "resources"], function (exports_3, context
             speed: 0,
             speedX: 0,
             speedY: 0,
-            speedLimit: 20,
-            speedBackReduction: 0.5,
+            speedLimit: 4,
+            speedBackReduction: 0.4,
             friction: 0.95,
             accel: 0,
             accelConst: 0.1,
@@ -3022,7 +3022,7 @@ System.register("index", ["controls", "resources"], function (exports_3, context
                     description3: 'область. Хороший взрыв'
                 },
             ];
-            GAME_LENGTH = 10000000000;
+            GAME_LENGTH = ONE_DAY * 3;
             timers = [];
             map = [];
             slotCount = 5;
