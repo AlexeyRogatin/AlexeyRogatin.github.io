@@ -412,7 +412,7 @@ System.register("controls", ["resources"], function (exports_2, context_2) {
 });
 System.register("index", ["controls", "resources"], function (exports_3, context_3) {
     "use strict";
-    var controls_1, resources_2, InventorySlot, TileLayer, Tile, RecipePart, Recipe, GameObject, particle, Text, GameObjectType, GameState, TileType, Item, Event, TILE, MORNING_LENGTH, DAY_LENGTH, AFTERNOON_LENGTH, NIGHT_LENGTH, ONE_DAY, EVENT_LENGTH, VOLCANO_RADIUS, VOLCANO_HEIGHT, GRAVITATION, CAMERA_HEIGHT, MAGMA_BALL_SPEED, METEORITE_SPEED, LAVA_BALL_SPEED, METEOR_STUFF_COOLDOWN, MAX_RANGE, STORAGE_SLOT_COUNT, STRIPE_WIDTH, STRIPE_HEIGHT, CHUNK_PROTOTYPES, RECIPES, GAME_LENGTH, timers, map, slotCount, inventory, drawQueue, alpha, gameObjects, particles, globalPlayer, screenShakes, craftMode, firstRecipeIndex, mainSlot, controlledStorage, dayTimer, gameTimer, event, timeBetweenEvents, eventEnd, hpShakeTimer, globalBoss, recentShake, gameState, menuTexts, playText;
+    var controls_1, resources_2, InventorySlot, TileLayer, Tile, RecipePart, Recipe, GameObject, particle, Text, GameObjectType, GameState, TileType, Item, Event, TILE, MORNING_LENGTH, DAY_LENGTH, AFTERNOON_LENGTH, NIGHT_LENGTH, ONE_DAY, EVENT_LENGTH, VOLCANO_RADIUS, VOLCANO_HEIGHT, GRAVITATION, CAMERA_HEIGHT, MAGMA_BALL_SPEED, METEORITE_SPEED, LAVA_BALL_SPEED, METEOR_STUFF_COOLDOWN, MAX_RANGE, STORAGE_SLOT_COUNT, STRIPE_WIDTH, STRIPE_HEIGHT, CHUNK_PROTOTYPES, RECIPES, GAME_LENGTH, timers, map, slotCount, inventory, drawQueue, alpha, gameObjects, particles, globalPlayer, screenShakes, craftMode, firstRecipeIndex, mainSlot, controlledStorage, dayTimer, gameTimer, event, timeBetweenEvents, eventEnd, hpShakeTimer, globalBoss, recentShake, gameState, menuTexts, playText, controlsText;
     var __moduleName = context_3 && context_3.id;
     function restate() {
         gameObjects = [];
@@ -669,6 +669,14 @@ System.register("index", ["controls", "resources"], function (exports_3, context
         }
         else if (timers[dayTimer] <= NIGHT_TIME) {
             alpha = 1;
+        }
+        var DECREASE_TIME = 360;
+        var RADIUS_DECREASE = 30;
+        if (timers[dayTimer] % DECREASE_TIME < DECREASE_TIME / 2) {
+            radius = radius + (timers[dayTimer] % DECREASE_TIME) / DECREASE_TIME * RADIUS_DECREASE;
+        }
+        else {
+            radius = radius + (DECREASE_TIME / 2 - timers[dayTimer] % (DECREASE_TIME / 2)) / DECREASE_TIME * RADIUS_DECREASE;
         }
         if (x > resources_2.camera.x - resources_2.camera.width * 0.5 - radius &&
             x < resources_2.camera.x + resources_2.camera.width * 0.5 + radius &&
@@ -1561,6 +1569,8 @@ System.register("index", ["controls", "resources"], function (exports_3, context
         }
         if (globalBoss && tile.upperLayer.type !== TileType.NONE && distanceBetweenPoints(globalBoss.x, globalBoss.y, tile.x * TILE.width, tile.y * TILE.height) <= globalBoss.height / 2 + tile.width / 2) {
             tile.upperLayer.type = TileType.NONE;
+            tile.toughness = 0;
+            tile.firstToughness = 0;
             burstParticles({
                 x: tile.x * TILE.width,
                 y: tile.y * TILE.height,
@@ -1581,11 +1591,15 @@ System.register("index", ["controls", "resources"], function (exports_3, context
         }
     }
     function updateTileMap() {
-        for (var y = 0; y < TILE.chunkCountY * TILE.chunkSizeY; y++) {
-            for (var x = 0; x < TILE.chunkCountX * TILE.chunkSizeX; x++) {
+        var firstTile = { x: Math.round((resources_2.camera.x - VOLCANO_RADIUS) / TILE.width), y: Math.round((resources_2.camera.y - VOLCANO_RADIUS) / TILE.width) };
+        var lastTile = { x: Math.round((resources_2.camera.x + VOLCANO_RADIUS) / TILE.width), y: Math.round((resources_2.camera.y + VOLCANO_RADIUS) / TILE.width) };
+        for (var y = firstTile.y; y < lastTile.y; y++) {
+            for (var x = firstTile.x; x < lastTile.x; x++) {
                 var tile = map[getIndexFromCoords(x, y)];
-                updateTile(tile.baseLayer.type, tile);
-                updateTile(tile.upperLayer.type, tile);
+                if (tile) {
+                    updateTile(tile.baseLayer.type, tile);
+                    updateTile(tile.upperLayer.type, tile);
+                }
             }
         }
     }
@@ -2284,10 +2298,10 @@ System.register("index", ["controls", "resources"], function (exports_3, context
                             && map[tileIndex].baseLayer.type !== TileType.VOLCANO) {
                             map[tileIndex].baseLayer.type = TileType.EARTH;
                             map[tileIndex].baseLayer.variant = 1;
-                            map[tileIndex].upperLayer.type = TileType.IGNEOUS;
-                            map[tileIndex].toughness = 500;
-                            map[tileIndex].firstToughness = 500;
-                            map[tileIndex].oreCount = 1;
+                            map[tileIndex].upperLayer.type = TileType.LAVA;
+                            map[tileIndex].toughness = 0;
+                            map[tileIndex].firstToughness = 0;
+                            map[tileIndex].upperLayer.variant = randomInt(1, 2);
                         }
                     }
                 }
@@ -2543,6 +2557,8 @@ System.register("index", ["controls", "resources"], function (exports_3, context
                         var tile = map[tileIndex];
                         if (tile.upperLayer.type !== TileType.NONE && distanceBetweenPoints(tile.x * TILE.width, tile.y * TILE.height, gameObject.x, gameObject.y) <= gameObject.width / 2 + tile.width / 2) {
                             tile.upperLayer.type = TileType.NONE;
+                            tile.toughness = 0;
+                            tile.firstToughness = 0;
                             burstParticles({
                                 x: tile.x * TILE.width,
                                 y: tile.y * TILE.height,
@@ -2708,6 +2724,7 @@ System.register("index", ["controls", "resources"], function (exports_3, context
         if (controls_1.rKey.wentDown) {
             gameState = GameState.MENU;
             playText = addMenuText(-resources_2.camera.width / 2 + 165, -resources_2.camera.height / 2 + 400, 130, 60, 'играть', 'White', 40, resources_2.Layer.UI);
+            controlsText = addMenuText(-resources_2.camera.width / 2 + 215, -resources_2.camera.height / 2 + 450, 130, 60, 'управление', 'White', 40, resources_2.Layer.UI);
         }
     }
     function loop() {
@@ -3055,6 +3072,7 @@ System.register("index", ["controls", "resources"], function (exports_3, context
             }
             buildMap();
             playText = addMenuText(-resources_2.camera.width / 2 + 165, -resources_2.camera.height / 2 + 400, 130, 60, 'играть', 'White', 40, resources_2.Layer.UI);
+            controlsText = addMenuText(-resources_2.camera.width / 2 + 215, -resources_2.camera.height / 2 + 450, 130, 60, 'управление', 'White', 40, resources_2.Layer.UI);
             requestAnimationFrame(loop);
         }
     };
