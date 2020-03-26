@@ -290,7 +290,7 @@ System.register("resources", [], function (exports_1, context_1) {
 });
 System.register("controls", ["resources"], function (exports_2, context_2) {
     "use strict";
-    var resources_1, mouseX, mouseY, KeyCode, Key, Mouse, upKey, leftKey, downKey, rightKey, mouse, qKey, shiftKey, rKey, escKey;
+    var resources_1, mouseX, mouseY, KeyCode, Key, Mouse, upKey, leftKey, downKey, rightKey, mouse, qKey, shiftKey, rKey, escKey, key1, key2, key3, key4, key5, key6;
     var __moduleName = context_2 && context_2.id;
     function handleKeyDown(event, keyCode, key) {
         if (keyCode === event.keyCode) {
@@ -321,6 +321,12 @@ System.register("controls", ["resources"], function (exports_2, context_2) {
         clearKey(shiftKey);
         clearKey(rKey);
         clearKey(escKey);
+        clearKey(key1);
+        clearKey(key2);
+        clearKey(key3);
+        clearKey(key4);
+        clearKey(key5);
+        clearKey(key6);
         mouse.wentUp = false;
         mouse.wentDown = false;
     }
@@ -343,6 +349,12 @@ System.register("controls", ["resources"], function (exports_2, context_2) {
                 KeyCode[KeyCode["SHIFT"] = 16] = "SHIFT";
                 KeyCode[KeyCode["R"] = 82] = "R";
                 KeyCode[KeyCode["ESC"] = 27] = "ESC";
+                KeyCode[KeyCode["KEY_1"] = 49] = "KEY_1";
+                KeyCode[KeyCode["KEY_2"] = 50] = "KEY_2";
+                KeyCode[KeyCode["KEY_3"] = 51] = "KEY_3";
+                KeyCode[KeyCode["KEY_4"] = 52] = "KEY_4";
+                KeyCode[KeyCode["KEY_5"] = 53] = "KEY_5";
+                KeyCode[KeyCode["KEY_6"] = 54] = "KEY_6";
             })(KeyCode || (KeyCode = {}));
             exports_2("KeyCode", KeyCode);
             Key = (function () {
@@ -369,6 +381,12 @@ System.register("controls", ["resources"], function (exports_2, context_2) {
             exports_2("shiftKey", shiftKey = new Key());
             exports_2("rKey", rKey = new Key());
             exports_2("escKey", escKey = new Key());
+            exports_2("key1", key1 = new Key());
+            exports_2("key2", key2 = new Key());
+            exports_2("key3", key3 = new Key());
+            exports_2("key4", key4 = new Key());
+            exports_2("key5", key5 = new Key());
+            exports_2("key6", key6 = new Key());
             window.onkeydown = function onkeydown(event) {
                 handleKeyDown(event, KeyCode.UP, upKey);
                 handleKeyDown(event, KeyCode.DOWN, downKey);
@@ -378,6 +396,12 @@ System.register("controls", ["resources"], function (exports_2, context_2) {
                 handleKeyDown(event, KeyCode.SHIFT, shiftKey);
                 handleKeyDown(event, KeyCode.R, rKey);
                 handleKeyDown(event, KeyCode.ESC, escKey);
+                handleKeyDown(event, KeyCode.KEY_1, key1);
+                handleKeyDown(event, KeyCode.KEY_2, key2);
+                handleKeyDown(event, KeyCode.KEY_3, key3);
+                handleKeyDown(event, KeyCode.KEY_4, key4);
+                handleKeyDown(event, KeyCode.KEY_5, key5);
+                handleKeyDown(event, KeyCode.KEY_6, key6);
             };
             window.onkeyup = function onkeyup(event) {
                 handleKeyUp(event, KeyCode.UP, upKey);
@@ -388,6 +412,12 @@ System.register("controls", ["resources"], function (exports_2, context_2) {
                 handleKeyUp(event, KeyCode.SHIFT, shiftKey);
                 handleKeyUp(event, KeyCode.R, rKey);
                 handleKeyUp(event, KeyCode.ESC, escKey);
+                handleKeyUp(event, KeyCode.KEY_1, key1);
+                handleKeyUp(event, KeyCode.KEY_2, key2);
+                handleKeyUp(event, KeyCode.KEY_3, key3);
+                handleKeyUp(event, KeyCode.KEY_4, key4);
+                handleKeyUp(event, KeyCode.KEY_5, key5);
+                handleKeyUp(event, KeyCode.KEY_6, key6);
             };
             window.onmousemove = function onmousemove(event) {
                 var rect = resources_1.canvas.getBoundingClientRect();
@@ -1761,6 +1791,10 @@ System.register("index", ["controls", "resources"], function (exports_3, context
                                 removeItem(inventory[mainSlot].item, inventory[mainSlot].count);
                             }
                         }
+                    }
+                    var keys = [controls_1.key1, controls_1.key2, controls_1.key3, controls_1.key4, controls_1.key5, controls_1.key6];
+                    if (keys[itemIndex].wentDown) {
+                        mainSlot = itemIndex;
                     }
                     if (inventory[itemIndex].item === Item.METEORITE_STUFF) {
                         width = timers[inventory[itemIndex].cooldown] / METEOR_STUFF_COOLDOWN * STRIPE_WIDTH_1;
