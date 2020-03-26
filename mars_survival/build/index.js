@@ -2298,9 +2298,7 @@ System.register("index", ["controls", "resources"], function (exports_3, context
                     else {
                         if (chance < 0.25 && map[tileIndex].baseLayer.type !== TileType.NONE && map[tileIndex].baseLayer.type !== TileType.GEYSER
                             && map[tileIndex].baseLayer.type !== TileType.VOLCANO) {
-                            map[tileIndex].baseLayer.type = TileType.EARTH;
-                            map[tileIndex].baseLayer.variant = 1;
-                            map[tileIndex].upperLayer.type = TileType.LAVA;
+                            map[tileIndex].baseLayer.type = TileType.LAVA;
                             map[tileIndex].toughness = 0;
                             map[tileIndex].firstToughness = 0;
                             map[tileIndex].upperLayer.variant = randomInt(1, 2);
