@@ -412,7 +412,7 @@ System.register("controls", ["resources"], function (exports_2, context_2) {
 });
 System.register("index", ["controls", "resources"], function (exports_3, context_3) {
     "use strict";
-    var controls_1, resources_2, InventorySlot, TileLayer, Tile, RecipePart, Recipe, GameObject, particle, Text, GameObjectType, GameState, TileType, Item, Event, TILE, MORNING_LENGTH, DAY_LENGTH, AFTERNOON_LENGTH, NIGHT_LENGTH, ONE_DAY, EVENT_LENGTH, VOLCANO_RADIUS, VOLCANO_HEIGHT, GRAVITATION, CAMERA_HEIGHT, MAGMA_BALL_SPEED, METEORITE_SPEED, LAVA_BALL_SPEED, METEOR_STUFF_COOLDOWN, MAX_RANGE, STORAGE_SLOT_COUNT, STRIPE_WIDTH, STRIPE_HEIGHT, CHUNK_PROTOTYPES, RECIPES, GAME_LENGTH, timers, map, slotCount, inventory, drawQueue, alpha, gameObjects, particles, globalPlayer, screenShakes, craftMode, firstRecipeIndex, mainSlot, controlledStorage, dayTimer, gameTimer, event, timeBetweenEvents, eventEnd, hpShakeTimer, globalBoss, recentShake, gameState, menuTexts, playText, controlsText;
+    var controls_1, resources_2, InventorySlot, TileLayer, Tile, RecipePart, Recipe, GameObject, particle, Text, GameObjectType, GameState, TileType, Item, Event, TILE, MORNING_LENGTH, DAY_LENGTH, AFTERNOON_LENGTH, NIGHT_LENGTH, ONE_DAY, EVENT_LENGTH, VOLCANO_RADIUS, VOLCANO_HEIGHT, GRAVITATION, CAMERA_HEIGHT, MAGMA_BALL_SPEED, METEORITE_SPEED, LAVA_BALL_SPEED, METEOR_STUFF_COOLDOWN, MAX_RANGE, STORAGE_SLOT_COUNT, STRIPE_WIDTH, STRIPE_HEIGHT, CHUNK_PROTOTYPES, RECIPES, GAME_LENGTH, timers, map, slotCount, inventory, drawQueue, alpha, gameObjects, particles, globalPlayer, screenShakes, craftMode, firstRecipeIndex, mainSlot, controlledStorage, dayTimer, gameTimer, event, timeBetweenEvents, eventEnd, hpShakeTimer, globalBoss, recentShake, gameState, menuTexts, MORNING_TIME, DAY_TIME, AFTERNOON_TIME, NIGHT_TIME, playText, controlsText;
     var __moduleName = context_3 && context_3.id;
     function restate() {
         gameObjects = [];
@@ -648,20 +648,10 @@ System.register("index", ["controls", "resources"], function (exports_3, context
     exports_3("drawLinearGradient", drawLinearGradient);
     function drawLight(x, y, radius) {
         alpha = 0;
-        var MORNING_TIME = NIGHT_LENGTH + AFTERNOON_LENGTH + DAY_LENGTH + MORNING_LENGTH;
-        var DAY_TIME = NIGHT_LENGTH + AFTERNOON_LENGTH + DAY_LENGTH;
-        var AFTERNOON_TIME = NIGHT_LENGTH + AFTERNOON_LENGTH;
-        var NIGHT_TIME = NIGHT_LENGTH;
         if (timers[dayTimer] <= MORNING_TIME && timers[dayTimer] > DAY_TIME) {
             alpha = 1 - (MORNING_TIME - timers[dayTimer]) / (MORNING_TIME - DAY_TIME);
         }
         else if (timers[dayTimer] <= DAY_TIME && timers[dayTimer] > AFTERNOON_TIME) {
-            if (globalPlayer.sunBateryLvl) {
-                timers[globalPlayer.energy] += 0.005;
-                if (timers[globalPlayer.energy] > globalPlayer.maxEnergy) {
-                    timers[globalPlayer.energy] = globalPlayer.maxEnergy;
-                }
-            }
             alpha = 0;
         }
         else if (timers[dayTimer] <= AFTERNOON_TIME && timers[dayTimer] > NIGHT_TIME) {
@@ -1660,6 +1650,7 @@ System.register("index", ["controls", "resources"], function (exports_3, context
             if (isInventoryFullForItem(Item.NONE)) {
                 drawText(resources_2.camera.x + resources_2.camera.width / 8, resources_2.camera.y + resources_2.camera.height / 2 - 40, 'green', 'Нажмите на Q, чтобы выбросить вещь', 25, 'left', resources_2.Layer.UI);
             }
+            addItem(Item.SUN_BATERY, 1);
             var vector1 = rotateVector(20, 0, gameObject.angle + Math.PI / 4);
             var vector2 = rotateVector(20, 0, gameObject.angle + Math.PI * 3 / 4);
             var vector3 = rotateVector(20, 0, gameObject.angle - Math.PI / 4);
@@ -1672,6 +1663,17 @@ System.register("index", ["controls", "resources"], function (exports_3, context
                 map[mapTile2].baseLayer.type === TileType.LAVA && map[mapTile3].baseLayer.type === TileType.LAVA &&
                 map[mapTile4].baseLayer.type === TileType.LAVA) {
                 gameObject.exists = false;
+            }
+            if (globalPlayer.sunBateryLvl) {
+                if (timers[dayTimer] <= DAY_TIME && timers[dayTimer] > AFTERNOON_TIME) {
+                    timers[globalPlayer.energy] += 2;
+                }
+                if ((timers[dayTimer] <= MORNING_TIME && timers[dayTimer] > DAY_TIME) || (timers[dayTimer] <= AFTERNOON_TIME && timers[dayTimer] > NIGHT_TIME)) {
+                    timers[globalPlayer.energy] += 0.66;
+                }
+                if (timers[globalPlayer.energy] > globalPlayer.maxEnergy) {
+                    timers[globalPlayer.energy] = globalPlayer.maxEnergy;
+                }
             }
             var canUseItems = true;
             for (var itemIndex = 0; itemIndex <= inventory.length; itemIndex++) {
@@ -1738,6 +1740,7 @@ System.register("index", ["controls", "resources"], function (exports_3, context
                     if (inventory[itemIndex].item === Item.METEORITE_STUFF) {
                         sprite = resources_2.imgMeteoriteStuff;
                     }
+                    drawRect(slotX, y, SLOT_WIDTH, SLOT_WIDTH, 0, "rgb(00,33,66,1)", 0, resources_2.Layer.UI);
                     drawRect(slotX, y, SLOT_WIDTH, SLOT_WIDTH, 0, 'black', 5, resources_2.Layer.UI);
                     drawRect(slotX, y, SLOT_WIDTH, SLOT_WIDTH, 0, 'grey', 2, resources_2.Layer.UI);
                     if (itemIndex === mainSlot) {
@@ -3070,6 +3073,10 @@ System.register("index", ["controls", "resources"], function (exports_3, context
             for (var i = 0; i < slotCount; i++) {
                 inventory.push(new InventorySlot());
             }
+            MORNING_TIME = NIGHT_LENGTH + AFTERNOON_LENGTH + DAY_LENGTH + MORNING_LENGTH;
+            DAY_TIME = NIGHT_LENGTH + AFTERNOON_LENGTH + DAY_LENGTH;
+            AFTERNOON_TIME = NIGHT_LENGTH + AFTERNOON_LENGTH;
+            NIGHT_TIME = NIGHT_LENGTH;
             buildMap();
             playText = addMenuText(-resources_2.camera.width / 2 + 165, -resources_2.camera.height / 2 + 400, 130, 60, 'играть', 'White', 40, resources_2.Layer.UI);
             controlsText = addMenuText(-resources_2.camera.width / 2 + 215, -resources_2.camera.height / 2 + 450, 130, 60, 'управление', 'White', 40, resources_2.Layer.UI);
