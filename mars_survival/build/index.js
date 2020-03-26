@@ -1,6 +1,6 @@
 System.register("resources", [], function (exports_1, context_1) {
     "use strict";
-    var SCREEN_RATIO, canvas, ctx, backBuffer, backCtx, camera, resourcesLoadedCount, resourcesWaitingForLoadCount, canBeginGame, Layer, DrawQueueType, DrawQueueItem, sounds, imgPlayer, imgNone, imgWheel1, imgWheel2, imgWheel3, imgWheel4, imgWheel5, imgWheel6, imgCamera, imgEarth1, imgEarth2, imgEarth3, imgGeyser, imgMountain, imgLava1, imgLava2, imgIron1, imgIron2, imgIron3, imgIron4, imgIron5, imgIronItem, imgArrow, imgCrafts, imgArrow1, imgMelter, imgIronIngot, imgAurit1, imgAurit2, imgAurit3, imgAurit4, imgAurit5, imgAuritItem, imgAuritIngot, imgCrystal1, imgCrystal2, imgCrystal3, imgCrystal4, imgCrystal5, imgCrystalItem, imgSplitter, imgToolkit, imgSunBatteryAdd, imgSunBatteryItem, imgSunBattery, imgSilicon1, imgSilicon2, imgSilicon3, imgSilicon4, imgSilicon5, imgSiliconItem, imgVolcano, imgMagmaBall, imgStorage, imgGoldenCamera, imgExtraSlot, imgExtraSlotItem, imgAlert, imgShockProofBody, imgMeteorite, imgIgneous, imgIgneousItem, imgIgneousIngot, imgMeteoriteStuff, imgBoss, imgArrow2, imgManipulator, imgMechanicalHand, imgEnergy, imgHp, imgBossReadyToAttack, imgBossReadyToAttack1, imgBossAttack, imgBossAttack1, imgLazer, imgLazer1, imgEdge1, imgEdge2_1, imgEdge2_2, imgEdge2_3, imgEdge3, imgEdge4, imgSide1, imgMenu, imgTime, imgDesk, sndMining, sndGeyser, sndVolcanoBoom, sndBoom;
+    var SCREEN_RATIO, canvas, ctx, backBuffer, backCtx, camera, resourcesLoadedCount, resourcesWaitingForLoadCount, canBeginGame, Layer, DrawQueueType, DrawQueueItem, sounds, imgPlayer, imgNone, imgWheel1, imgWheel2, imgWheel3, imgWheel4, imgWheel5, imgWheel6, imgCamera, imgEarth1, imgEarth2, imgEarth3, imgGeyser, imgMountain, imgLava1, imgLava2, imgIron1, imgIron2, imgIron3, imgIron4, imgIron5, imgIronItem, imgArrow, imgCrafts, imgArrow1, imgMelter, imgIronIngot, imgAurit1, imgAurit2, imgAurit3, imgAurit4, imgAurit5, imgAuritItem, imgAuritIngot, imgCrystal1, imgCrystal2, imgCrystal3, imgCrystal4, imgCrystal5, imgCrystalItem, imgSplitter, imgToolkit, imgSunBatteryAdd, imgSunBatteryItem, imgSunBattery, imgSilicon1, imgSilicon2, imgSilicon3, imgSilicon4, imgSilicon5, imgSiliconItem, imgVolcano, imgMagmaBall, imgStorage, imgGoldenCamera, imgExtraSlot, imgExtraSlotItem, imgAlert, imgShockProofBody, imgMeteorite, imgIgneous, imgIgneousItem, imgIgneousIngot, imgMeteoriteStuff, imgBoss, imgArrow2, imgManipulator, imgMechanicalHand, imgEnergy, imgHp, imgBossReadyToAttack, imgBossReadyToAttack1, imgBossAttack, imgBossAttack1, imgLazer, imgLazer1, imgEdge1, imgEdge2_1, imgEdge2_2, imgEdge2_3, imgEdge3, imgEdge4, imgSide1, imgMenu, imgTime, imgDesk, sndMining, sndGeyser, sndVolcanoBoom, sndBoom, sndParadox, sndDysonSphere;
     var __moduleName = context_1 && context_1.id;
     function handleResize() {
         var rect = canvas.getBoundingClientRect();
@@ -285,6 +285,8 @@ System.register("resources", [], function (exports_1, context_1) {
             exports_1("sndGeyser", sndGeyser = loadSound('../sounds/geyser.mp3'));
             exports_1("sndVolcanoBoom", sndVolcanoBoom = loadSound('../sounds/volcanoBoom.mp3'));
             exports_1("sndBoom", sndBoom = loadSound('../sounds/boom.mp3'));
+            exports_1("sndParadox", sndParadox = loadSound('../sounds/Petos Paradox.mp3'));
+            exports_1("sndDysonSphere", sndDysonSphere = loadSound('../sounds/Dyson Sphere.mp3'));
         }
     };
 });
@@ -442,7 +444,7 @@ System.register("controls", ["resources"], function (exports_2, context_2) {
 });
 System.register("index", ["controls", "resources"], function (exports_3, context_3) {
     "use strict";
-    var controls_1, resources_2, InventorySlot, TileLayer, Tile, RecipePart, Recipe, GameObject, particle, Text, GameObjectType, GameState, TileType, Item, Event, TILE, MORNING_LENGTH, DAY_LENGTH, AFTERNOON_LENGTH, NIGHT_LENGTH, ONE_DAY, EVENT_LENGTH, VOLCANO_RADIUS, VOLCANO_HEIGHT, GRAVITATION, CAMERA_HEIGHT, MAGMA_BALL_SPEED, METEORITE_SPEED, LAVA_BALL_SPEED, METEOR_STUFF_COOLDOWN, MAX_RANGE, STORAGE_SLOT_COUNT, STRIPE_WIDTH, STRIPE_HEIGHT, CHUNK_PROTOTYPES, RECIPES, GAME_LENGTH, timers, map, slotCount, inventory, drawQueue, alpha, gameObjects, particles, globalPlayer, screenShakes, craftMode, firstRecipeIndex, mainSlot, controlledStorage, dayTimer, gameTimer, event, timeBetweenEvents, eventEnd, hpShakeTimer, globalBoss, recentShake, gameState, menuTexts, MORNING_TIME, DAY_TIME, AFTERNOON_TIME, NIGHT_TIME, playText, controlsText;
+    var controls_1, resources_2, InventorySlot, TileLayer, Tile, RecipePart, Recipe, GameObject, particle, Text, GameObjectType, GameState, TileType, Item, Event, TILE, MORNING_LENGTH, DAY_LENGTH, AFTERNOON_LENGTH, NIGHT_LENGTH, ONE_DAY, EVENT_LENGTH, VOLCANO_RADIUS, VOLCANO_HEIGHT, GRAVITATION, CAMERA_HEIGHT, MAGMA_BALL_SPEED, METEORITE_SPEED, LAVA_BALL_SPEED, METEOR_STUFF_COOLDOWN, MAX_RANGE, STORAGE_SLOT_COUNT, STRIPE_WIDTH, STRIPE_HEIGHT, CHUNK_PROTOTYPES, RECIPES, GAME_LENGTH, timers, map, slotCount, inventory, drawQueue, alpha, gameObjects, particles, globalPlayer, screenShakes, craftMode, firstRecipeIndex, mainSlot, controlledStorage, dayTimer, gameTimer, event, timeBetweenEvents, eventEnd, hpShakeTimer, globalBoss, recentShake, gameState, menuTexts, MORNING_TIME, DAY_TIME, AFTERNOON_TIME, NIGHT_TIME, playText, controlsText, instructions, musik;
     var __moduleName = context_3 && context_3.id;
     function restate() {
         gameObjects = [];
@@ -2666,10 +2668,20 @@ System.register("index", ["controls", "resources"], function (exports_3, context
                 gameState = GameState.GAME;
                 restate();
                 buildMap();
+                musik = resources_2.playSound(resources_2.sndParadox, 0.85, true);
             }
         }
         else {
             playText.text = 'играть';
+        }
+        if (controlsText.mouseOn && resources_2.canBeginGame) {
+            controlsText.text = 'УПРАВЛЕНИЕ';
+            if (controls_1.mouse.wentDown) {
+                instructions = !instructions;
+            }
+        }
+        else {
+            controlsText.text = 'управление';
         }
         resetClicks();
     }
@@ -2713,6 +2725,8 @@ System.register("index", ["controls", "resources"], function (exports_3, context
                 y = randomInt(resources_2.camera.y - resources_2.camera.height * 3, resources_2.camera.y + resources_2.camera.height * 3);
             }
             globalBoss = addGameObject(GameObjectType.BOSS, x, y);
+            musik.volume = 0;
+            musik = resources_2.playSound(resources_2.sndDysonSphere, 0.85, true);
             var distanceFromManipulators = 500;
             var hand1Angle = globalBoss.angle - 0.25 * Math.PI;
             var hand1Vector = rotateVector(distanceFromManipulators, 0, hand1Angle);
@@ -2757,6 +2771,8 @@ System.register("index", ["controls", "resources"], function (exports_3, context
         }
         if (controls_1.rKey.wentDown) {
             gameState = GameState.MENU;
+            musik.volume = 0;
+            musik = null;
             playText = addMenuText(-resources_2.camera.width / 2 + 165, -resources_2.camera.height / 2 + 400, 130, 60, 'играть', 'White', 40, resources_2.Layer.UI);
             controlsText = addMenuText(-resources_2.camera.width / 2 + 215, -resources_2.camera.height / 2 + 450, 130, 60, 'управление', 'White', 40, resources_2.Layer.UI);
         }
@@ -3075,7 +3091,7 @@ System.register("index", ["controls", "resources"], function (exports_3, context
                     description3: 'область. Хороший взрыв'
                 },
             ];
-            GAME_LENGTH = ONE_DAY * 3;
+            GAME_LENGTH = 2;
             timers = [];
             map = [];
             slotCount = 5;
@@ -3111,6 +3127,8 @@ System.register("index", ["controls", "resources"], function (exports_3, context
             buildMap();
             playText = addMenuText(-resources_2.camera.width / 2 + 165, -resources_2.camera.height / 2 + 400, 130, 60, 'играть', 'White', 40, resources_2.Layer.UI);
             controlsText = addMenuText(-resources_2.camera.width / 2 + 215, -resources_2.camera.height / 2 + 450, 130, 60, 'управление', 'White', 40, resources_2.Layer.UI);
+            instructions = false;
+            musik = null;
             requestAnimationFrame(loop);
         }
     };
