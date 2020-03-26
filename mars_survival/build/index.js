@@ -3091,7 +3091,7 @@ System.register("index", ["controls", "resources"], function (exports_3, context
                     description3: 'область. Хороший взрыв'
                 },
             ];
-            GAME_LENGTH = 2;
+            GAME_LENGTH = ONE_DAY;
             timers = [];
             map = [];
             slotCount = 5;
