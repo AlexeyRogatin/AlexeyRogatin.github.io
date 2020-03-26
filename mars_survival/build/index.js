@@ -1650,7 +1650,6 @@ System.register("index", ["controls", "resources"], function (exports_3, context
             if (isInventoryFullForItem(Item.NONE)) {
                 drawText(resources_2.camera.x + resources_2.camera.width / 8, resources_2.camera.y + resources_2.camera.height / 2 - 40, 'green', 'Нажмите на Q, чтобы выбросить вещь', 25, 'left', resources_2.Layer.UI);
             }
-            addItem(Item.SUN_BATERY, 1);
             var vector1 = rotateVector(20, 0, gameObject.angle + Math.PI / 4);
             var vector2 = rotateVector(20, 0, gameObject.angle + Math.PI * 3 / 4);
             var vector3 = rotateVector(20, 0, gameObject.angle - Math.PI / 4);
