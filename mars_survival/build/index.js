@@ -1559,7 +1559,7 @@ System.register("index", ["controls", "resources"], function (exports_3, context
                 }
                 break;
         }
-        if (globalBoss && tile.upperLayer && distanceBetweenPoints(globalBoss.x, globalBoss.y, tile.x * TILE.width, tile.y * TILE.height) <= globalBoss.height / 2 + tile.width / 2) {
+        if (globalBoss && tile.upperLayer.type !== TileType.NONE && distanceBetweenPoints(globalBoss.x, globalBoss.y, tile.x * TILE.width, tile.y * TILE.height) <= globalBoss.height / 2 + tile.width / 2) {
             tile.upperLayer.type = TileType.NONE;
             burstParticles({
                 x: tile.x * TILE.width,
@@ -1615,7 +1615,7 @@ System.register("index", ["controls", "resources"], function (exports_3, context
             if (!craftMode) {
                 buttonAngle = 0;
             }
-            drawSprite(resources_2.camera.x - resources_2.camera.width / 2 + 10, resources_2.camera.y - resources_2.camera.height / 4, resources_2.imgArrow, buttonAngle, 30, 50, false, resources_2.Layer.UI);
+            drawSprite(resources_2.camera.x - resources_2.camera.width / 2 + 45 / 2, resources_2.camera.y - resources_2.camera.height / 4, resources_2.imgArrow, buttonAngle, 45, 75, false, resources_2.Layer.UI);
             var width = gameObject.hitpoints / gameObject.maxHitpoints * STRIPE_WIDTH;
             if (timers[hpShakeTimer] <= 0) {
                 timers[hpShakeTimer] = width / STRIPE_WIDTH * 800;
@@ -1837,55 +1837,55 @@ System.register("index", ["controls", "resources"], function (exports_3, context
                     }
                 }
             }
-            if (craftMode && controls_1.mouse.worldX > resources_2.camera.x - resources_2.camera.width / 2 + 130 &&
-                controls_1.mouse.worldX < resources_2.camera.x - resources_2.camera.width / 2 + 170 &&
-                controls_1.mouse.worldY > resources_2.camera.y - resources_2.camera.height / 4 + 2 &&
-                controls_1.mouse.worldY < resources_2.camera.y - resources_2.camera.height / 4 + 30 &&
-                RECIPES[firstRecipeIndex - 1]) {
-                canUseItems = false;
-                if (controls_1.mouse.wentDown) {
-                    firstRecipeIndex--;
-                }
-            }
-            if (craftMode && controls_1.mouse.worldX > resources_2.camera.x - resources_2.camera.width / 2 + 130 &&
-                controls_1.mouse.worldX < resources_2.camera.x - resources_2.camera.width / 2 + 170 &&
-                controls_1.mouse.worldY > resources_2.camera.y - resources_2.camera.height / 4 + 422 &&
-                controls_1.mouse.worldY < resources_2.camera.y - resources_2.camera.height / 4 + 450 &&
-                RECIPES[firstRecipeIndex + 3]) {
-                canUseItems = false;
-                if (controls_1.mouse.wentDown) {
-                    firstRecipeIndex++;
-                }
-            }
-            if (controls_1.mouse.worldX > resources_2.camera.x - resources_2.camera.width / 2 - 10 &&
-                controls_1.mouse.worldX < resources_2.camera.x - resources_2.camera.width / 2 + 25 &&
-                controls_1.mouse.worldY > resources_2.camera.y - resources_2.camera.height / 4 - 25 &&
-                controls_1.mouse.worldY < resources_2.camera.y - resources_2.camera.height / 4 + 25) {
+            if (controls_1.mouse.worldX > resources_2.camera.x - resources_2.camera.width / 2 &&
+                controls_1.mouse.worldX < resources_2.camera.x - resources_2.camera.width / 2 + 45 &&
+                controls_1.mouse.worldY > resources_2.camera.y - resources_2.camera.height / 4 - 37.5 &&
+                controls_1.mouse.worldY < resources_2.camera.y - resources_2.camera.height / 4 + 37.5) {
                 canUseItems = false;
                 if (controls_1.mouse.wentDown) {
                     craftMode = !craftMode;
                 }
             }
             if (craftMode) {
-                drawSprite(resources_2.camera.x - resources_2.camera.width / 2 + 150, resources_2.camera.y - resources_2.camera.height / 4 + 200 + 25, resources_2.imgCrafts, 0, 450, 533, false, resources_2.Layer.UI);
+                if (controls_1.mouse.worldX > resources_2.camera.x - resources_2.camera.width / 2 + 130 &&
+                    controls_1.mouse.worldX < resources_2.camera.x - resources_2.camera.width / 2 + 170 &&
+                    controls_1.mouse.worldY > resources_2.camera.y - resources_2.camera.height / 4 + 9 &&
+                    controls_1.mouse.worldY < resources_2.camera.y - resources_2.camera.height / 4 + 39 &&
+                    RECIPES[firstRecipeIndex - 1]) {
+                    canUseItems = false;
+                    if (controls_1.mouse.wentDown) {
+                        firstRecipeIndex--;
+                    }
+                }
+                if (controls_1.mouse.worldX > resources_2.camera.x - resources_2.camera.width / 2 + 130 &&
+                    controls_1.mouse.worldX < resources_2.camera.x - resources_2.camera.width / 2 + 170 &&
+                    controls_1.mouse.worldY > resources_2.camera.y - resources_2.camera.height / 4 + 438 &&
+                    controls_1.mouse.worldY < resources_2.camera.y - resources_2.camera.height / 4 + 466 &&
+                    RECIPES[firstRecipeIndex + 3]) {
+                    canUseItems = false;
+                    if (controls_1.mouse.wentDown) {
+                        firstRecipeIndex++;
+                    }
+                }
+                drawSprite(resources_2.camera.x - resources_2.camera.width / 2 + 150, resources_2.camera.y - resources_2.camera.height / 4 + 200 + 39, resources_2.imgCrafts, 0, 450, 533, false, resources_2.Layer.UI);
                 for (var itemIndex = 0; itemIndex < 3; itemIndex++) {
-                    drawSprite(resources_2.camera.x - resources_2.camera.width / 2 + 60, resources_2.camera.y - resources_2.camera.height / 4 + 92 + 133 * itemIndex, RECIPES[firstRecipeIndex + itemIndex].sprite, 0, 70, 70, false, resources_2.Layer.UI);
-                    drawText(resources_2.camera.x - resources_2.camera.width / 2 + 150, resources_2.camera.y - resources_2.camera.height / 4 + 47 + 133 * itemIndex, 'white', RECIPES[firstRecipeIndex + itemIndex].name, 25, 'center', resources_2.Layer.UI);
+                    drawSprite(resources_2.camera.x - resources_2.camera.width / 2 + 60, resources_2.camera.y - resources_2.camera.height / 4 + 110 + 133 * itemIndex, RECIPES[firstRecipeIndex + itemIndex].sprite, 0, 70, 70, false, resources_2.Layer.UI);
+                    drawText(resources_2.camera.x - resources_2.camera.width / 2 + 150, resources_2.camera.y - resources_2.camera.height / 4 + 63 + 133 * itemIndex, 'white', RECIPES[firstRecipeIndex + itemIndex].name, 25, 'center', resources_2.Layer.UI);
                     for (var partIndex = 0; partIndex < RECIPES[firstRecipeIndex + itemIndex].parts.length; partIndex++) {
                         var row = 0;
                         if (partIndex > 2) {
                             row = 1;
                         }
-                        drawSprite(resources_2.camera.x - resources_2.camera.width / 2 + 130 + 50 * partIndex - 150 * row, resources_2.camera.y - resources_2.camera.height / 4 + 92 + 133 * itemIndex + 50 * row, RECIPES[firstRecipeIndex + itemIndex].parts[partIndex].sprite, 0, 30, 30, false, resources_2.Layer.UI);
-                        drawText(resources_2.camera.x - resources_2.camera.width / 2 + 133 + 50 * partIndex - 150 * row, resources_2.camera.y - resources_2.camera.height / 4 + 72 + 133 * itemIndex + 50 * row, 'white', "" + RECIPES[firstRecipeIndex + itemIndex].parts[partIndex].count, 15, 'center', resources_2.Layer.UI);
+                        drawSprite(resources_2.camera.x - resources_2.camera.width / 2 + 130 + 50 * partIndex - 150 * row, resources_2.camera.y - resources_2.camera.height / 4 + 106 + 133 * itemIndex + 50 * row, RECIPES[firstRecipeIndex + itemIndex].parts[partIndex].sprite, 0, 30, 30, false, resources_2.Layer.UI);
+                        drawText(resources_2.camera.x - resources_2.camera.width / 2 + 133 + 50 * partIndex - 150 * row, resources_2.camera.y - resources_2.camera.height / 4 + 86 + 133 * itemIndex + 50 * row, 'white', "" + RECIPES[firstRecipeIndex + itemIndex].parts[partIndex].count, 15, 'center', resources_2.Layer.UI);
                     }
                     if (controls_1.mouse.worldX >= resources_2.camera.x - resources_2.camera.width / 2 &&
                         controls_1.mouse.worldX <= resources_2.camera.x - resources_2.camera.width / 2 + 300 &&
-                        controls_1.mouse.worldY >= resources_2.camera.y - resources_2.camera.height / 4 + 25 + 133 * itemIndex &&
-                        controls_1.mouse.worldY <= resources_2.camera.y - resources_2.camera.height / 4 + 133 + 25 + 133 * itemIndex) {
-                        drawRect((resources_2.camera.x * 2 - resources_2.camera.width + 300) / 2, resources_2.camera.y - resources_2.camera.height / 4 + 91.5 + 133 * itemIndex, 300, 133, 0, 'green', 5, resources_2.Layer.UI);
+                        controls_1.mouse.worldY >= resources_2.camera.y - resources_2.camera.height / 4 + 39 + 133 * itemIndex &&
+                        controls_1.mouse.worldY <= resources_2.camera.y - resources_2.camera.height / 4 + 133 + 39 + 133 * itemIndex) {
+                        drawRect((resources_2.camera.x * 2 - resources_2.camera.width + 300) / 2, resources_2.camera.y - resources_2.camera.height / 4 + 105.5 + 133 * itemIndex, 300, 133, 0, 'green', 5, resources_2.Layer.UI);
                         canUseItems = false;
-                        drawSprite(resources_2.camera.x + resources_2.camera.width / 2 - 250, resources_2.camera.y, resources_2.imgDesk, 0, 500, 250, false, resources_2.Layer.UI);
+                        drawSprite(resources_2.camera.x + resources_2.camera.width / 2 - 250, resources_2.camera.y, resources_2.imgDesk, 0, 500, 200, false, resources_2.Layer.UI);
                         drawText(resources_2.camera.x + resources_2.camera.width / 2 - 475, resources_2.camera.y - 60, 'white', RECIPES[firstRecipeIndex + itemIndex].description1, 28, 'left', resources_2.Layer.UI);
                         drawText(resources_2.camera.x + resources_2.camera.width / 2 - 475, resources_2.camera.y, 'white', RECIPES[firstRecipeIndex + itemIndex].description2, 28, 'left', resources_2.Layer.UI);
                         drawText(resources_2.camera.x + resources_2.camera.width / 2 - 475, resources_2.camera.y + 60, 'white', RECIPES[firstRecipeIndex + itemIndex].description3, 28, 'left', resources_2.Layer.UI);
@@ -1893,8 +1893,8 @@ System.register("index", ["controls", "resources"], function (exports_3, context
                             craftRecipe(RECIPES[firstRecipeIndex + itemIndex]);
                         }
                     }
-                    drawSprite(resources_2.camera.x - resources_2.camera.width / 2 + 150, resources_2.camera.y - resources_2.camera.height / 4 + 15, resources_2.imgArrow1, 0, 40, 26, false, resources_2.Layer.UI);
-                    drawSprite(resources_2.camera.x - resources_2.camera.width / 2 + 150, resources_2.camera.y - resources_2.camera.height / 4 + 435, resources_2.imgArrow1, 1 * Math.PI, 40, 26, false, resources_2.Layer.UI);
+                    drawSprite(resources_2.camera.x - resources_2.camera.width / 2 + 150, resources_2.camera.y - resources_2.camera.height / 4 + 25, resources_2.imgArrow1, 0, 40, 26, false, resources_2.Layer.UI);
+                    drawSprite(resources_2.camera.x - resources_2.camera.width / 2 + 150, resources_2.camera.y - resources_2.camera.height / 4 + 453, resources_2.imgArrow1, 1 * Math.PI, 40, 26, false, resources_2.Layer.UI);
                 }
             }
             if (canUseItems) {
@@ -1987,7 +1987,7 @@ System.register("index", ["controls", "resources"], function (exports_3, context
                         }
                         else if (inventory[mainSlot].item === Item.SHOCKPROOF_BODY) {
                             if (gameObject.sprite !== resources_2.imgShockProofBody) {
-                                gameObject.hitpoints = 150;
+                                gameObject.hitpoints = gameObject.hitpoints / gameObject.maxHitpoints * 150;
                                 gameObject.maxHitpoints = 150;
                                 gameObject.sprite = resources_2.imgShockProofBody;
                                 removeItem(Item.SHOCKPROOF_BODY, 1);
@@ -2541,7 +2541,7 @@ System.register("index", ["controls", "resources"], function (exports_3, context
                     }
                     for (var tileIndex = 0; tileIndex < map.length; tileIndex++) {
                         var tile = map[tileIndex];
-                        if (tile.upperLayer && distanceBetweenPoints(tile.x * TILE.width, tile.y * TILE.height, gameObject.x, gameObject.y) <= gameObject.width / 2 + tile.width / 2) {
+                        if (tile.upperLayer.type !== TileType.NONE && distanceBetweenPoints(tile.x * TILE.width, tile.y * TILE.height, gameObject.x, gameObject.y) <= gameObject.width / 2 + tile.width / 2) {
                             tile.upperLayer.type = TileType.NONE;
                             burstParticles({
                                 x: tile.x * TILE.width,
@@ -2625,6 +2625,9 @@ System.register("index", ["controls", "resources"], function (exports_3, context
     }
     function loopGame() {
         updateTileMap();
+        if (globalPlayer.exists === false) {
+            drawText(resources_2.camera.x, resources_2.camera.y, 'white', 'Не время сдаваться, вы справитесь. Нажмите на R для меню', 45, 'center', resources_2.Layer.UI);
+        }
         if (timers[gameTimer] < eventEnd - timeBetweenEvents) {
             event = Event.METEORITE_RAIN;
             eventEnd = timers[gameTimer] - EVENT_LENGTH;
