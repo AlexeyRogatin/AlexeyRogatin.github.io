@@ -659,13 +659,30 @@ System.register("index", ["controls", "resources"], function (exports_3, context
         }
     }
     exports_3("drawCircle", drawCircle);
-    function drawText(x, y, color, text, textSize, textAlign, layer) {
+    function drawText(x, y, width, intervalsBettweenLines, color, text, textSize, textAlign, layer) {
         if (layer === void 0) { layer = resources_2.Layer.UI; }
         if (x > resources_2.camera.x - resources_2.camera.width * 0.5 - textSize / 2 &&
             x < resources_2.camera.x + resources_2.camera.width * 0.5 + textSize / 2 &&
             y > resources_2.camera.y - resources_2.camera.height * 0.5 - textSize / 2 &&
             y < resources_2.camera.y + resources_2.camera.height * 0.5 + textSize / 2) {
-            drawQueue.push({ x: x, y: y, color: [color], text: text, layer: layer, type: resources_2.DrawQueueType.TEXT, textSize: textSize, textAlign: textAlign });
+            if (width > 0 && resources_2.ctx.measureText(text).width > width) {
+                var textNumber = -1;
+                var words = text.split(' ');
+                var wordNumber = 0;
+                while (wordNumber < words.length) {
+                    textNumber++;
+                    var textSample = '';
+                    while (resources_2.ctx.measureText(textSample).width + resources_2.ctx.measureText(words[wordNumber]).width < width && words[wordNumber]) {
+                        textSample += words[wordNumber] + ' ';
+                        wordNumber++;
+                    }
+                    console.log(textSample);
+                    drawQueue.push({ x: x, y: y + textNumber * intervalsBettweenLines, color: [color], text: textSample, layer: layer, type: resources_2.DrawQueueType.TEXT, textSize: textSize, textAlign: textAlign });
+                }
+            }
+            else {
+                drawQueue.push({ x: x, y: y, color: [color], text: text, layer: layer, type: resources_2.DrawQueueType.TEXT, textSize: textSize, textAlign: textAlign });
+            }
         }
     }
     exports_3("drawText", drawText);
@@ -1440,7 +1457,7 @@ System.register("index", ["controls", "resources"], function (exports_3, context
                     drawLight(tile.x * TILE.width, tile.y * TILE.height, TILE.width * 0.75);
                     upSprite = resources_2.imgMelter;
                     if (timers[tile.specialTimer] > 0) {
-                        drawText(tile.x * TILE.width - 10, tile.y * TILE.height, 'blue', "" + Math.round(timers[tile.specialTimer] / 60), 30, 'left', resources_2.Layer.UI);
+                        drawText(tile.x * TILE.width - 10, tile.y * TILE.height, 0, 0, 'blue', "" + Math.round(timers[tile.specialTimer] / 60), 30, 'left', resources_2.Layer.UI);
                     }
                     if (!controls_1.mouse.isDown) {
                         tile.toughness = tile.firstToughness;
@@ -1673,14 +1690,14 @@ System.register("index", ["controls", "resources"], function (exports_3, context
             drawSprite(resources_2.camera.x + resources_2.camera.width / 2 - 100, resources_2.camera.y - resources_2.camera.height / 2 + 140, resources_2.imgTime, 0, 150, 200, false, resources_2.Layer.UI);
             var hour = ONE_DAY / (24 + 37 / 60);
             var minute = hour / 60;
-            drawText(resources_2.camera.x + resources_2.camera.width / 2 - 151, resources_2.camera.y - resources_2.camera.height / 2 + 82, 'white', Math.floor((ONE_DAY - timers[dayTimer]) / hour) + " : " + Math.floor((ONE_DAY - timers[dayTimer]) / minute) % 60, 35, 'left', resources_2.Layer.UI);
-            drawText(resources_2.camera.x + resources_2.camera.width / 2 - 68, resources_2.camera.y - resources_2.camera.height / 2 + 155, 'white', "" + Math.round((gameObject.x) / TILE.width), 35, 'center', resources_2.Layer.UI);
-            drawText(resources_2.camera.x + resources_2.camera.width / 2 - 68, resources_2.camera.y - resources_2.camera.height / 2 + 203, 'white', "" + Math.round((gameObject.y) / TILE.height), 35, 'center', resources_2.Layer.UI);
+            drawText(resources_2.camera.x + resources_2.camera.width / 2 - 151, resources_2.camera.y - resources_2.camera.height / 2 + 82, 0, 0, 'white', Math.floor((ONE_DAY - timers[dayTimer]) / hour) + " : " + Math.floor((ONE_DAY - timers[dayTimer]) / minute) % 60, 35, 'left', resources_2.Layer.UI);
+            drawText(resources_2.camera.x + resources_2.camera.width / 2 - 68, resources_2.camera.y - resources_2.camera.height / 2 + 155, 0, 0, 'white', "" + Math.round((gameObject.x) / TILE.width), 35, 'center', resources_2.Layer.UI);
+            drawText(resources_2.camera.x + resources_2.camera.width / 2 - 68, resources_2.camera.y - resources_2.camera.height / 2 + 203, 0, 0, 'white', "" + Math.round((gameObject.y) / TILE.height), 35, 'center', resources_2.Layer.UI);
             if (controls_1.qKey.wentDown) {
                 inventory[mainSlot] = { item: Item.NONE, count: 0, cooldown: addTimer(0) };
             }
             if (isInventoryFullForItem(Item.NONE)) {
-                drawText(resources_2.camera.x + resources_2.camera.width / 8, resources_2.camera.y + resources_2.camera.height / 2 - 40, 'green', 'Нажмите на Q, чтобы выбросить вещь', 25, 'left', resources_2.Layer.UI);
+                drawText(resources_2.camera.x + resources_2.camera.width / 8, resources_2.camera.y + resources_2.camera.height / 2 - 40, 0, 0, 'green', 'Нажмите на Q, чтобы выбросить вещь', 25, 'left', resources_2.Layer.UI);
             }
             var vector1 = rotateVector(20, 0, gameObject.angle + Math.PI / 4);
             var vector2 = rotateVector(20, 0, gameObject.angle + Math.PI * 3 / 4);
@@ -1779,7 +1796,7 @@ System.register("index", ["controls", "resources"], function (exports_3, context
                     }
                     drawSprite(slotX, y, sprite, 0, SLOT_WIDTH - 10, SLOT_WIDTH - 10, false, resources_2.Layer.UI);
                     if (inventory[itemIndex].count > 1) {
-                        drawText(slotX, y - SLOT_WIDTH / 2 - 12, 'green', "" + inventory[itemIndex].count, 25, 'center', resources_2.Layer.UI);
+                        drawText(slotX, y - SLOT_WIDTH / 2 - 12, 0, 0, 'green', "" + inventory[itemIndex].count, 25, 'center', resources_2.Layer.UI);
                     }
                     if (controls_1.mouse.worldX > slotX - SLOT_WIDTH / 2 &&
                         controls_1.mouse.worldX < slotX + SLOT_WIDTH / 2 &&
@@ -1875,7 +1892,7 @@ System.register("index", ["controls", "resources"], function (exports_3, context
                     }
                     drawSprite(x, y, sprite, 0, SLOT_WIDTH, SLOT_WIDTH, false, resources_2.Layer.UI);
                     if (controlledStorage.inventory[slotIndex].count !== 0) {
-                        drawText(x, y - SLOT_WIDTH, 'green', "" + controlledStorage.inventory[slotIndex].count, 25, 'center', resources_2.Layer.UI);
+                        drawText(x, y - SLOT_WIDTH, 0, 0, 'green', "" + controlledStorage.inventory[slotIndex].count, 25, 'center', resources_2.Layer.UI);
                     }
                     if (controls_1.mouse.worldX > x - SLOT_WIDTH / 2 &&
                         controls_1.mouse.worldX < x + SLOT_WIDTH / 2 &&
@@ -1922,14 +1939,14 @@ System.register("index", ["controls", "resources"], function (exports_3, context
                 drawSprite(resources_2.camera.x - resources_2.camera.width / 2 + 150, resources_2.camera.y - resources_2.camera.height / 4 + 200 + 39, resources_2.imgCrafts, 0, 450, 533, false, resources_2.Layer.UI);
                 for (var itemIndex = 0; itemIndex < 3; itemIndex++) {
                     drawSprite(resources_2.camera.x - resources_2.camera.width / 2 + 60, resources_2.camera.y - resources_2.camera.height / 4 + 110 + 133 * itemIndex, RECIPES[firstRecipeIndex + itemIndex].sprite, 0, 70, 70, false, resources_2.Layer.UI);
-                    drawText(resources_2.camera.x - resources_2.camera.width / 2 + 150, resources_2.camera.y - resources_2.camera.height / 4 + 63 + 133 * itemIndex, 'white', RECIPES[firstRecipeIndex + itemIndex].name, 25, 'center', resources_2.Layer.UI);
+                    drawText(resources_2.camera.x - resources_2.camera.width / 2 + 150, resources_2.camera.y - resources_2.camera.height / 4 + 63 + 133 * itemIndex, 0, 0, 'white', RECIPES[firstRecipeIndex + itemIndex].name, 25, 'center', resources_2.Layer.UI);
                     for (var partIndex = 0; partIndex < RECIPES[firstRecipeIndex + itemIndex].parts.length; partIndex++) {
                         var row = 0;
                         if (partIndex > 2) {
                             row = 1;
                         }
                         drawSprite(resources_2.camera.x - resources_2.camera.width / 2 + 130 + 50 * partIndex - 150 * row, resources_2.camera.y - resources_2.camera.height / 4 + 106 + 133 * itemIndex + 50 * row, RECIPES[firstRecipeIndex + itemIndex].parts[partIndex].sprite, 0, 30, 30, false, resources_2.Layer.UI);
-                        drawText(resources_2.camera.x - resources_2.camera.width / 2 + 133 + 50 * partIndex - 150 * row, resources_2.camera.y - resources_2.camera.height / 4 + 86 + 133 * itemIndex + 50 * row, 'white', "" + RECIPES[firstRecipeIndex + itemIndex].parts[partIndex].count, 15, 'center', resources_2.Layer.UI);
+                        drawText(resources_2.camera.x - resources_2.camera.width / 2 + 133 + 50 * partIndex - 150 * row, resources_2.camera.y - resources_2.camera.height / 4 + 86 + 133 * itemIndex + 50 * row, 0, 0, 'white', "" + RECIPES[firstRecipeIndex + itemIndex].parts[partIndex].count, 15, 'center', resources_2.Layer.UI);
                     }
                     if (controls_1.mouse.worldX >= resources_2.camera.x - resources_2.camera.width / 2 &&
                         controls_1.mouse.worldX <= resources_2.camera.x - resources_2.camera.width / 2 + 300 &&
@@ -1937,10 +1954,8 @@ System.register("index", ["controls", "resources"], function (exports_3, context
                         controls_1.mouse.worldY <= resources_2.camera.y - resources_2.camera.height / 4 + 133 + 39 + 133 * itemIndex) {
                         drawRect((resources_2.camera.x * 2 - resources_2.camera.width + 300) / 2, resources_2.camera.y - resources_2.camera.height / 4 + 105.5 + 133 * itemIndex, 300, 133, 0, 'green', 5, resources_2.Layer.UI);
                         canUseItems = false;
-                        drawSprite(resources_2.camera.x + resources_2.camera.width / 2 - 250, resources_2.camera.y, resources_2.imgDesk, 0, 500, 200, false, resources_2.Layer.UI);
-                        drawText(resources_2.camera.x + resources_2.camera.width / 2 - 475, resources_2.camera.y - 60, 'white', RECIPES[firstRecipeIndex + itemIndex].description1, 28, 'left', resources_2.Layer.UI);
-                        drawText(resources_2.camera.x + resources_2.camera.width / 2 - 475, resources_2.camera.y, 'white', RECIPES[firstRecipeIndex + itemIndex].description2, 28, 'left', resources_2.Layer.UI);
-                        drawText(resources_2.camera.x + resources_2.camera.width / 2 - 475, resources_2.camera.y + 60, 'white', RECIPES[firstRecipeIndex + itemIndex].description3, 28, 'left', resources_2.Layer.UI);
+                        drawSprite(resources_2.camera.x + resources_2.camera.width / 2 - 250, resources_2.camera.y, resources_2.imgDesk, 0, 500, 220, false, resources_2.Layer.UI);
+                        drawText(resources_2.camera.x + resources_2.camera.width / 2 - 475, resources_2.camera.y - 75, 160, 50, 'white', RECIPES[firstRecipeIndex + itemIndex].description, 28, 'left', resources_2.Layer.UI);
                         if (controls_1.mouse.wentDown) {
                             craftRecipe(RECIPES[firstRecipeIndex + itemIndex]);
                         }
@@ -2648,7 +2663,7 @@ System.register("index", ["controls", "resources"], function (exports_3, context
                 controls_1.mouse.worldY < text.y + text.height / 2) {
                 text.mouseOn = true;
             }
-            drawText(text.x, text.y, text.color, text.text, text.size, 'center', text.layer);
+            drawText(text.x, text.y, 0, 0, text.color, text.text, text.size, 'center', text.layer);
         }
     }
     function resetClicks() {
@@ -2660,7 +2675,7 @@ System.register("index", ["controls", "resources"], function (exports_3, context
         resources_2.camera.x = 0;
         resources_2.camera.y = 0;
         drawSprite(resources_2.camera.x, resources_2.camera.y, resources_2.imgMenu, 0, resources_2.camera.width, resources_2.camera.height, false, resources_2.Layer.TILE);
-        drawText(resources_2.camera.x, resources_2.camera.y - resources_2.camera.height / 2 + 200, 'white', 'MEGA MARS 2D-3D SUPER EPIC SOMEWHAT SURVIVAL', 71, 'center', resources_2.Layer.ON_TILE);
+        drawText(resources_2.camera.x, resources_2.camera.y - resources_2.camera.height / 2 + 200, 0, 0, 'white', 'MEGA MARS 2D-3D SUPER EPIC SOMEWHAT SURVIVAL', 71, 'center', resources_2.Layer.ON_TILE);
         updateClickableTexts();
         if (playText.mouseOn && resources_2.canBeginGame) {
             playText.text = 'ИГРАТЬ';
@@ -2683,12 +2698,23 @@ System.register("index", ["controls", "resources"], function (exports_3, context
         else {
             controlsText.text = 'управление';
         }
+        if (instructions) {
+            drawText(resources_2.camera.x, resources_2.camera.y, 150, 80, 'White', '1)Перемещаться на WASD 2)Q-выбросить вещь 3)R-рестарт 4)Собирать вещи, нажимая на клетки поля мышкой Всё, всех люблю, ня, пока', 60, 'left', resources_2.Layer.UI);
+        }
+        if (controlsText.mouseOn && resources_2.canBeginGame) {
+            controlsText.text = 'УПРАВЛЕНИЕ';
+            if (controls_1.mouse.wentDown) {
+            }
+        }
+        else {
+            controlsText.text = 'управление';
+        }
         resetClicks();
     }
     function loopGame() {
         updateTileMap();
         if (globalPlayer.exists === false) {
-            drawText(resources_2.camera.x, resources_2.camera.y, 'white', 'Не время сдаваться, вы справитесь. Нажмите на R для меню', 45, 'center', resources_2.Layer.UI);
+            drawText(resources_2.camera.x, resources_2.camera.y, 0, 0, 'white', 'Не время сдаваться, вы справитесь. Нажмите на R для меню', 45, 'center', resources_2.Layer.UI);
         }
         if (timers[gameTimer] < eventEnd - timeBetweenEvents) {
             event = Event.METEORITE_RAIN;
@@ -3013,63 +3039,49 @@ System.register("index", ["controls", "resources"], function (exports_3, context
                     parts: [{ item: Item.IRON, count: 20, sprite: resources_2.imgIronItem },],
                     sprite: resources_2.imgMelter,
                     name: 'Плавильня',
-                    description1: 'Бегать с железом - это одно,',
-                    description2: 'а с железными слитками - другое.',
-                    description3: 'Можно поставить только на лаву'
+                    description: 'Бегать с железом - это одно, а с железными слитками - другое. Можно поставить только на лаву'
                 },
                 {
                     result: Item.SPLITTER,
                     parts: [{ item: Item.IRON_INGOT, count: 5, sprite: resources_2.imgIronIngot }, { item: Item.CRYSTAL, count: 10, sprite: resources_2.imgCrystalItem }],
                     sprite: resources_2.imgSplitter,
                     name: 'Расщепитель',
-                    description1: 'Если сломать кристалл пополам,',
-                    description2: 'много энергии не выделится.',
-                    description3: 'Нужно что-то посерьёзнее'
+                    description: 'Если сломать кристалл пополам, много энергии не выделится. Нужно что-то посерьёзнее'
                 },
                 {
                     result: Item.STORAGE,
                     parts: [{ item: Item.IRON_INGOT, count: 20, sprite: resources_2.imgIronIngot }],
                     sprite: resources_2.imgStorage,
                     name: 'Хранилище',
-                    description1: 'Это сундук из Майнкрафта,',
-                    description2: 'ни больше, ни меньше.',
-                    description3: 'Хватит вопросов!'
+                    description: 'Это сундук из Майнкрафта, ни больше, ни меньше. Хватит вопросов!'
                 },
                 {
                     result: Item.TOOLKIT,
                     parts: [{ item: Item.IRON_INGOT, count: 5, sprite: resources_2.imgIronIngot }],
                     sprite: resources_2.imgToolkit,
                     name: 'Ремнабор',
-                    description1: 'Все травмы можно залатать,',
-                    description2: 'если они не душевные.',
-                    description3: 'Восполняет жизни (расходник)'
+                    description: 'Все травмы можно залатать, если они не душевные. Восполняет жизни (расходник)'
                 },
                 {
                     result: Item.EXTRA_SLOT,
                     parts: [{ item: Item.IRON_INGOT, count: 40, sprite: resources_2.imgIronIngot }],
                     sprite: resources_2.imgExtraSlotItem,
                     name: 'Допслот',
-                    description1: 'Как же замечательно иметь ещё',
-                    description2: 'чуть-чуть места под рукой! Сюда',
-                    description3: 'можно положить немного счастья.'
+                    description: 'Как же замечательно иметь ещё чуть-чуть места под рукой! Сюда можно положить немного счастья.'
                 },
                 {
                     result: Item.SUN_BATERY,
                     parts: [{ item: Item.SILIKON, count: 15, sprite: resources_2.imgSiliconItem }, { item: Item.CRYSTAL, count: 30, sprite: resources_2.imgCrystalItem }],
                     sprite: resources_2.imgSunBatteryItem,
                     name: 'Сол панель ур.1',
-                    description1: 'Без батарей, как без рук!',
-                    description2: 'Позволяет получать энергию днём;',
-                    description3: 'уменьшает запас энергии в 2 раза...'
+                    description: 'Без батарей, как без рук! Позволяет получать энергию днём; уменьшает запас энергии в 2 раза...'
                 },
                 {
                     result: Item.GOLDEN_CAMERA,
                     parts: [{ item: Item.AURIT_INGOT, count: 40, sprite: resources_2.imgAuritIngot }],
                     sprite: resources_2.imgGoldenCamera,
                     name: 'Зоркая камера',
-                    description1: 'Действительно ауритовая вещь!',
-                    description2: 'Позволяет видеть опасности,',
-                    description3: 'если хорошо приглядеться.'
+                    description: 'Действительно ауритовая вещь! Позволяет видеть опасности, если вы такие слепые'
                 },
                 {
                     result: Item.SHOCKPROOF_BODY,
@@ -3077,18 +3089,14 @@ System.register("index", ["controls", "resources"], function (exports_3, context
                         { item: Item.AURIT_INGOT, count: 30, sprite: resources_2.imgAuritIngot }],
                     sprite: resources_2.imgShockProofBody,
                     name: 'Крепкое тело',
-                    description1: 'Красивый ауритовый корпус говорит',
-                    description2: 'о непрочности, но слой силикона',
-                    description3: 'говорит обратное. Больше жизней'
+                    description: 'Красивый ауритовый корпус говорит о непрочности, но слой силикона говорит обратное. Больше жизней'
                 },
                 {
                     result: Item.METEORITE_STUFF,
                     parts: [{ item: Item.IGNEOUS_INGOT, count: 20, sprite: resources_2.imgIgneousIngot }],
                     sprite: resources_2.imgMeteoriteStuff,
                     name: 'Метеопосох',
-                    description1: 'Эта вещь может вызвать метеорит,',
-                    description2: 'который упадёт на выбранную ',
-                    description3: 'область. Хороший взрыв'
+                    description: 'Эта вещь может вызвать метеорит, который упадёт на выбранную область. Хорошо бабахнуло'
                 },
             ];
             GAME_LENGTH = ONE_DAY;
