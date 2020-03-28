@@ -1799,6 +1799,12 @@ System.register("index", ["controls", "resources"], function (exports_3, context
                     if (inventory[itemIndex].item === Item.METEORITE_STUFF) {
                         sprite = resources_2.imgMeteoriteStuff;
                     }
+                    if (inventory[itemIndex].item === Item.SHAKING_DETECTOR) {
+                        sprite = resources_2.imgShakingDetector;
+                    }
+                    if (inventory[itemIndex].item === Item.KNOWLEDGE_OF_BALLISTICS) {
+                        sprite = resources_2.imgKnowledgeOfBallistics;
+                    }
                     drawRect(slotX, y, SLOT_WIDTH, SLOT_WIDTH, 0, "rgb(00,33,66,1)", 0, resources_2.Layer.UI);
                     drawRect(slotX, y, SLOT_WIDTH, SLOT_WIDTH, 0, 'black', 5, resources_2.Layer.UI);
                     drawRect(slotX, y, SLOT_WIDTH, SLOT_WIDTH, 0, 'grey', 2, resources_2.Layer.UI);
@@ -1900,6 +1906,12 @@ System.register("index", ["controls", "resources"], function (exports_3, context
                     }
                     if (controlledStorage.inventory[slotIndex].item === Item.METEORITE_STUFF) {
                         sprite = resources_2.imgMeteoriteStuff;
+                    }
+                    if (controlledStorage.inventory[slotIndex].item === Item.SHAKING_DETECTOR) {
+                        sprite = resources_2.imgShakingDetector;
+                    }
+                    if (controlledStorage.inventory[slotIndex].item === Item.KNOWLEDGE_OF_BALLISTICS) {
+                        sprite = resources_2.imgKnowledgeOfBallistics;
                     }
                     drawSprite(x, y, sprite, 0, SLOT_WIDTH, SLOT_WIDTH, false, resources_2.Layer.UI);
                     if (controlledStorage.inventory[slotIndex].count !== 0) {
@@ -2367,15 +2379,15 @@ System.register("index", ["controls", "resources"], function (exports_3, context
                     if (map[tileIndex].upperLayer.type !== TileType.NONE) {
                         if (chance < 0.25 && map[tileIndex].upperLayer.type !== TileType.VOLCANO) {
                             map[tileIndex].upperLayer.type = TileType.NONE;
+                            map[tileIndex].toughness = 0;
+                            map[tileIndex].firstToughness = 0;
                         }
                     }
                     else {
                         if (chance < 0.25 && map[tileIndex].baseLayer.type !== TileType.NONE && map[tileIndex].baseLayer.type !== TileType.GEYSER
                             && map[tileIndex].baseLayer.type !== TileType.VOLCANO) {
                             map[tileIndex].baseLayer.type = TileType.LAVA;
-                            map[tileIndex].toughness = 0;
-                            map[tileIndex].firstToughness = 0;
-                            map[tileIndex].upperLayer.variant = randomInt(1, 2);
+                            map[tileIndex].baseLayer.variant = randomInt(1, 2);
                         }
                     }
                 }
@@ -2413,12 +2425,12 @@ System.register("index", ["controls", "resources"], function (exports_3, context
                     }
                     if (map[tileIndex].upperLayer) {
                         map[tileIndex].upperLayer.type = TileType.NONE;
+                        map[tileIndex].toughness = 0;
+                        map[tileIndex].oreCount = 0;
                     }
                     if (map[tileIndex].baseLayer.type === TileType.MOUNTAIN) {
                         map[tileIndex].baseLayer.type = TileType.EARTH;
                         map[tileIndex].baseLayer.variant = 1;
-                        map[tileIndex].toughness = 0;
-                        map[tileIndex].oreCount = 0;
                     }
                 }
                 else {
