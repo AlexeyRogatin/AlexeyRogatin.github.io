@@ -1480,12 +1480,16 @@ System.register("index", ["controls", "resources"], function (exports_3, context
                             tile.inventory[1].item = Item.IGNEOUS_INGOT;
                         }
                         tile.inventory[0].count--;
-                        if (tile.inventory[0].count <= 0) {
-                            tile.inventory[0].item = Item.NONE;
-                        }
                         if (timers[tile.specialTimer] === 0) {
                             tile.specialTimer = null;
                         }
+                    }
+                    console.log(tile.inventory[0].item, tile.inventory[0].count, tile.inventory[1].item, tile.inventory[1].count);
+                    if (tile.inventory[0].count <= 0) {
+                        tile.inventory[0].item = Item.NONE;
+                    }
+                    if (tile.inventory[1].count <= 0) {
+                        tile.inventory[1].item = Item.NONE;
                     }
                     if (!controls_1.mouse.isDown) {
                         tile.toughness = tile.firstToughness;
@@ -2904,7 +2908,7 @@ System.register("index", ["controls", "resources"], function (exports_3, context
             musik.volume = 0;
             musik = null;
             playText = addMenuText(-resources_2.camera.width / 2 + 165, -resources_2.camera.height / 2 + 400, 130, 60, 'играть', 'White', 40, resources_2.Layer.UI);
-            controlsText = addMenuText(-resources_2.camera.width / 2 + 215, -resources_2.camera.height / 2 + 450, 130, 60, 'управление', 'White', 40, resources_2.Layer.UI);
+            controlsText = addMenuText(-resources_2.camera.width / 2 + 215, -resources_2.camera.height / 2 + 470, 130, 60, 'управление', 'White', 40, resources_2.Layer.UI);
         }
     }
     function loop() {
@@ -3253,7 +3257,7 @@ System.register("index", ["controls", "resources"], function (exports_3, context
             NIGHT_TIME = NIGHT_LENGTH;
             buildMap();
             playText = addMenuText(-resources_2.camera.width / 2 + 165, -resources_2.camera.height / 2 + 400, 130, 60, 'играть', 'White', 40, resources_2.Layer.UI);
-            controlsText = addMenuText(-resources_2.camera.width / 2 + 215, -resources_2.camera.height / 2 + 450, 130, 60, 'управление', 'White', 40, resources_2.Layer.UI);
+            controlsText = addMenuText(-resources_2.camera.width / 2 + 215, -resources_2.camera.height / 2 + 470, 130, 60, 'управление', 'White', 40, resources_2.Layer.UI);
             instructions = false;
             musik = null;
             requestAnimationFrame(loop);
