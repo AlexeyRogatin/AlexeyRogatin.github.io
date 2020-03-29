@@ -1931,7 +1931,6 @@ System.register("index", ["controls", "resources"], function (exports_3, context
                     }
                 }
             }
-            addItem(Item.STORAGE, 1);
             if (controls_1.mouse.worldX > resources_2.camera.x - resources_2.camera.width / 2 &&
                 controls_1.mouse.worldX < resources_2.camera.x - resources_2.camera.width / 2 + 45 &&
                 controls_1.mouse.worldY > resources_2.camera.y - resources_2.camera.height / 4 - 37.5 &&
