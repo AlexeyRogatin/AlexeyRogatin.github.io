@@ -1465,8 +1465,14 @@ System.register("index", ["controls", "resources"], function (exports_3, context
                 {
                     drawLight(tile.x * TILE.width, tile.y * TILE.height, TILE.width * 0.75);
                     upSprite = resources_2.imgMelter;
+                    if (tile.inventory[1].count > 0) {
+                        drawText(tile.x * TILE.width + 30, tile.y * TILE.height, 0, 0, 'blue', "" + tile.inventory[1].count, 30, 'center', resources_2.Layer.UI);
+                        if (timers[tile.specialTimer] > 0) {
+                            drawText(tile.x * TILE.width, tile.y * TILE.height, 0, 0, 'blue', "\u2192", 30, 'center', resources_2.Layer.UI);
+                        }
+                    }
                     if (timers[tile.specialTimer] > 0) {
-                        drawText(tile.x * TILE.width - 10, tile.y * TILE.height, 0, 0, 'blue', "" + Math.ceil(timers[tile.specialTimer] / 60), 30, 'left', resources_2.Layer.UI);
+                        drawText(tile.x * TILE.width - 30, tile.y * TILE.height, 0, 0, 'blue', "" + Math.ceil(timers[tile.specialTimer] / 60), 30, 'center', resources_2.Layer.UI);
                     }
                     if (tile.specialTimer && timers[tile.specialTimer] % 120 === 0) {
                         tile.inventory[1].count++;
@@ -1484,7 +1490,6 @@ System.register("index", ["controls", "resources"], function (exports_3, context
                             tile.specialTimer = null;
                         }
                     }
-                    console.log(tile.inventory[0].item, tile.inventory[0].count, tile.inventory[1].item, tile.inventory[1].count);
                     if (tile.inventory[0].count <= 0) {
                         tile.inventory[0].item = Item.NONE;
                     }
@@ -1642,6 +1647,9 @@ System.register("index", ["controls", "resources"], function (exports_3, context
             tile.upperLayer.type = TileType.NONE;
             tile.toughness = 0;
             tile.firstToughness = 0;
+            if (tile.sound) {
+                tile.sound.volume = 0;
+            }
             burstParticles({
                 x: tile.x * TILE.width,
                 y: tile.y * TILE.height,
@@ -1744,12 +1752,13 @@ System.register("index", ["controls", "resources"], function (exports_3, context
                 map[mapTile4].baseLayer.type === TileType.LAVA) {
                 gameObject.exists = false;
             }
+            addItem(Item.SUN_BATERY, 1);
             if (globalPlayer.sunBateryLvl) {
                 if (timers[dayTimer] <= DAY_TIME && timers[dayTimer] > AFTERNOON_TIME) {
-                    timers[globalPlayer.energy] += 2;
+                    timers[globalPlayer.energy] += 1.17;
                 }
                 if ((timers[dayTimer] <= MORNING_TIME && timers[dayTimer] > DAY_TIME) || (timers[dayTimer] <= AFTERNOON_TIME && timers[dayTimer] > NIGHT_TIME)) {
-                    timers[globalPlayer.energy] += 0.66;
+                    timers[globalPlayer.energy] += 1.34;
                 }
                 if (timers[globalPlayer.energy] > globalPlayer.maxEnergy) {
                     timers[globalPlayer.energy] = globalPlayer.maxEnergy;
@@ -2026,8 +2035,10 @@ System.register("index", ["controls", "resources"], function (exports_3, context
                         mouseTile.specialTimer = addTimer(mouseTile.inventory[0].count * 2 * 60);
                     }
                     if (mouseTile.inventory[1].count > 0) {
-                        addItem(mouseTile.inventory[1].item, mouseTile.inventory[1].count);
-                        mouseTile.inventory[1].count = 0;
+                        if (!isInventoryFullForItem(mouseTile.inventory[1].item)) {
+                            addItem(mouseTile.inventory[1].item, mouseTile.inventory[1].count);
+                            mouseTile.inventory[1].count = 0;
+                        }
                     }
                 }
                 if (mouseTile && controls_1.mouse.wentDown && mouseTile.upperLayer.type === TileType.SPLITTER &&
@@ -2183,7 +2194,7 @@ System.register("index", ["controls", "resources"], function (exports_3, context
                         }
                         if (!isThereAnItem) {
                             if (mouseTile.toughness % 80 === 0 || mouseTile.toughness === 0) {
-                                resources_2.playSound(resources_2.sndMining, randomFloat(0.25, 0.8));
+                                resources_2.playSound(resources_2.sndMining, 0.5);
                             }
                             if (mouseTile.upperLayer.type === TileType.IRON && !isInventoryFullForItem(Item.IRON)) {
                                 mouseTile.toughness--;
@@ -2401,6 +2412,9 @@ System.register("index", ["controls", "resources"], function (exports_3, context
                                 map[tileIndex].upperLayer.type = TileType.NONE;
                                 map[tileIndex].toughness = 0;
                                 map[tileIndex].firstToughness = 0;
+                                if (map[tileIndex].sound) {
+                                    map[tileIndex].sound.volume = 0;
+                                }
                             }
                         }
                         else {
@@ -2447,6 +2461,9 @@ System.register("index", ["controls", "resources"], function (exports_3, context
                             map[tileIndex].upperLayer.type = TileType.NONE;
                             map[tileIndex].toughness = 0;
                             map[tileIndex].oreCount = 0;
+                            if (map[tileIndex].sound) {
+                                map[tileIndex].sound.volume = 0;
+                            }
                         }
                         if (map[tileIndex].baseLayer.type === TileType.MOUNTAIN) {
                             map[tileIndex].baseLayer.type = TileType.EARTH;
@@ -2503,6 +2520,9 @@ System.register("index", ["controls", "resources"], function (exports_3, context
                         map[tileIndex_1].baseLayer.type = TileType.LAVA;
                         map[tileIndex_1].toughness = 0;
                         map[tileIndex_1].oreCount = 0;
+                        if (map[tileIndex_1].sound) {
+                            map[tileIndex_1].sound.volume = 0;
+                        }
                     }
                 }
             }
@@ -2699,6 +2719,9 @@ System.register("index", ["controls", "resources"], function (exports_3, context
                             tile.upperLayer.type = TileType.NONE;
                             tile.toughness = 0;
                             tile.firstToughness = 0;
+                            if (tile.sound) {
+                                tile.sound.volume = 0;
+                            }
                             burstParticles({
                                 x: tile.x * TILE.width,
                                 y: tile.y * TILE.height,
@@ -3063,10 +3086,10 @@ System.register("index", ["controls", "resources"], function (exports_3, context
                 chunkCountX: 16,
                 chunkCountY: 16
             };
-            MORNING_LENGTH = 4000;
-            DAY_LENGTH = 4000;
-            AFTERNOON_LENGTH = 4000;
-            NIGHT_LENGTH = 4000;
+            MORNING_LENGTH = 0;
+            DAY_LENGTH = 0;
+            AFTERNOON_LENGTH = 0;
+            NIGHT_LENGTH = 4000 * 4;
             ONE_DAY = MORNING_LENGTH + DAY_LENGTH + AFTERNOON_LENGTH + NIGHT_LENGTH;
             EVENT_LENGTH = 1800;
             VOLCANO_RADIUS = TILE.width * TILE.chunkSizeX * 1.5;
@@ -3180,10 +3203,10 @@ System.register("index", ["controls", "resources"], function (exports_3, context
                 },
                 {
                     result: Item.SUN_BATERY,
-                    parts: [{ item: Item.SILIKON, count: 15, sprite: resources_2.imgSiliconItem }, { item: Item.CRYSTAL, count: 30, sprite: resources_2.imgCrystalItem }],
+                    parts: [{ item: Item.SILIKON, count: 45, sprite: resources_2.imgSiliconItem }, { item: Item.CRYSTAL, count: 45, sprite: resources_2.imgCrystalItem }],
                     sprite: resources_2.imgSunBatteryItem,
                     name: 'Сол панель ур.1',
-                    description: 'Без батарей, как без рук! Позволяет получать энергию днём; уменьшает запас энергии в 2 раза...'
+                    description: 'Без батарей, как без рук! Позволяет получать энергию днём; уменьшает запас энергии в 4 раза...Можно убрать'
                 },
                 {
                     result: Item.GOLDEN_CAMERA,
