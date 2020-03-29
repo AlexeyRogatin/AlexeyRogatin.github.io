@@ -1752,7 +1752,6 @@ System.register("index", ["controls", "resources"], function (exports_3, context
                 map[mapTile4].baseLayer.type === TileType.LAVA) {
                 gameObject.exists = false;
             }
-            addItem(Item.SUN_BATERY, 1);
             if (globalPlayer.sunBateryLvl) {
                 if (timers[dayTimer] <= DAY_TIME && timers[dayTimer] > AFTERNOON_TIME) {
                     timers[globalPlayer.energy] += 1.17;
