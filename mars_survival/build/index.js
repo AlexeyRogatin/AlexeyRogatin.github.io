@@ -1848,7 +1848,7 @@ System.register("index", ["controls", "resources"], function (exports_3, context
                         y = resources_2.camera.y;
                     }
                     else {
-                        x = resources_2.camera.x + resources_2.camera.width / 2 - SLOT_WIDTH * STORAGE_SLOT_COUNT / 2 - SLOT_WIDTH / 2 + slotIndex * (LINE_WIDTH + SLOT_WIDTH) - SLOT_WIDTH * STORAGE_SLOT_COUNT / 2;
+                        x = resources_2.camera.x + resources_2.camera.width / 2 - SLOT_WIDTH * STORAGE_SLOT_COUNT / 2 - SLOT_WIDTH / 2 + slotIndex * (LINE_WIDTH + SLOT_WIDTH) - (SLOT_WIDTH + LINE_WIDTH) * STORAGE_SLOT_COUNT / 2;
                         y = resources_2.camera.y + 100;
                     }
                     var sprite = null;
