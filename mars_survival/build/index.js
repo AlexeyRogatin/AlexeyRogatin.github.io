@@ -149,22 +149,19 @@ System.register("resources", [], function (exports_1, context_1) {
             exports_1("resourcesLoadedCount", resourcesLoadedCount = 0);
             exports_1("resourcesWaitingForLoadCount", resourcesWaitingForLoadCount = 0);
             exports_1("canBeginGame", canBeginGame = false);
-            (function (Layer) {
-                Layer[Layer["UI"] = 0] = "UI";
-                Layer[Layer["BOSS_EYE"] = 1] = "BOSS_EYE";
-                Layer[Layer["FORGROUND"] = 2] = "FORGROUND";
-                Layer[Layer["METEORITE"] = 3] = "METEORITE";
-                Layer[Layer["PARTICLES"] = 4] = "PARTICLES";
-                Layer[Layer["BOSS"] = 5] = "BOSS";
-                Layer[Layer["BOSS_LEG"] = 6] = "BOSS_LEG";
-                Layer[Layer["MANIPULATOR"] = 7] = "MANIPULATOR";
-                Layer[Layer["UPPER_TILE"] = 8] = "UPPER_TILE";
-                Layer[Layer["PLAYER"] = 9] = "PLAYER";
-                Layer[Layer["ON_TILE"] = 10] = "ON_TILE";
-                Layer[Layer["TILE"] = 11] = "TILE";
-                Layer[Layer["NONE"] = 12] = "NONE";
-            })(Layer || (Layer = {}));
-            exports_1("Layer", Layer);
+            exports_1("Layer", Layer = {
+                UI: 1000000000,
+                FORGROUND: 100000000,
+                BOSS: 130,
+                BOSS_LEG: 120,
+                MANIPULATOR: 110,
+                PARTICLES: 105,
+                UPPER_TILE: 100,
+                PLAYER: 50,
+                ON_TILE: 1,
+                TILE: 0,
+                NONE: -100000
+            });
             (function (DrawQueueType) {
                 DrawQueueType[DrawQueueType["NONE"] = 0] = "NONE";
                 DrawQueueType[DrawQueueType["IMAGE"] = 1] = "IMAGE";
@@ -176,8 +173,8 @@ System.register("resources", [], function (exports_1, context_1) {
             exports_1("DrawQueueType", DrawQueueType);
             DrawQueueItem = (function () {
                 function DrawQueueItem() {
-                    this.layer = Layer.TILE;
                     this.type = DrawQueueType.NONE;
+                    this.z = 0;
                     this.width = 0;
                     this.height = 0;
                     this.angle = 0;
@@ -447,7 +444,7 @@ System.register("controls", ["resources"], function (exports_2, context_2) {
 });
 System.register("index", ["controls", "resources"], function (exports_3, context_3) {
     "use strict";
-    var controls_1, resources_2, InventorySlot, TileLayer, Tile, RecipePart, Recipe, GameObject, particle, Text, GameObjectType, GameState, TileType, Item, Event, TILE, MORNING_LENGTH, DAY_LENGTH, AFTERNOON_LENGTH, NIGHT_LENGTH, ONE_DAY, EVENT_LENGTH, VOLCANO_RADIUS, VOLCANO_HEIGHT, GRAVITATION, CAMERA_HEIGHT, MAGMA_BALL_SPEED, METEORITE_SPEED, LAVA_BALL_SPEED, METEOR_STUFF_COOLDOWN, MAX_RANGE, STORAGE_SLOT_COUNT, STRIPE_WIDTH, STRIPE_HEIGHT, CHUNK_PROTOTYPES, RECIPES, GAME_LENGTH, timers, map, slotCount, inventory, drawQueue, alpha, gameObjects, particles, globalPlayer, screenShakes, craftMode, firstRecipeIndex, mainSlot, controlledStorage, dayTimer, gameTimer, event, timeBetweenEvents, eventEnd, hpShakeTimer, globalBoss, recentShake, gameState, menuTexts, MORNING_TIME, DAY_TIME, AFTERNOON_TIME, NIGHT_TIME, playText, controlsText, instructions, musik;
+    var controls_1, resources_2, InventorySlot, TileLayer, Tile, RecipePart, Recipe, GameObject, particle, Text, GameObjectType, GameState, TileType, Item, Event, TILE, MORNING_LENGTH, DAY_LENGTH, AFTERNOON_LENGTH, NIGHT_LENGTH, ONE_DAY, EVENT_LENGTH, VOLCANO_RADIUS, GRAVITATION, CAMERA_HEIGHT, MAGMA_BALL_SPEED, METEORITE_SPEED, LAVA_BALL_SPEED, METEOR_STUFF_COOLDOWN, MAX_RANGE, STORAGE_SLOT_COUNT, STRIPE_WIDTH, STRIPE_HEIGHT, CHUNK_PROTOTYPES, RECIPES, GAME_LENGTH, timers, map, slotCount, inventory, drawQueue, alpha, gameObjects, particles, globalPlayer, screenShakes, craftMode, firstRecipeIndex, mainSlot, controlledStorage, dayTimer, gameTimer, event, timeBetweenEvents, eventEnd, hpShakeTimer, globalBoss, recentShake, gameState, menuTexts, MORNING_TIME, DAY_TIME, AFTERNOON_TIME, NIGHT_TIME, playText, controlsText, instructions, musik;
     var __moduleName = context_3 && context_3.id;
     function restate() {
         gameObjects = [];
@@ -615,11 +612,11 @@ System.register("index", ["controls", "resources"], function (exports_3, context
             addItem(recipe.result, 1);
         }
     }
-    function drawSprite(x, y, sprite, angle, width, height, fromThePoint, layer) {
+    function drawSprite(x, y, sprite, angle, width, height, fromThePoint, z) {
         if (width === void 0) { width = 0; }
         if (height === void 0) { height = 0; }
         if (fromThePoint === void 0) { fromThePoint = false; }
-        if (layer === void 0) { layer = resources_2.Layer.TILE; }
+        if (z === void 0) { z = resources_2.Layer.TILE; }
         var mainSide = width;
         if (height > width) {
             mainSide = height;
@@ -629,7 +626,7 @@ System.register("index", ["controls", "resources"], function (exports_3, context
                 x < resources_2.camera.x + resources_2.camera.width * 0.5 + mainSide / 2 &&
                 y > resources_2.camera.y - resources_2.camera.height * 0.5 - mainSide / 2 &&
                 y < resources_2.camera.y + resources_2.camera.height * 0.5 + mainSide / 2) {
-                drawQueue.push({ x: x, y: y, sprite: sprite, angle: angle, width: width, height: height, fromThePoint: fromThePoint, layer: layer, type: resources_2.DrawQueueType.IMAGE });
+                drawQueue.push({ x: x, y: y, sprite: sprite, angle: angle, width: width, height: height, fromThePoint: fromThePoint, z: z, type: resources_2.DrawQueueType.IMAGE });
             }
         }
         else {
@@ -637,33 +634,33 @@ System.register("index", ["controls", "resources"], function (exports_3, context
                 x < resources_2.camera.x + resources_2.camera.width * 0.5 + mainSide * 4 &&
                 y > resources_2.camera.y - resources_2.camera.height * 0.5 - mainSide * 4 &&
                 y < resources_2.camera.y + resources_2.camera.height * 0.5 + mainSide * 4) {
-                drawQueue.push({ x: x, y: y, sprite: sprite, angle: angle, width: width, height: height, fromThePoint: fromThePoint, layer: layer, type: resources_2.DrawQueueType.IMAGE });
+                drawQueue.push({ x: x, y: y, sprite: sprite, angle: angle, width: width, height: height, fromThePoint: fromThePoint, z: z, type: resources_2.DrawQueueType.IMAGE });
             }
         }
     }
     exports_3("drawSprite", drawSprite);
-    function drawRect(x, y, width, height, angle, color, outlineOnly, layer) {
-        if (layer === void 0) { layer = resources_2.Layer.TILE; }
+    function drawRect(x, y, width, height, angle, color, outlineOnly, z) {
+        if (z === void 0) { z = resources_2.Layer.TILE; }
         if (x > resources_2.camera.x - resources_2.camera.width * 0.5 - width / 2 &&
             x < resources_2.camera.x + resources_2.camera.width * 0.5 + width / 2 &&
             y > resources_2.camera.y - resources_2.camera.height * 0.5 - height / 2 &&
             y < resources_2.camera.y + resources_2.camera.height * 0.5 + height / 2) {
-            drawQueue.push({ x: x, y: y, width: width, height: height, color: [color], angle: angle, layer: layer, outlineOnly: outlineOnly, type: resources_2.DrawQueueType.RECT });
+            drawQueue.push({ x: x, y: y, width: width, height: height, color: [color], angle: angle, z: z, outlineOnly: outlineOnly, type: resources_2.DrawQueueType.RECT });
         }
     }
     exports_3("drawRect", drawRect);
-    function drawCircle(x, y, radius, color, outlineOnly, layer) {
-        if (layer === void 0) { layer = resources_2.Layer.TILE; }
+    function drawCircle(x, y, radius, color, outlineOnly, z) {
+        if (z === void 0) { z = resources_2.Layer.TILE; }
         if (x > resources_2.camera.x - resources_2.camera.width * 0.5 - radius &&
             x < resources_2.camera.x + resources_2.camera.width * 0.5 + radius &&
             y > resources_2.camera.y - resources_2.camera.height * 0.5 - radius &&
             y < resources_2.camera.y + resources_2.camera.height * 0.5 + radius) {
-            drawQueue.push({ x: x, y: y, radius: radius, color: [color], layer: layer, outlineOnly: outlineOnly, type: resources_2.DrawQueueType.CIRCLE });
+            drawQueue.push({ x: x, y: y, radius: radius, color: [color], z: z, outlineOnly: outlineOnly, type: resources_2.DrawQueueType.CIRCLE });
         }
     }
     exports_3("drawCircle", drawCircle);
-    function drawText(x, y, width, intervalsBettweenLines, color, text, textSize, textAlign, layer) {
-        if (layer === void 0) { layer = resources_2.Layer.UI; }
+    function drawText(x, y, width, intervalsBettweenLines, color, text, textSize, textAlign, z) {
+        if (z === void 0) { z = resources_2.Layer.UI; }
         if (x > resources_2.camera.x - resources_2.camera.width * 0.5 - textSize / 2 &&
             x < resources_2.camera.x + resources_2.camera.width * 0.5 + textSize / 2 &&
             y > resources_2.camera.y - resources_2.camera.height * 0.5 - textSize / 2 &&
@@ -683,21 +680,21 @@ System.register("index", ["controls", "resources"], function (exports_3, context
                         wordNumber++;
                     }
                     console.log(textSample);
-                    drawQueue.push({ x: x, y: y + textNumber * intervalsBettweenLines, color: [color], text: textSample, layer: layer, type: resources_2.DrawQueueType.TEXT, textSize: textSize, textAlign: textAlign });
+                    drawQueue.push({ x: x, y: y + textNumber * intervalsBettweenLines, color: [color], text: textSample, z: z, type: resources_2.DrawQueueType.TEXT, textSize: textSize, textAlign: textAlign });
                 }
             }
             else {
-                drawQueue.push({ x: x, y: y, color: [color], text: text, layer: layer, type: resources_2.DrawQueueType.TEXT, textSize: textSize, textAlign: textAlign });
+                drawQueue.push({ x: x, y: y, color: [color], text: text, z: z, type: resources_2.DrawQueueType.TEXT, textSize: textSize, textAlign: textAlign });
             }
         }
     }
     exports_3("drawText", drawText);
-    function drawLinearGradient(x, y, width, height, color, stop, layer) {
+    function drawLinearGradient(x, y, width, height, color, stop, z) {
         if (x > resources_2.camera.x - resources_2.camera.width * 0.5 - width / 2 &&
             x < resources_2.camera.x + resources_2.camera.width * 0.5 + width / 2 &&
             y > resources_2.camera.y - resources_2.camera.height * 0.5 - height / 2 &&
             y < resources_2.camera.y + resources_2.camera.height * 0.5 + height / 2) {
-            drawQueue.push({ x: x, y: y, width: width, height: height, color: color, stop: stop, layer: layer, type: resources_2.DrawQueueType.LINEAR_GRADIENT });
+            drawQueue.push({ x: x, y: y, width: width, height: height, color: color, stop: stop, z: z, type: resources_2.DrawQueueType.LINEAR_GRADIENT });
         }
     }
     exports_3("drawLinearGradient", drawLinearGradient);
@@ -803,6 +800,8 @@ System.register("index", ["controls", "resources"], function (exports_3, context
             gameObject.sprite = resources_2.imgMeteorite;
             gameObject.angle = randomFloat(0, Math.PI * 2);
             gameObject.angleZ = -randomFloat(0.25 * Math.PI, 0.5 * Math.PI);
+            gameObject.width = 100 + CAMERA_HEIGHT;
+            gameObject.height = 100 + CAMERA_HEIGHT;
         }
         if (gameObject.type === GameObjectType.LAVA_BALL) {
             gameObject.sprite = resources_2.imgMagmaBall;
@@ -815,7 +814,7 @@ System.register("index", ["controls", "resources"], function (exports_3, context
             gameObject.height = 600;
             gameObject.speedLimit = 10;
             gameObject.rotationSpeed = 0.2;
-            gameObject.accelConst = 0.1;
+            gameObject.accelConst = 0.05;
             gameObject.hitpoints = 5000;
             gameObject.maxHitpoints = 5000;
             gameObject.specialTimer = addTimer(100);
@@ -1843,15 +1842,15 @@ System.register("index", ["controls", "resources"], function (exports_3, context
                     var x = void 0;
                     var y = void 0;
                     var SLOT_WIDTH = 60;
+                    var LINE_WIDTH = 5;
                     if (slotIndex <= Math.round(STORAGE_SLOT_COUNT / 2 - 1)) {
-                        x = resources_2.camera.x + resources_2.camera.width / 2 - SLOT_WIDTH * STORAGE_SLOT_COUNT / 2 - SLOT_WIDTH / 2 + slotIndex * SLOT_WIDTH;
+                        x = resources_2.camera.x + resources_2.camera.width / 2 - SLOT_WIDTH * STORAGE_SLOT_COUNT / 2 - SLOT_WIDTH / 2 + slotIndex * (LINE_WIDTH + SLOT_WIDTH);
                         y = resources_2.camera.y;
                     }
                     else {
-                        x = resources_2.camera.x + resources_2.camera.width / 2 - SLOT_WIDTH * STORAGE_SLOT_COUNT / 2 - SLOT_WIDTH / 2 + slotIndex * SLOT_WIDTH - SLOT_WIDTH * STORAGE_SLOT_COUNT / 2;
+                        x = resources_2.camera.x + resources_2.camera.width / 2 - SLOT_WIDTH * STORAGE_SLOT_COUNT / 2 - SLOT_WIDTH / 2 + slotIndex * (LINE_WIDTH + SLOT_WIDTH) - SLOT_WIDTH * STORAGE_SLOT_COUNT / 2;
                         y = resources_2.camera.y + 100;
                     }
-                    drawRect(x, y, SLOT_WIDTH, SLOT_WIDTH, 0, 'grey', 5, resources_2.Layer.UI);
                     var sprite = null;
                     if (controlledStorage.inventory[slotIndex].item === Item.NONE) {
                         sprite = resources_2.imgNone;
@@ -1913,7 +1912,10 @@ System.register("index", ["controls", "resources"], function (exports_3, context
                     if (controlledStorage.inventory[slotIndex].item === Item.KNOWLEDGE_OF_BALLISTICS) {
                         sprite = resources_2.imgKnowledgeOfBallistics;
                     }
-                    drawSprite(x, y, sprite, 0, SLOT_WIDTH, SLOT_WIDTH, false, resources_2.Layer.UI);
+                    drawRect(x, y, SLOT_WIDTH, SLOT_WIDTH, 0, "rgb(00,33,66,1)", 0, resources_2.Layer.UI);
+                    drawRect(x, y, SLOT_WIDTH, SLOT_WIDTH, 0, 'black', 5, resources_2.Layer.UI);
+                    drawRect(x, y, SLOT_WIDTH, SLOT_WIDTH, 0, 'grey', 2, resources_2.Layer.UI);
+                    drawSprite(x, y, sprite, 0, SLOT_WIDTH - 10, SLOT_WIDTH - 10, false, resources_2.Layer.UI);
                     if (controlledStorage.inventory[slotIndex].count !== 0) {
                         drawText(x, y - SLOT_WIDTH, 0, 0, 'green', "" + controlledStorage.inventory[slotIndex].count, 25, 'center', resources_2.Layer.UI);
                     }
@@ -1929,6 +1931,7 @@ System.register("index", ["controls", "resources"], function (exports_3, context
                     }
                 }
             }
+            addItem(Item.STORAGE, 1);
             if (controls_1.mouse.worldX > resources_2.camera.x - resources_2.camera.width / 2 &&
                 controls_1.mouse.worldX < resources_2.camera.x - resources_2.camera.width / 2 + 45 &&
                 controls_1.mouse.worldY > resources_2.camera.y - resources_2.camera.height / 4 - 37.5 &&
@@ -2338,17 +2341,17 @@ System.register("index", ["controls", "resources"], function (exports_3, context
             }
         }
         if (gameObject.type === GameObjectType.MAGMA_BALL) {
-            drawSprite(gameObject.x, gameObject.y, gameObject.sprite, gameObject.angle + Math.PI / 180 * gameObject.lifeTime, gameObject.width, gameObject.height, false, resources_2.Layer.METEORITE);
-            drawLight(gameObject.x, gameObject.y, gameObject.width * 1.2);
-            gameObject.x += gameObject.speedX;
-            gameObject.y += gameObject.speedY;
-            gameObject.lifeTime++;
             var speedZ = MAGMA_BALL_SPEED * Math.sin(gameObject.angleZ);
             var speedXY = MAGMA_BALL_SPEED * Math.cos(gameObject.angleZ);
             var speedVector = rotateVector(speedXY, 0, gameObject.angle);
             gameObject.speedX = speedVector[0];
             gameObject.speedY = speedVector[1];
-            var height = VOLCANO_HEIGHT + speedZ * gameObject.lifeTime - GRAVITATION / 2 * gameObject.lifeTime * gameObject.lifeTime;
+            gameObject.x += gameObject.speedX;
+            gameObject.y += gameObject.speedY;
+            gameObject.lifeTime++;
+            var height = resources_2.Layer.UPPER_TILE + speedZ * gameObject.lifeTime - GRAVITATION / 2 * gameObject.lifeTime * gameObject.lifeTime;
+            drawSprite(gameObject.x, gameObject.y, gameObject.sprite, gameObject.angle + Math.PI / 180 * gameObject.lifeTime, gameObject.width, gameObject.height, false, height);
+            drawLight(gameObject.x, gameObject.y, gameObject.width * 1.2);
             var range = MAGMA_BALL_SPEED * MAGMA_BALL_SPEED * Math.sin(2 * gameObject.angleZ) / GRAVITATION;
             var rangeProjections = rotateVector(range, 0, gameObject.angle);
             if (globalPlayer.knowledgeOfBallistics) {
@@ -2357,109 +2360,111 @@ System.register("index", ["controls", "resources"], function (exports_3, context
             }
             gameObject.width = (100 + height);
             gameObject.height = (100 + height);
-            if (height <= 0) {
-                gameObject.exists = false;
-                var maxDistance = VOLCANO_RADIUS;
-                var volume = void 0;
-                if (distanceBetweenPoints(globalPlayer.x, globalPlayer.y, gameObject.x, gameObject.y) <= maxDistance) {
-                    volume = 1 - distanceBetweenPoints(globalPlayer.x, globalPlayer.y, gameObject.x, gameObject.y) / maxDistance;
-                }
-                else {
-                    volume = 0;
-                }
-                var strength = volume * 15;
-                makeScreenShake(strength, 15);
-                resources_2.playSound(resources_2.sndBoom, volume * 0.5);
-                burstParticles({ x: gameObject.x, y: gameObject.y, color: 'red', speed: 5, size: 45, count: 15, decrease: 0.75, accel: 0 });
+            if (height < resources_2.Layer.UPPER_TILE) {
                 var x = Math.round(gameObject.x / TILE.width);
                 var y = Math.round(gameObject.y / TILE.height);
                 var tileIndex = getIndexFromCoords(x, y);
-                var chance = randomFloat(0, 1);
-                if (map[tileIndex]) {
-                    if (map[tileIndex].upperLayer.type !== TileType.NONE) {
-                        if (chance < 0.25 && map[tileIndex].upperLayer.type !== TileType.VOLCANO) {
-                            map[tileIndex].upperLayer.type = TileType.NONE;
-                            map[tileIndex].toughness = 0;
-                            map[tileIndex].firstToughness = 0;
-                        }
+                if (map[tileIndex] && map[tileIndex].upperLayer || height <= 0) {
+                    gameObject.exists = false;
+                    var maxDistance = VOLCANO_RADIUS;
+                    var volume = void 0;
+                    if (distanceBetweenPoints(globalPlayer.x, globalPlayer.y, gameObject.x, gameObject.y) <= maxDistance) {
+                        volume = 1 - distanceBetweenPoints(globalPlayer.x, globalPlayer.y, gameObject.x, gameObject.y) / maxDistance;
                     }
                     else {
-                        if (chance < 0.25 && map[tileIndex].baseLayer.type !== TileType.NONE && map[tileIndex].baseLayer.type !== TileType.GEYSER
-                            && map[tileIndex].baseLayer.type !== TileType.VOLCANO) {
-                            map[tileIndex].baseLayer.type = TileType.LAVA;
-                            map[tileIndex].baseLayer.variant = randomInt(1, 2);
+                        volume = 0;
+                    }
+                    var strength = volume * 15;
+                    makeScreenShake(strength, 15);
+                    resources_2.playSound(resources_2.sndBoom, volume * 0.5);
+                    burstParticles({ x: gameObject.x, y: gameObject.y, color: 'red', speed: 5, size: 45, count: 15, decrease: 0.75, accel: 0 });
+                    var chance = randomFloat(0, 1);
+                    if (map[tileIndex]) {
+                        if (map[tileIndex].upperLayer.type !== TileType.NONE) {
+                            if (chance < 0.25 && map[tileIndex].upperLayer.type !== TileType.VOLCANO) {
+                                map[tileIndex].upperLayer.type = TileType.NONE;
+                                map[tileIndex].toughness = 0;
+                                map[tileIndex].firstToughness = 0;
+                            }
+                        }
+                        else {
+                            if (chance < 0.25 && map[tileIndex].baseLayer.type !== TileType.NONE && map[tileIndex].baseLayer.type !== TileType.GEYSER
+                                && map[tileIndex].baseLayer.type !== TileType.VOLCANO) {
+                                map[tileIndex].baseLayer.type = TileType.LAVA;
+                                map[tileIndex].baseLayer.variant = randomInt(1, 2);
+                            }
                         }
                     }
                 }
             }
         }
         if (gameObject.type === GameObjectType.METEORITE) {
-            drawLight(gameObject.x, gameObject.y, gameObject.width * 1.2);
-            drawSprite(gameObject.x, gameObject.y, gameObject.sprite, gameObject.angle + Math.PI / 180 * gameObject.lifeTime, gameObject.width, gameObject.height, false, resources_2.Layer.METEORITE);
-            gameObject.x += gameObject.speedX;
-            gameObject.y += gameObject.speedY;
-            gameObject.lifeTime++;
             var speedZ = METEORITE_SPEED * Math.sin(gameObject.angleZ);
+            gameObject.lifeTime++;
             var height = CAMERA_HEIGHT + speedZ * gameObject.lifeTime - GRAVITATION / 2 * gameObject.lifeTime * gameObject.lifeTime;
+            drawLight(gameObject.x, gameObject.y, gameObject.width * 1.2);
+            drawSprite(gameObject.x, gameObject.y, gameObject.sprite, gameObject.angle + Math.PI / 180 * gameObject.lifeTime, gameObject.width, gameObject.height, false, height);
             gameObject.width = (100 + height);
             gameObject.height = (100 + height);
-            if (height <= 0) {
-                gameObject.exists = false;
-                var maxDistance = VOLCANO_RADIUS;
-                var volume = void 0;
-                if (distanceBetweenPoints(globalPlayer.x, globalPlayer.y, gameObject.x, gameObject.y) <= maxDistance) {
-                    volume = 1 - distanceBetweenPoints(globalPlayer.x, globalPlayer.y, gameObject.x, gameObject.y) / maxDistance;
-                }
-                else {
-                    volume = 0;
-                }
-                var strength = volume * 15;
-                makeScreenShake(strength, 15);
-                resources_2.playSound(resources_2.sndBoom, volume * 0.5);
+            if (height < resources_2.Layer.UPPER_TILE) {
                 var x = Math.round(gameObject.x / TILE.width);
                 var y = Math.round(gameObject.y / TILE.height);
                 var tileIndex = getIndexFromCoords(x, y);
-                if (gameObject.summoned) {
-                    if (globalBoss && distanceBetweenPoints(globalBoss.x, globalBoss.y, gameObject.x, gameObject.y) <= globalBoss.height / 2 + gameObject.width / 2) {
-                        globalBoss.hitpoints -= 100;
+                if (map[tileIndex] && map[tileIndex].upperLayer || height <= 0) {
+                    gameObject.exists = false;
+                    var maxDistance = VOLCANO_RADIUS;
+                    var volume = void 0;
+                    if (distanceBetweenPoints(globalPlayer.x, globalPlayer.y, gameObject.x, gameObject.y) <= maxDistance) {
+                        volume = 1 - distanceBetweenPoints(globalPlayer.x, globalPlayer.y, gameObject.x, gameObject.y) / maxDistance;
                     }
-                    if (map[tileIndex].upperLayer) {
-                        map[tileIndex].upperLayer.type = TileType.NONE;
-                        map[tileIndex].toughness = 0;
-                        map[tileIndex].oreCount = 0;
+                    else {
+                        volume = 0;
                     }
-                    if (map[tileIndex].baseLayer.type === TileType.MOUNTAIN) {
-                        map[tileIndex].baseLayer.type = TileType.EARTH;
-                        map[tileIndex].baseLayer.variant = 1;
+                    var strength = volume * 15;
+                    makeScreenShake(strength, 15);
+                    resources_2.playSound(resources_2.sndBoom, volume * 0.5);
+                    if (gameObject.summoned) {
+                        if (globalBoss && distanceBetweenPoints(globalBoss.x, globalBoss.y, gameObject.x, gameObject.y) <= globalBoss.height / 2 + gameObject.width / 2) {
+                            globalBoss.hitpoints -= 100;
+                        }
+                        if (map[tileIndex].upperLayer) {
+                            map[tileIndex].upperLayer.type = TileType.NONE;
+                            map[tileIndex].toughness = 0;
+                            map[tileIndex].oreCount = 0;
+                        }
+                        if (map[tileIndex].baseLayer.type === TileType.MOUNTAIN) {
+                            map[tileIndex].baseLayer.type = TileType.EARTH;
+                            map[tileIndex].baseLayer.variant = 1;
+                        }
                     }
-                }
-                else {
-                    burstParticles({ x: gameObject.x, y: gameObject.y, color: 'red', speed: 5, size: 80, count: 15, decrease: 1, accel: 0 });
-                    var chance = randomFloat(0, 1);
-                    if (chance < 0.25) {
-                        if (map[tileIndex] && map[tileIndex].baseLayer.type !== TileType.LAVA && map[tileIndex].baseLayer.type !== TileType.MOUNTAIN &&
-                            map[tileIndex].baseLayer.type !== TileType.NONE && map[tileIndex].baseLayer.type !== TileType.VOLCANO) {
-                            map[tileIndex].upperLayer.type = TileType.IGNEOUS;
-                            map[tileIndex].toughness = 500;
-                            map[tileIndex].firstToughness = 500;
-                            map[tileIndex].oreCount = 1;
+                    else {
+                        burstParticles({ x: gameObject.x, y: gameObject.y, color: 'red', speed: 5, size: 80, count: 15, decrease: 1, accel: 0 });
+                        var chance = randomFloat(0, 1);
+                        if (chance < 0.25) {
+                            if (map[tileIndex] && map[tileIndex].baseLayer.type !== TileType.LAVA && map[tileIndex].baseLayer.type !== TileType.MOUNTAIN &&
+                                map[tileIndex].baseLayer.type !== TileType.NONE && map[tileIndex].baseLayer.type !== TileType.VOLCANO) {
+                                map[tileIndex].upperLayer.type = TileType.IGNEOUS;
+                                map[tileIndex].toughness = 500;
+                                map[tileIndex].firstToughness = 500;
+                                map[tileIndex].oreCount = 1;
+                            }
                         }
                     }
                 }
             }
         }
         if (gameObject.type === GameObjectType.LAVA_BALL) {
-            drawSprite(gameObject.x, gameObject.y, gameObject.sprite, gameObject.angle + Math.PI / 180 * gameObject.lifeTime, gameObject.width, gameObject.height, false, resources_2.Layer.METEORITE);
-            drawLight(gameObject.x, gameObject.y, gameObject.width * 1.2);
-            gameObject.x += gameObject.speedX;
-            gameObject.y += gameObject.speedY;
-            gameObject.lifeTime++;
             var speedZ = LAVA_BALL_SPEED * Math.sin(gameObject.angleZ);
             var speedXY = LAVA_BALL_SPEED * Math.cos(gameObject.angleZ);
             var speedVector = rotateVector(speedXY, 0, gameObject.angle);
             gameObject.speedX = speedVector[0];
             gameObject.speedY = speedVector[1];
-            var height = VOLCANO_HEIGHT + speedZ * gameObject.lifeTime - GRAVITATION / 2 * gameObject.lifeTime * gameObject.lifeTime;
+            gameObject.x += gameObject.speedX;
+            gameObject.y += gameObject.speedY;
+            gameObject.lifeTime++;
+            var height = resources_2.Layer.BOSS + speedZ * gameObject.lifeTime - GRAVITATION / 2 * gameObject.lifeTime * gameObject.lifeTime;
+            drawSprite(gameObject.x, gameObject.y, gameObject.sprite, gameObject.angle + Math.PI / 180 * gameObject.lifeTime, gameObject.width, gameObject.height, false, height);
+            drawLight(gameObject.x, gameObject.y, gameObject.width * 1.2);
             var range = LAVA_BALL_SPEED * LAVA_BALL_SPEED * Math.sin(2 * gameObject.angleZ) / GRAVITATION;
             var rangeProjections = rotateVector(range, 0, gameObject.angle);
             if (globalPlayer.knowledgeOfBallistics) {
@@ -2468,16 +2473,21 @@ System.register("index", ["controls", "resources"], function (exports_3, context
             }
             gameObject.width = (20 + height);
             gameObject.height = (20 + height);
-            if (height <= 0) {
-                gameObject.exists = false;
+            if (height < resources_2.Layer.UPPER_TILE) {
                 var x = Math.round(gameObject.x / TILE.width);
                 var y = Math.round(gameObject.y / TILE.height);
                 var tileIndex = getIndexFromCoords(x, y);
-                if (map[tileIndex] && map[tileIndex].baseLayer.type !== TileType.VOLCANO && map[tileIndex].baseLayer.type !== TileType.NONE) {
-                    map[tileIndex].upperLayer.type = TileType.NONE;
-                    map[tileIndex].baseLayer.type = TileType.LAVA;
-                    map[tileIndex].toughness = 0;
-                    map[tileIndex].oreCount = 0;
+                if (map[tileIndex] && map[tileIndex].upperLayer || height <= 0) {
+                    gameObject.exists = false;
+                    var x_1 = Math.round(gameObject.x / TILE.width);
+                    var y_1 = Math.round(gameObject.y / TILE.height);
+                    var tileIndex_1 = getIndexFromCoords(x_1, y_1);
+                    if (map[tileIndex_1] && map[tileIndex_1].baseLayer.type !== TileType.VOLCANO && map[tileIndex_1].baseLayer.type !== TileType.NONE) {
+                        map[tileIndex_1].upperLayer.type = TileType.NONE;
+                        map[tileIndex_1].baseLayer.type = TileType.LAVA;
+                        map[tileIndex_1].toughness = 0;
+                        map[tileIndex_1].oreCount = 0;
+                    }
                 }
             }
         }
@@ -2712,7 +2722,7 @@ System.register("index", ["controls", "resources"], function (exports_3, context
         }
         normalizeAngle(gameObject.angle);
     }
-    function addMenuText(x, y, width, height, text, color, size, layer) {
+    function addMenuText(x, y, width, height, text, color, size, z) {
         var clickableText = {
             text: text,
             x: x,
@@ -2721,7 +2731,7 @@ System.register("index", ["controls", "resources"], function (exports_3, context
             height: height,
             color: color,
             size: size,
-            layer: layer,
+            z: z,
             mouseOn: false,
             exists: true
         };
@@ -2741,7 +2751,7 @@ System.register("index", ["controls", "resources"], function (exports_3, context
                 controls_1.mouse.worldY < text.y + text.height / 2) {
                 text.mouseOn = true;
             }
-            drawText(text.x, text.y, 0, 0, text.color, text.text, text.size, 'center', text.layer);
+            drawText(text.x, text.y, 0, 0, text.color, text.text, text.size, 'center', text.z);
         }
     }
     function resetClicks() {
@@ -2907,7 +2917,7 @@ System.register("index", ["controls", "resources"], function (exports_3, context
             loopGame();
         }
         updateTimers();
-        drawQueue.sort(function (a, b) { return b.layer - a.layer; });
+        drawQueue.sort(function (a, b) { return a.z - b.z; });
         for (var itemIndex = 0; itemIndex < drawQueue.length; itemIndex++) {
             var item = drawQueue[itemIndex];
             resources_2.renderItem(item);
@@ -3037,14 +3047,13 @@ System.register("index", ["controls", "resources"], function (exports_3, context
                 chunkCountX: 16,
                 chunkCountY: 16
             };
-            MORNING_LENGTH = 6000;
-            DAY_LENGTH = 6000;
-            AFTERNOON_LENGTH = 6000;
-            NIGHT_LENGTH = 6000;
+            MORNING_LENGTH = 4000;
+            DAY_LENGTH = 4000;
+            AFTERNOON_LENGTH = 4000;
+            NIGHT_LENGTH = 4000;
             ONE_DAY = MORNING_LENGTH + DAY_LENGTH + AFTERNOON_LENGTH + NIGHT_LENGTH;
             EVENT_LENGTH = 1800;
             VOLCANO_RADIUS = TILE.width * TILE.chunkSizeX * 1.5;
-            VOLCANO_HEIGHT = 100;
             GRAVITATION = 0.5;
             CAMERA_HEIGHT = 1325;
             MAGMA_BALL_SPEED = 35;
@@ -3176,7 +3185,7 @@ System.register("index", ["controls", "resources"], function (exports_3, context
                 },
                 {
                     result: Item.SHAKING_DETECTOR,
-                    parts: [{ item: Item.IRON, count: 30, sprite: resources_2.imgIronIngot }],
+                    parts: [{ item: Item.IRON_INGOT, count: 30, sprite: resources_2.imgIronIngot }],
                     sprite: resources_2.imgShakingDetector,
                     name: 'Детектор тряски',
                     description: 'Настроен различать самые мелкие колебания, даже колебания от гейзеров.'
