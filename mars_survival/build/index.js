@@ -679,7 +679,6 @@ System.register("index", ["controls", "resources"], function (exports_3, context
                     if (words[wordNumber] === '/') {
                         wordNumber++;
                     }
-                    console.log(textSample);
                     drawQueue.push({ x: x, y: y + textNumber * intervalsBettweenLines, color: [color], text: textSample, z: z, type: resources_2.DrawQueueType.TEXT, textSize: textSize, textAlign: textAlign });
                 }
             }
@@ -1467,7 +1466,26 @@ System.register("index", ["controls", "resources"], function (exports_3, context
                     drawLight(tile.x * TILE.width, tile.y * TILE.height, TILE.width * 0.75);
                     upSprite = resources_2.imgMelter;
                     if (timers[tile.specialTimer] > 0) {
-                        drawText(tile.x * TILE.width - 10, tile.y * TILE.height, 0, 0, 'blue', "" + Math.round(timers[tile.specialTimer] / 60), 30, 'left', resources_2.Layer.UI);
+                        drawText(tile.x * TILE.width - 10, tile.y * TILE.height, 0, 0, 'blue', "" + Math.ceil(timers[tile.specialTimer] / 60), 30, 'left', resources_2.Layer.UI);
+                    }
+                    if (tile.specialTimer && timers[tile.specialTimer] % 120 === 0) {
+                        tile.inventory[1].count++;
+                        if (tile.inventory[0].item === Item.IRON) {
+                            tile.inventory[1].item = Item.IRON_INGOT;
+                        }
+                        if (tile.inventory[0].item === Item.AURIT) {
+                            tile.inventory[1].item = Item.AURIT_INGOT;
+                        }
+                        if (tile.inventory[0].item === Item.IGNEOUS) {
+                            tile.inventory[1].item = Item.IGNEOUS_INGOT;
+                        }
+                        tile.inventory[0].count--;
+                        if (tile.inventory[0].count <= 0) {
+                            tile.inventory[0].item = Item.NONE;
+                        }
+                        if (timers[tile.specialTimer] === 0) {
+                            tile.specialTimer = null;
+                        }
                     }
                     if (!controls_1.mouse.isDown) {
                         tile.toughness = tile.firstToughness;
@@ -1993,26 +2011,19 @@ System.register("index", ["controls", "resources"], function (exports_3, context
                 if (mouseTile && controls_1.mouse.wentDown && mouseTile.upperLayer.type === TileType.MELTER &&
                     distanceBetweenPoints(gameObject.x, gameObject.y, mouseTile.x * TILE.width, mouseTile.y * TILE.height) <=
                         TILE.width + gameObject.width) {
-                    if (mouseTile.inventory[0].item === Item.NONE && inventory[mainSlot] &&
-                        (inventory[mainSlot].item === Item.IRON || inventory[mainSlot].item === Item.AURIT ||
+                    if ((mouseTile.inventory[0].item === Item.NONE && inventory[mainSlot] ||
+                        mouseTile.inventory[0].item === inventory[mainSlot].item) &&
+                        (inventory[mainSlot].item === Item.IRON ||
+                            inventory[mainSlot].item === Item.AURIT ||
                             inventory[mainSlot].item === Item.IGNEOUS)) {
                         mouseTile.inventory[0].item = inventory[mainSlot].item;
-                        mouseTile.inventory[0].count = inventory[mainSlot].count;
+                        mouseTile.inventory[0].count += inventory[mainSlot].count;
                         removeItem(inventory[mainSlot].item, inventory[mainSlot].count);
                         mouseTile.specialTimer = addTimer(mouseTile.inventory[0].count * 2 * 60);
                     }
-                    if (timers[mouseTile.specialTimer] <= 0) {
-                        if (mouseTile.inventory[0].item === Item.IRON && !isInventoryFullForItem(Item.IRON_INGOT)) {
-                            addItem(Item.IRON_INGOT, mouseTile.inventory[0].count);
-                        }
-                        if (mouseTile.inventory[0].item === Item.AURIT && !isInventoryFullForItem(Item.AURIT_INGOT)) {
-                            addItem(Item.AURIT_INGOT, mouseTile.inventory[0].count);
-                        }
-                        if (mouseTile.inventory[0].item === Item.IGNEOUS && !isInventoryFullForItem(Item.IGNEOUS_INGOT)) {
-                            addItem(Item.IGNEOUS_INGOT, mouseTile.inventory[0].count);
-                        }
-                        mouseTile.inventory[0].item = Item.NONE;
-                        timers[mouseTile.specialTimer] = null;
+                    if (mouseTile.inventory[1].count > 0) {
+                        addItem(mouseTile.inventory[1].item, mouseTile.inventory[1].count);
+                        mouseTile.inventory[1].count = 0;
                     }
                 }
                 if (mouseTile && controls_1.mouse.wentDown && mouseTile.upperLayer.type === TileType.SPLITTER &&
@@ -2118,8 +2129,10 @@ System.register("index", ["controls", "resources"], function (exports_3, context
                             mouseTile.upperLayer = { type: TileType.MELTER, variant: 1 };
                             mouseTile.toughness = 200;
                             mouseTile.firstToughness = 200;
-                            mouseTile.specialTimer = addTimer(0);
-                            mouseTile.inventory[0] = { item: Item.NONE, count: 0, cooldown: addTimer(0) };
+                            mouseTile.specialTimer = null;
+                            for (var i = 0; i < 2; i++) {
+                                mouseTile.inventory[i] = { item: Item.NONE, count: 0, cooldown: addTimer(0) };
+                            }
                             removeItem(Item.MELTER, 1);
                         }
                         if (inventory[mainSlot] && inventory[mainSlot].item === Item.SPLITTER &&
