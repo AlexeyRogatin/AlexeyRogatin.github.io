@@ -1463,7 +1463,6 @@ System.register("index", ["controls", "resources"], function (exports_3, context
                 break;
             case TileType.MELTER:
                 {
-                    drawLight(tile.x * TILE.width, tile.y * TILE.height, TILE.width * 0.75);
                     upSprite = resources_2.imgMelter;
                     if (tile.inventory[1].count > 0) {
                         drawText(tile.x * TILE.width + 30, tile.y * TILE.height, 0, 0, 'blue', "" + tile.inventory[1].count, 30, 'center', resources_2.Layer.UI);
@@ -1695,7 +1694,9 @@ System.register("index", ["controls", "resources"], function (exports_3, context
                 drawSprite(gameObject.x, gameObject.y, gameObject.sprite, gameObject.angle, gameObject.width, gameObject.height, false, resources_2.Layer.PLAYER);
             }
             controlGameObject(gameObject);
-            drawLight(gameObject.x, gameObject.y, gameObject.width * 2.5);
+            if (timers[gameObject.energy] > 0) {
+                drawLight(gameObject.x, gameObject.y, timers[gameObject.energy] / gameObject.maxEnergy * gameObject.width * 1.5 + gameObject.width);
+            }
             if (globalBoss && gameObject.luckyCamera &&
                 !(globalBoss.x > resources_2.camera.x - resources_2.camera.width / 2 &&
                     globalBoss.x < resources_2.camera.x + resources_2.camera.width / 2 &&
@@ -1754,10 +1755,10 @@ System.register("index", ["controls", "resources"], function (exports_3, context
             }
             if (globalPlayer.sunBateryLvl) {
                 if (timers[dayTimer] <= DAY_TIME && timers[dayTimer] > AFTERNOON_TIME) {
-                    timers[globalPlayer.energy] += 1.17;
+                    timers[globalPlayer.energy] += 1.034;
                 }
                 if ((timers[dayTimer] <= MORNING_TIME && timers[dayTimer] > DAY_TIME) || (timers[dayTimer] <= AFTERNOON_TIME && timers[dayTimer] > NIGHT_TIME)) {
-                    timers[globalPlayer.energy] += 1.34;
+                    timers[globalPlayer.energy] += 1.068;
                 }
                 if (timers[globalPlayer.energy] > globalPlayer.maxEnergy) {
                     timers[globalPlayer.energy] = globalPlayer.maxEnergy;
@@ -2084,8 +2085,8 @@ System.register("index", ["controls", "resources"], function (exports_3, context
                         if (inventory[mainSlot].item === Item.SUN_BATERY) {
                             if (gameObject.sunBateryLvl === 0) {
                                 gameObject.sunBateryLvl = 1;
-                                timers[gameObject.energy] *= 0.25;
-                                gameObject.maxEnergy *= 0.25;
+                                timers[gameObject.energy] *= 0.05;
+                                gameObject.maxEnergy *= 0.05;
                                 removeItem(Item.SUN_BATERY, 1);
                             }
                         }
@@ -2125,8 +2126,8 @@ System.register("index", ["controls", "resources"], function (exports_3, context
                         else {
                             if (gameObject.sunBateryLvl === 1 && !isInventoryFullForItem(Item.SUN_BATERY)) {
                                 gameObject.sunBateryLvl = 0;
-                                timers[gameObject.energy] *= 100 / 25;
-                                gameObject.maxEnergy *= 100 / 25;
+                                timers[gameObject.energy] *= 100 / 5;
+                                gameObject.maxEnergy *= 100 / 5;
                                 addItem(Item.SUN_BATERY, 1);
                             }
                         }
@@ -2352,7 +2353,12 @@ System.register("index", ["controls", "resources"], function (exports_3, context
                     drawSprite(gameObject.x + wheelPositions[posIndex][0], gameObject.y + wheelPositions[posIndex][1], wheelSprite, gameObject.angle, 25, 12, false, resources_2.Layer.PLAYER);
                 }
             }
-            moveGameObject(gameObject);
+            if (timers[gameObject.energy] > 0) {
+                moveGameObject(gameObject);
+            }
+            else {
+                gameObject.hitpoints -= 0.01;
+            }
             if (globalPlayer.x < TILE.firstX - TILE.width / 2) {
                 globalPlayer.x = TILE.firstX - TILE.width / 2;
             }
@@ -2755,9 +2761,6 @@ System.register("index", ["controls", "resources"], function (exports_3, context
                 });
             }
         }
-        if (timers[gameObject.energy] <= 0 && gameObject.type === GameObjectType.PLAYER) {
-            gameObject.exists = false;
-        }
         normalizeAngle(gameObject.angle);
     }
     function addMenuText(x, y, width, height, text, color, size, z) {
@@ -3085,10 +3088,10 @@ System.register("index", ["controls", "resources"], function (exports_3, context
                 chunkCountX: 16,
                 chunkCountY: 16
             };
-            MORNING_LENGTH = 0;
-            DAY_LENGTH = 0;
-            AFTERNOON_LENGTH = 0;
-            NIGHT_LENGTH = 4000 * 4;
+            MORNING_LENGTH = 4000;
+            DAY_LENGTH = 4000;
+            AFTERNOON_LENGTH = 4000;
+            NIGHT_LENGTH = 4000;
             ONE_DAY = MORNING_LENGTH + DAY_LENGTH + AFTERNOON_LENGTH + NIGHT_LENGTH;
             EVENT_LENGTH = 1800;
             VOLCANO_RADIUS = TILE.width * TILE.chunkSizeX * 1.5;
@@ -3205,7 +3208,7 @@ System.register("index", ["controls", "resources"], function (exports_3, context
                     parts: [{ item: Item.SILIKON, count: 45, sprite: resources_2.imgSiliconItem }, { item: Item.CRYSTAL, count: 45, sprite: resources_2.imgCrystalItem }],
                     sprite: resources_2.imgSunBatteryItem,
                     name: 'Сол панель ур.1',
-                    description: 'Без батарей, как без рук! Позволяет получать энергию днём; уменьшает запас энергии в 4 раза...Можно убрать'
+                    description: 'Без батарей, как без рук! Позволяет получать энергию днём; её поставили на место вашей батареи...'
                 },
                 {
                     result: Item.GOLDEN_CAMERA,
