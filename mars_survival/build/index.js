@@ -792,7 +792,7 @@ System.register("index", ["controls", "resources"], function (exports_3, context
         }
         if (gameObject.type === GameObjectType.MAGMA_BALL) {
             gameObject.sprite = resources_2.imgMagmaBall;
-            gameObject.angle = randomFloat(0, Math.PI * 2);
+            gameObject.angle = randomFloat(0, 2 * Math.PI);
             gameObject.angleZ = randomFloat(0.25 * Math.PI, 0.5 * Math.PI);
         }
         if (gameObject.type === GameObjectType.METEORITE) {
@@ -2550,13 +2550,14 @@ System.register("index", ["controls", "resources"], function (exports_3, context
             }
             if (timers[gameObject.specialTimer] === 0) {
                 if (distanceBetweenPoints(globalBoss.x, globalBoss.y, globalPlayer.x, globalPlayer.y) > resources_2.camera.width * 1.5) {
-                    gameObject.angle = angleBetweenPoints(gameObject.x, gameObject.y, globalPlayer.x, globalPlayer.y);
                     gameObject.attack = 0;
                 }
                 else {
                     gameObject.attack = randomInt(0, 3);
                     if (distanceBetweenPoints(globalBoss.x, globalBoss.y, globalPlayer.x, globalPlayer.y) >= 600 && gameObject.attack === 1) {
-                        gameObject.attack = randomInt(2, 3);
+                        while (gameObject.attack === 1) {
+                            gameObject.attack = randomInt(0, 3);
+                        }
                     }
                 }
                 gameObject.goForward = false;
@@ -2574,18 +2575,10 @@ System.register("index", ["controls", "resources"], function (exports_3, context
             if (gameObject.attack === 0) {
                 var angle = angleBetweenPoints(gameObject.x, gameObject.y, globalPlayer.x, globalPlayer.y);
                 var diff = normalizeAngle(gameObject.angle - angle);
-                if (diff > gameObject.rotationSpeed && !gameObject.goForward) {
-                    gameObject.goLeft = true;
-                    gameObject.goRight = false;
+                if (distanceBetweenPoints(globalBoss.x, globalBoss.y, globalPlayer.x, globalPlayer.y) < resources_2.camera.width * 1.5 && gameObject.goForward) {
+                    gameObject.rotationSpeed = 0;
                 }
-                else if (diff < -gameObject.rotationSpeed && !gameObject.goForward) {
-                    gameObject.goRight = true;
-                    gameObject.goLeft = false;
-                }
-                else {
-                    gameObject.goLeft = false;
-                    gameObject.goRight = false;
-                    gameObject.goForward = true;
+                if (gameObject.goForward) {
                     var vector = rotateVector(gameObject.width / 2, 0, gameObject.angle + Math.PI);
                     burstParticles({
                         x: gameObject.x + vector[0],
@@ -2598,8 +2591,18 @@ System.register("index", ["controls", "resources"], function (exports_3, context
                         accel: 0
                     });
                 }
-                if (gameObject.goForward) {
-                    gameObject.rotationSpeed = 0.0005;
+                if (diff > gameObject.rotationSpeed) {
+                    gameObject.goLeft = true;
+                    gameObject.goRight = false;
+                }
+                else if (diff < -gameObject.rotationSpeed) {
+                    gameObject.goRight = true;
+                    gameObject.goLeft = false;
+                }
+                else {
+                    gameObject.goLeft = false;
+                    gameObject.goRight = false;
+                    gameObject.goForward = true;
                 }
             }
             if (gameObject.attack === 1) {
@@ -2618,7 +2621,7 @@ System.register("index", ["controls", "resources"], function (exports_3, context
             }
             if (gameObject.attack === 2) {
                 if (timers[gameObject.specialTimer] > 100) {
-                    if (timers[gameObject.specialTimer] < 300 && timers[gameObject.specialTimer] % 10 === 0) {
+                    if (timers[gameObject.specialTimer] < 300 && timers[gameObject.specialTimer] % 7 === 0) {
                         addGameObject(GameObjectType.MAGMA_BALL, gameObject.x, gameObject.y);
                     }
                     gameObject.rotationSpeed += 0.0015;
@@ -2669,7 +2672,7 @@ System.register("index", ["controls", "resources"], function (exports_3, context
                     resources_2.ctx.translate(gameObject.x + vector[0], gameObject.y + vector[1]);
                     if (-286 / 796 * gameObject.height / 2 < rotatedDistanceFromPlayer[1] && 286 / 796 * gameObject.height / 2 > rotatedDistanceFromPlayer[1]
                         && -lazerLength / 2 < rotatedDistanceFromPlayer[0] && lazerLength / 2 > rotatedDistanceFromPlayer[0]) {
-                        globalPlayer.hitpoints -= 0.1;
+                        globalPlayer.hitpoints -= 0.15;
                     }
                     resources_2.ctx.restore();
                 }
@@ -2846,7 +2849,7 @@ System.register("index", ["controls", "resources"], function (exports_3, context
             drawText(resources_2.camera.x, resources_2.camera.y, 0, 0, 'white', 'Вы - выигрывающий) Спасибо, что поиграли в демо версию, ждите новых обновлений', 45, 'center', resources_2.Layer.UI);
         }
         else if (globalPlayer.exists === false) {
-            drawText(resources_2.camera.x, resources_2.camera.y, 0, 0, 'white', 'Не время сдаваться, вы справитесь. Нажмите на R для меню', 45, 'center', resources_2.Layer.UI);
+            drawText(resources_2.camera.x, resources_2.camera.y, 0, 0, 'white', 'Не время сдаваться, вы справитесь. Нажмите R для меню', 45, 'center', resources_2.Layer.UI);
         }
         if (timers[gameTimer] < eventEnd - timeBetweenEvents) {
             event = Event.METEORITE_RAIN;
@@ -3085,8 +3088,8 @@ System.register("index", ["controls", "resources"], function (exports_3, context
                 firstY: 0,
                 chunkSizeX: 8,
                 chunkSizeY: 8,
-                chunkCountX: 16,
-                chunkCountY: 16
+                chunkCountX: 32,
+                chunkCountY: 32
             };
             MORNING_LENGTH = 4000;
             DAY_LENGTH = 4000;
