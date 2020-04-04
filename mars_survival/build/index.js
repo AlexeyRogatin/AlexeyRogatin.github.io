@@ -2000,7 +2000,6 @@ System.register("index", ["controls", "resources"], function (exports_3, context
                         firstRecipeIndex++;
                     }
                 }
-                addItem(Item.STORAGE, 1);
                 drawSprite(resources_2.camera.x - resources_2.camera.width / 2 + 150, resources_2.camera.y - resources_2.camera.height / 4 + 200 + 39, resources_2.imgCrafts, 0, 450, 533, false, resources_2.Layer.UI);
                 for (var itemIndex = 0; itemIndex < 3; itemIndex++) {
                     drawSprite(resources_2.camera.x - resources_2.camera.width / 2 + 60, resources_2.camera.y - resources_2.camera.height / 4 + 110 + 133 * itemIndex, RECIPES[firstRecipeIndex + itemIndex].sprite, 0, 70, 70, false, resources_2.Layer.UI);
