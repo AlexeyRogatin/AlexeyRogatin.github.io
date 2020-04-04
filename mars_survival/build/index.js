@@ -876,6 +876,7 @@ System.register("index", ["controls", "resources"], function (exports_3, context
         if (gameObject.goRight) {
             gameObject.angle += gameObject.rotationSpeed;
         }
+        gameObject.angle = normalizeAngle(gameObject.angle);
         gameObject.speed += gameObject.accel;
         if (gameObject.speed > gameObject.speedLimit) {
             gameObject.speed = gameObject.speedLimit;
@@ -885,62 +886,69 @@ System.register("index", ["controls", "resources"], function (exports_3, context
         }
         gameObject.speedX = gameObject.speed * Math.cos(gameObject.angle);
         gameObject.speedY = gameObject.speed * Math.sin(gameObject.angle);
-        for (var tileIndex = 0; tileIndex < map.length; tileIndex++) {
-            var other = map[tileIndex];
-            var wallLeft = other.x * TILE.width - other.collisionWidth / 2;
-            var wallRight = other.x * TILE.width + other.collisionWidth / 2;
-            var wallTop = other.y * TILE.height - other.collisionHeight / 2;
-            var wallBottom = other.y * TILE.height + other.collisionHeight / 2;
-            var playerLeft = gameObject.x - gameObject.width / 2;
-            var playerRight = gameObject.x + gameObject.width / 2;
-            var playerTop = gameObject.y - gameObject.height / 2;
-            var playerBottom = gameObject.y + gameObject.height / 2;
-            if (gameObject.stuckable && (other.upperLayer.type === TileType.MOUNTAIN || other.baseLayer.type === TileType.VOLCANO ||
-                other.upperLayer.type === TileType.MELTER || other.upperLayer.type === TileType.SPLITTER ||
-                other.upperLayer.type === TileType.SUN_BATERY || other.upperLayer.type === TileType.STORAGE)) {
-                if (gameObject.speedX !== 0) {
-                    var side = void 0;
-                    var wallSide = void 0;
-                    if (gameObject.speedX > 0) {
-                        side = playerRight;
-                        wallSide = wallLeft;
+        var firstTile = { x: Math.round((gameObject.x - (TILE.width * 2.1 + gameObject.width)) / TILE.width), y: Math.round((gameObject.y - (TILE.width * 3 + gameObject.width)) / TILE.width) };
+        var lastTile = { x: Math.round((gameObject.x + (TILE.width * 2.1 + gameObject.width)) / TILE.width), y: Math.round((gameObject.y + (TILE.width * 3 + gameObject.width)) / TILE.width) };
+        for (var y = firstTile.y; y < lastTile.y; y++) {
+            for (var x = firstTile.x; x < lastTile.x; x++) {
+                var other = map[getIndexFromCoords(x, y)];
+                if (other) {
+                    var wallLeft = other.x * TILE.width - other.collisionWidth / 2;
+                    var wallRight = other.x * TILE.width + other.collisionWidth / 2;
+                    var wallTop = other.y * TILE.height - other.collisionHeight / 2;
+                    var wallBottom = other.y * TILE.height + other.collisionHeight / 2;
+                    var playerLeft = gameObject.x - gameObject.width / 2;
+                    var playerRight = gameObject.x + gameObject.width / 2;
+                    var playerTop = gameObject.y - gameObject.height / 2;
+                    var playerBottom = gameObject.y + gameObject.height / 2;
+                    if (gameObject.stuckable && (other.upperLayer.type === TileType.MOUNTAIN || other.baseLayer.type === TileType.VOLCANO ||
+                        other.upperLayer.type === TileType.MELTER || other.upperLayer.type === TileType.SPLITTER ||
+                        other.upperLayer.type === TileType.SUN_BATERY || other.upperLayer.type === TileType.STORAGE)) {
+                        if (gameObject.speedX !== 0) {
+                            var side = void 0;
+                            var wallSide = void 0;
+                            if (gameObject.speedX > 0) {
+                                side = playerRight;
+                                wallSide = wallLeft;
+                            }
+                            else {
+                                side = playerLeft;
+                                wallSide = wallRight;
+                            }
+                            if (!(playerRight + gameObject.speedX <= wallLeft ||
+                                playerLeft + gameObject.speedX >= wallRight ||
+                                playerTop >= wallBottom ||
+                                playerBottom <= wallTop)) {
+                                gameObject.speedX = 0;
+                                gameObject.x -= side - wallSide;
+                            }
+                        }
+                        if (gameObject.speedY !== 0) {
+                            var side = void 0;
+                            var wallSide = void 0;
+                            if (gameObject.speedY > 0) {
+                                side = playerBottom;
+                                wallSide = wallTop;
+                            }
+                            else {
+                                side = playerTop;
+                                wallSide = wallBottom;
+                            }
+                            if (!(playerRight <= wallLeft ||
+                                playerLeft >= wallRight ||
+                                playerTop + gameObject.speedY >= wallBottom ||
+                                playerBottom + gameObject.speedY <= wallTop)) {
+                                debugger;
+                                gameObject.speedY = 0;
+                                gameObject.y -= side - wallSide;
+                            }
+                        }
                     }
-                    else {
-                        side = playerLeft;
-                        wallSide = wallRight;
-                    }
-                    if (!(playerRight + gameObject.speedX <= wallLeft ||
-                        playerLeft + gameObject.speedX >= wallRight ||
-                        playerTop >= wallBottom ||
-                        playerBottom <= wallTop)) {
-                        gameObject.speedX = 0;
-                        gameObject.x -= side - wallSide;
-                    }
-                }
-                if (gameObject.speedY !== 0) {
-                    var side = void 0;
-                    var wallSide = void 0;
-                    if (gameObject.speedY > 0) {
-                        side = playerBottom;
-                        wallSide = wallTop;
-                    }
-                    else {
-                        side = playerTop;
-                        wallSide = wallBottom;
-                    }
-                    if (!(playerRight <= wallLeft ||
-                        playerLeft >= wallRight ||
-                        playerTop + gameObject.speedY >= wallBottom ||
-                        playerBottom + gameObject.speedY <= wallTop)) {
-                        gameObject.speedY = 0;
-                        gameObject.y -= side - wallSide;
-                    }
+                    globalPlayer.goForward = false;
+                    globalPlayer.goBackward = false;
+                    globalPlayer.goLeft = false;
+                    globalPlayer.goRight = false;
                 }
             }
-            globalPlayer.goForward = false;
-            globalPlayer.goBackward = false;
-            globalPlayer.goLeft = false;
-            globalPlayer.goRight = false;
         }
         gameObject.x += gameObject.speedX;
         gameObject.y += gameObject.speedY;
@@ -1114,8 +1122,8 @@ System.register("index", ["controls", "resources"], function (exports_3, context
                             downTileType = TileType.VOLCANO;
                             map[index].width = TILE.width * 3;
                             map[index].height = TILE.height * 3;
-                            map[index].collisionWidth = TILE.width * 2;
-                            map[index].collisionHeight = TILE.height * 2;
+                            map[index].collisionWidth = TILE.width * 2.1;
+                            map[index].collisionHeight = TILE.height * 2.1;
                             map[index].specialTimer = addTimer(randomInt(50, 500));
                         }
                         else if (char === '!') {
@@ -1992,6 +2000,7 @@ System.register("index", ["controls", "resources"], function (exports_3, context
                         firstRecipeIndex++;
                     }
                 }
+                addItem(Item.STORAGE, 1);
                 drawSprite(resources_2.camera.x - resources_2.camera.width / 2 + 150, resources_2.camera.y - resources_2.camera.height / 4 + 200 + 39, resources_2.imgCrafts, 0, 450, 533, false, resources_2.Layer.UI);
                 for (var itemIndex = 0; itemIndex < 3; itemIndex++) {
                     drawSprite(resources_2.camera.x - resources_2.camera.width / 2 + 60, resources_2.camera.y - resources_2.camera.height / 4 + 110 + 133 * itemIndex, RECIPES[firstRecipeIndex + itemIndex].sprite, 0, 70, 70, false, resources_2.Layer.UI);
@@ -2392,7 +2401,7 @@ System.register("index", ["controls", "resources"], function (exports_3, context
             }
             gameObject.width = (100 + height);
             gameObject.height = (100 + height);
-            if (height < resources_2.Layer.UPPER_TILE) {
+            if (height <= resources_2.Layer.UPPER_TILE) {
                 var x = Math.round(gameObject.x / TILE.width);
                 var y = Math.round(gameObject.y / TILE.height);
                 var tileIndex = getIndexFromCoords(x, y);
@@ -3088,8 +3097,8 @@ System.register("index", ["controls", "resources"], function (exports_3, context
                 firstY: 0,
                 chunkSizeX: 8,
                 chunkSizeY: 8,
-                chunkCountX: 32,
-                chunkCountY: 32
+                chunkCountX: 124,
+                chunkCountY: 124
             };
             MORNING_LENGTH = 4000;
             DAY_LENGTH = 4000;
