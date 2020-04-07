@@ -1745,9 +1745,6 @@ System.register("index", ["controls", "resources"], function (exports_3, context
             if (controls_1.qKey.wentDown) {
                 inventory[mainSlot] = { item: Item.NONE, count: 0, cooldown: addTimer(0) };
             }
-            if (isInventoryFullForItem(Item.NONE)) {
-                drawText(resources_2.camera.x + resources_2.camera.width / 8, resources_2.camera.y + resources_2.camera.height / 2 - 40, 0, 0, 'green', 'Нажмите на Q, чтобы выбросить вещь', 25, 'left', resources_2.Layer.UI);
-            }
             var vector1 = rotateVector(20, 0, gameObject.angle + Math.PI / 4);
             var vector2 = rotateVector(20, 0, gameObject.angle + Math.PI * 3 / 4);
             var vector3 = rotateVector(20, 0, gameObject.angle - Math.PI / 4);
@@ -2616,9 +2613,7 @@ System.register("index", ["controls", "resources"], function (exports_3, context
             if (gameObject.attack === 1) {
                 if (timers[gameObject.specialTimer] > 100) {
                     if (timers[gameObject.specialTimer] < 300) {
-                        for (var i = 0; i < 5; i++) {
-                            addGameObject(GameObjectType.LAVA_BALL, gameObject.x, gameObject.y);
-                        }
+                        addGameObject(GameObjectType.LAVA_BALL, gameObject.x, gameObject.y);
                     }
                     gameObject.rotationSpeed += 0.0015;
                 }
@@ -2629,7 +2624,7 @@ System.register("index", ["controls", "resources"], function (exports_3, context
             }
             if (gameObject.attack === 2) {
                 if (timers[gameObject.specialTimer] > 100) {
-                    if (timers[gameObject.specialTimer] < 300 && timers[gameObject.specialTimer] % 7 === 0) {
+                    if (timers[gameObject.specialTimer] < 300 && timers[gameObject.specialTimer] % 10 === 0) {
                         addGameObject(GameObjectType.MAGMA_BALL, gameObject.x, gameObject.y);
                     }
                     gameObject.rotationSpeed += 0.0015;
