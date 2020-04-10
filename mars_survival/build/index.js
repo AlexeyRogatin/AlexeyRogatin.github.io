@@ -3261,7 +3261,7 @@ System.register("index", ["controls", "resources"], function (exports_3, context
                     description: 'Эта вещь может вызвать метеорит, который упадёт на выбранную область. Хорошо бабахнуло'
                 },
             ];
-            GAME_LENGTH = 2;
+            GAME_LENGTH = ONE_DAY * 3;
             timers = [];
             map = [];
             slotCount = 5;
