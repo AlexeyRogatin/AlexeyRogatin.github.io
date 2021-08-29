@@ -4,6 +4,7 @@ let KEY_DOWN = 83;
 let KEY_UP = 87;
 let KEY_SPACE = 32;
 let KEY_SHIFT = 16;
+let KEY_Q = 81;
 let KEY_R = 82;
 let KEY_ESC = 27;
 let KEY_A = 65;
@@ -27,7 +28,7 @@ let rightKey = makeKey();
 let spaceKey = makeKey();
 let shiftKey = makeKey();
 let rKey = makeKey();
-let escKey = makeKey();
+let qKey = makeKey();
 
 let mouseX = 0;
 let mouseY = 0;
@@ -58,7 +59,7 @@ window.onkeydown = function onkeydown(event) {
     handleKeyDown(event, KEY_SPACE, spaceKey);
     handleKeyDown(event, KEY_SHIFT, shiftKey);
     handleKeyDown(event, KEY_R, rKey);
-    handleKeyDown(event, KEY_ESC, escKey);
+    handleKeyDown(event, KEY_Q, qKey);
 
     if (
         (event.keyCode >= KEY_A && event.keyCode <= KEY_Z) ||
@@ -79,7 +80,7 @@ window.onkeyup = function onkeyup(event) {
     handleKeyUp(event, KEY_SPACE, spaceKey);
     handleKeyUp(event, KEY_SHIFT, shiftKey);
     handleKeyUp(event, KEY_R, rKey);
-    handleKeyUp(event, KEY_ESC, escKey);
+    handleKeyUp(event, KEY_Q, qKey);
 };
 window.onmousemove = function onmousemove(event) {
     mouseX = event.clientX - canvas.clientLeft;
@@ -98,5 +99,5 @@ function clearAllKeys() {
     clearKey(spaceKey);
     clearKey(shiftKey);
     clearKey(rKey);
-    clearKey(escKey);
+    clearKey(qKey);
 }

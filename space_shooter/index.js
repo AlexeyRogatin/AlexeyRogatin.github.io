@@ -1,8 +1,6 @@
 ﻿'use strict';
 const ROTATION_SPEED = 0.05;
 
-
-const MENU_OPTION_SELECT_CHARACHTER = 0;
 const MENU_OPTION_PLAY = 1;
 const MENU_OPTION_DIFFICULTY = 2;
 const MENU_OPTION_NAME = 3;
@@ -19,6 +17,7 @@ const DIFFCULTY_HARD = 1;
 const SCREEN_MENU = 0;
 const SCREEN_GAME = 1;
 const SCREEN_RECORDS = 2;
+const SCREEN_CHARACTERS = 3;
 
 const GAME_OBJECT_NONE = 0;
 const GAME_OBJECT_PLAYER = 1;
@@ -40,7 +39,7 @@ const AI_STATE_ROTATE_RIGHT = 2;
 const AI_STATE_MOVE_FORWARD = 3;
 const AI_STATE_SHOOT = 4;
 const AI_STATE_HUNT = 5;
-const TIME_UNTIL_BOSS = 3600;
+const TIME_UNTIL_BOSS = 3000;
 
 const SCREEN_RATIO = 16 / 9;
 const canvas = document.getElementById("canvas");
@@ -57,10 +56,8 @@ window.addEventListener('resize', handleResize);
 
 const ctx = canvas.getContext("2d");
 
-
 let state = null;
 let globalRecords = [];
-
 
 const DEFAULT_PLAYER_NAME = 'player';
 
@@ -74,7 +71,6 @@ function resetState() {
             angle: 0,
         },
         particles: [],
-        playerType: PLAYER_TYPE_DEFAULT,
         gameObjects: [],
         timers: [],
         globalPlayer: null,
@@ -88,9 +84,6 @@ function resetState() {
         globalTime: 0,
 
         inputInProgress: false,
-        playersName: DEFAULT_PLAYER_NAME,
-        menuKey: MENU_OPTION_PLAY,
-        difficulty: DIFFICULTY_NORMAL,
         currentScreen: SCREEN_MENU,
         bossDefeatCount: 0,
     };
@@ -99,9 +92,14 @@ function resetState() {
     state.enemySpawnTimer = addTimer();
     state.screenShakeTimer = addTimer();
     state.bossTimer = addTimer(TIME_UNTIL_BOSS);
+
     state.tutorialTimer = addTimer(300);
-    state.showWinTextTimer = addTimer();
 }
+
+let playerType = PLAYER_TYPE_DEFAULT;
+let playersName = DEFAULT_PLAYER_NAME;
+let difficulty = DIFFICULTY_NORMAL;
+let menuKey = MENU_OPTION_PLAY;
 
 let lap = 0;
 
@@ -228,9 +226,6 @@ function addGameObject(type) {
 
         //powerup
         powerUpTime: 0,
-
-        //boss
-        bossRotateChance: 0,
     };
 
     let freeIndex = state.gameObjects.length;
@@ -541,13 +536,15 @@ function bossProcessAI(gameObject) {
 
     let stateChanged = false;
 
+    let rotationChance = 0;
+
     let distance = distanceBetweenPoints(gameObject.x, gameObject.y, state.globalPlayer.x, state.globalPlayer.y);
     if (distance > HUNT_RADIUS) {
         gameObject.aiState = AI_STATE_HUNT;
     } else if (getTimer(gameObject.aiTimer) <= 0) {
         gameObject.aiState = getRandomInt(AI_STATE_MOVE_FORWARD, AI_STATE_SHOOT);
-        gameObject.bossRotateChance = getRandomFloat(0, 1);
         stateChanged = true;
+        rotationChance = getRandomInt(0, 1);
     }
 
     switch (gameObject.aiState) {
@@ -566,7 +563,7 @@ function bossProcessAI(gameObject) {
             }
 
             shoot = true;
-            if (gameObject.bossRotateChance > 0.5) {
+            if (rotationChance = 1) {
                 rotateRight = true;
             } else {
                 rotateLeft = true;
@@ -644,11 +641,7 @@ function processAI(gameObject) {
 
 
 function updateGameObject(gameObject) {
-    const camera = state.camera;
-
     if (gameObject.type === GAME_OBJECT_PLAYER) {
-        state.camera.x = gameObject.x;
-        state.camera.y = gameObject.y;
         let hitHeal = checkCollision(gameObject, [GAME_OBJECT_HEAL]);
         if (hitHeal !== null) {
             removeGameObject(hitHeal);
@@ -690,10 +683,10 @@ function updateGameObject(gameObject) {
         ];
 
         if (state.skillMode) {
-            if (state.playerType === PLAYER_TYPE_FAST) {
+            if (playerType === PLAYER_TYPE_FAST) {
                 rateMultiplier = 0.5;
             }
-            if (state.playerType === PLAYER_TYPE_DEFAULT) {
+            if (playerType === PLAYER_TYPE_DEFAULT) {
                 let shield = addBullet(
                     GAME_OBJECT_BULLET,
                     gameObject.x, gameObject.y, gameObject.angle,
@@ -705,7 +698,7 @@ function updateGameObject(gameObject) {
                 setTimer(gameObject.shootTimer, 1);
                 setTimer(gameObject.unhitableTimer, 1);
             }
-            if (state.playerType === PLAYER_TYPE_DOUBLE) {
+            if (playerType === PLAYER_TYPE_DOUBLE) {
                 state.killBullet = true;
                 setTimer(state.skillTimer, getTimer(state.skillTimer) - 0.5);
                 if (state.cleanWidth < 1000) {
@@ -825,6 +818,11 @@ function updateGameObject(gameObject) {
             playSound(sndGun, 0.2);
         }
 
+        controlShip(gameObject, rightKey.isDown, leftKey.isDown, upKey.isDown);
+
+        state.camera.x = gameObject.x;
+        state.camera.y = gameObject.y;
+
         const STRIPE_WIDTH = 100;
         const STRIPE_HEIGHT = 30;
         const powerUpTimeLeftPercentage = getTimer(gameObject.powerUpTimer) / 400;
@@ -844,8 +842,8 @@ function updateGameObject(gameObject) {
                 } break;
             }
             drawRect(
-                200 + leftTimeWidth / 2 + camera.x - camera.width / 2,
-                10 + STRIPE_HEIGHT / 2 + camera.y - camera.height / 2,
+                200 + leftTimeWidth / 2 + state.camera.x - state.camera.width / 2,
+                10 + STRIPE_HEIGHT / 2 + state.camera.y - state.camera.height / 2,
                 leftTimeWidth, STRIPE_HEIGHT, 0, color
             );
         }
@@ -853,10 +851,10 @@ function updateGameObject(gameObject) {
         const skillTimeLeftPercentage = getTimer(state.skillTimer) / SKILL_TIMER_MAX;
         const skillLeftTimeWidth = skillTimeLeftPercentage * STRIPE_WIDTH;
 
-        drawRect(400 + skillLeftTimeWidth / 2 + camera.x - camera.width / 2, 10 + STRIPE_HEIGHT / 2 + camera.y - camera.height / 2, skillLeftTimeWidth, STRIPE_HEIGHT, 0, 'white');
+        drawRect(400 + skillLeftTimeWidth / 2 + state.camera.x - state.camera.width / 2, 10 + STRIPE_HEIGHT / 2 + state.camera.y - state.camera.height / 2, skillLeftTimeWidth, STRIPE_HEIGHT, 0, 'white');
 
         if (getTimer(state.skillTimer) >= SKILL_TIMER_MAX) {
-            drawText(400 + skillLeftTimeWidth / 2 + camera.x - camera.width / 2 + 300, camera.y - camera.height / 2 + 10, 'Press Shift!!!', 'top', 'right', '30px Arial', 'yellow');
+            drawText(400 + skillLeftTimeWidth / 2 + state.camera.x - state.camera.width / 2 + 300, state.camera.y - state.camera.height / 2 + 10, 'Press Shift!!!', 'top', 'right', '30px Arial', 'yellow');
         }
 
         //draw hitpoints
@@ -865,31 +863,32 @@ function updateGameObject(gameObject) {
         const leftWidth = STRIPE_WIDTH * hitpointsLeftPercentage;
 
         ctx.save();
-        ctx.rotate(-camera.angle);
+        ctx.rotate(-state.camera.angle);
 
         drawRect(
-            10 + STRIPE_WIDTH / 2 + camera.x - camera.width / 2,
-            10 + STRIPE_HEIGHT / 2 + camera.y - camera.height / 2,
+            10 + STRIPE_WIDTH / 2 + state.camera.x - state.camera.width / 2,
+            10 + STRIPE_HEIGHT / 2 + state.camera.y - state.camera.height / 2,
             STRIPE_WIDTH, STRIPE_HEIGHT, 0, 'red',
         );
         drawRect(
-            10 + leftWidth / 2 + camera.x - camera.width / 2,
-            10 + STRIPE_HEIGHT / 2 + camera.y - camera.height / 2,
+            10 + leftWidth / 2 + state.camera.x - state.camera.width / 2,
+            10 + STRIPE_HEIGHT / 2 + state.camera.y - state.camera.height / 2,
             leftWidth, STRIPE_HEIGHT, 0, 'green',
         );
         ctx.restore();
 
         //draw score
         drawText(
-            camera.x + camera.width / 2 - 10,
-            camera.y - camera.height / 2 + 10,
+            state.camera.x + state.camera.width / 2 - 10,
+            state.camera.y - state.camera.height / 2 + 10,
             'Score: ' + state.globalScore,
             'top', 'right', '30px Arial', 'yellow',
         );
 
-
-
-        controlShip(gameObject, rightKey.isDown, leftKey.isDown, upKey.isDown);
+        if (state.timers[state.screenShakeTimer] > 0) {
+            state.camera.x += getRandomFloat(-3, 3);
+            state.camera.y += getRandomFloat(-3, 3);
+        }
     };
 
     if (gameObject.type === GAME_OBJECT_ENEMY) {
@@ -1098,17 +1097,17 @@ function updateGameObject(gameObject) {
                 }
             } break;
             case GAME_OBJECT_BOSS: {
-                state.globalScore += 10000;
+                state.bossDefeatCount++;
+
+                state.globalScore += 10000 * state.bossDefeatCount;
 
                 // win the game
-                setTimer(state.showWinTextTimer, 180);
                 setTimer(state.bossTimer, TIME_UNTIL_BOSS);
                 state.globalBoss = null;
-                state.bossDefeatCount++;
             } break;
             case GAME_OBJECT_PLAYER: {
                 globalRecords.push({
-                    name: state.playersName,
+                    name: playersName,
                     score: state.globalScore,
                 });
             } break;
@@ -1134,14 +1133,14 @@ function updateGameObject(gameObject) {
 
     if (gameObject.bounce) {
         if (
-            gameObject.x > camera.x + camera.width / 2 ||
-            gameObject.x < camera.x - camera.width / 2
+            gameObject.x > state.camera.x + state.camera.width / 2 ||
+            gameObject.x < state.camera.x - state.camera.width / 2
         ) {
             gameObject.speedX *= -1;
         }
         if (
-            gameObject.y > camera.y + camera.height / 2 ||
-            gameObject.y < camera.y - camera.height / 2
+            gameObject.y > state.camera.y + state.camera.height / 2 ||
+            gameObject.y < state.camera.y - state.camera.height / 2
         ) {
             gameObject.speedY *= -1;
         }
@@ -1171,144 +1170,190 @@ function clipValue(value, min, max) {
 
 const MENU_OFFSET_LEFT = 0.32 * state.camera.width;
 
-function drawMenuText(x, y, text, align = 'left') {
-    const camera = state.camera;
-    drawText(MENU_OFFSET_LEFT + x, camera.y + camera.height / 2 + y, text, 'middle', align, '60px Arial', 'yellow');
+function drawMenuText(x, y, text, bold = false, align = 'left') {
+    let font = '';
+    if (bold) {
+        font += 'bold ';
+    }
+    font += '60px Arial';
+    drawText(state.camera.x + x, state.camera.y + y, text, 'middle', align, font, 'yellow');
 }
 
 function loopMenu() {
-    const camera = state.camera;
-
     if (!state.inputInProgress) {
         if (upKey.wentDown) {
-            state.menuKey--;
+            menuKey--;
         }
         if (downKey.wentDown) {
-            state.menuKey++;
+            menuKey++;
         }
     }
-    state.menuKey = clipValue(state.menuKey, MENU_OPTION_SELECT_CHARACHTER, MENU_OPTION_RECORDS);
 
-    //картинка
-    drawSprite(camera.width / 2, camera.height / 2, imgScreen, 0, canvas.width, canvas.height);
+    menuKey = clipValue(menuKey, MENU_OPTION_PLAY, MENU_OPTION_RECORDS);
 
-    //Вибeрите персонажа
-    drawMenuText(camera.width * 0.5 - MENU_OFFSET_LEFT, - 350, 'Выберите персонажа', 'center');
+    //задник
+    drawSprite(state.camera.width / 2, state.camera.height / 2, imgScreen, 0, canvas.width, canvas.height);
 
-    //спрайты персонажей
-    const playerSprites = [imgPlayerVadim1, imgPlayerVadim2, imgPlayerVadim3];
-    for (let i = 0; i < playerSprites.length; i++) {
-        drawSprite(
-            camera.x + camera.width / 2 - 150 + i * 150,
-            camera.y + camera.height / 2 - 250,
-            playerSprites[i], 0, ctx.width, ctx.height
-        );
-    }
-
-    if (state.menuKey === MENU_OPTION_SELECT_CHARACHTER) {
-
-        if (rightKey.wentDown) {
-            state.playerType++;
+    if (menuKey === MENU_OPTION_PLAY) {
+        if (spaceKey.wentDown && canBeginGame) {
+            state.currentScreen = SCREEN_CHARACTERS;
         }
-        if (leftKey.wentDown) {
-            state.playerType--;
-        }
-        state.playerType = clipValue(state.playerType, PLAYER_TYPE_FAST, PLAYER_TYPE_DOUBLE);
-    }
-
-    if (state.menuKey === MENU_OPTION_SELECT_CHARACHTER) {
-        let arrowX = state.playerType * 150;
-        drawMenuText(arrowX, -250, '→');
+        drawMenuText(150, 300, 'Играть', true);
     } else {
-        drawMenuText(-70, -225 + state.menuKey * 75, '→');
-    }
-
-    drawMenuText(0, -150, 'Играть');
-    if (spaceKey.wentDown && canBeginGame && state.menuKey === MENU_OPTION_PLAY) {
-        state.currentScreen = SCREEN_GAME;
-        if (lap === 0) {
-            playSound(sndSong, 0.75, true);
-        }
-        if (state.playerType === PLAYER_TYPE_FAST) {
-            state.globalPlayer = addPlayerFast();
-        }
-        if (state.playerType === PLAYER_TYPE_DEFAULT) {
-            state.globalPlayer = addPlayerDefault();
-        }
-        if (state.playerType === PLAYER_TYPE_DOUBLE) {
-            state.globalPlayer = addPlayerDouble();
-        }
+        drawMenuText(150, 300, 'Играть');
     }
 
     const difficultyTexts = ['Нормально', 'Сложно'];
-    drawMenuText(0, -75, difficultyTexts[state.difficulty]);
-    if (state.menuKey === MENU_OPTION_DIFFICULTY) {
+
+    if (menuKey === MENU_OPTION_DIFFICULTY) {
         if (spaceKey.wentDown) {
-            state.difficulty++;
-            if (state.difficulty > DIFFCULTY_HARD) {
-                state.difficulty = DIFFICULTY_NORMAL;
+            difficulty++;
+            if (difficulty > DIFFCULTY_HARD) {
+                difficulty = DIFFICULTY_NORMAL;
             }
         }
+        drawMenuText(150, 375, difficultyTexts[difficulty], true);
+    } else {
+        drawMenuText(150, 375, difficultyTexts[difficulty]);
     }
 
-    if (state.menuKey === MENU_OPTION_NAME && spaceKey.wentDown) {
-        if (state.inputInProgress) {
-            state.inputInProgress = false;
-        } else {
-            globalInputString = '';
-            state.inputInProgress = true;
+    let boldness = false;
+    if (menuKey === MENU_OPTION_NAME) {
+        boldness = true;
+        if (spaceKey.wentDown) {
+            if (state.inputInProgress) {
+                state.inputInProgress = false;
+            } else {
+                globalInputString = '';
+                state.inputInProgress = true;
+            }
         }
     }
 
     if (!state.inputInProgress) {
         let name = 'Имя';
-        if (state.playersName !== DEFAULT_PLAYER_NAME) {
-            name = state.playersName;
+        if (playersName !== DEFAULT_PLAYER_NAME) {
+            name = playersName;
         }
-        drawMenuText(0, 0, name);
+        drawMenuText(150, 450, name, boldness);
     } else {
-        state.playersName = globalInputString;
-        drawMenuText(0, 0, state.playersName);
+        playersName = globalInputString;
+        drawMenuText(150, 450, playersName, boldness);
     }
 
-    drawMenuText(0, 75, 'Рекорды');
+    if (menuKey === MENU_OPTION_RECORDS) {
+        drawMenuText(150, 525, 'Рекорды', true);
+        if (spaceKey.wentDown) {
+            state.currentScreen = SCREEN_RECORDS;
 
-    if (state.menuKey === MENU_OPTION_RECORDS && spaceKey.wentDown) {
-        state.currentScreen = SCREEN_RECORDS;
+            let recordsCount = globalRecords.length;
+            let mistakes = 1;
+            if (recordsCount >= 2) {
+                while (mistakes !== 0) {
+                    mistakes = 0;
+                    for (let recordIndex = 1; recordIndex < recordsCount; recordIndex++) {
+                        if (globalRecords[recordIndex].score > globalRecords[recordIndex - 1].score) {
+                            let save_record = globalRecords[recordIndex];
+                            globalRecords[recordIndex] = globalRecords[recordIndex - 1];
+                            globalRecords[recordIndex - 1] = save_record;
+
+                            mistakes++;
+                        }
+                    }
+                }
+            }
+        }
+    } else {
+        drawMenuText(150, 525, 'Рекорды');
     }
 
 
-    drawText(
-        camera.x + camera.width / 2,
-        camera.y + camera.height / 2 + 200,
-        'Space Future 2D-3D', 'middle', 'center', '80px Arial', 'yellow',
-    );
-    drawText(
-        camera.x + camera.width / 2,
-        camera.y + camera.height / 2 + 300,
-        'Super Epic Shooter', 'middle', 'center', '80px Arial', 'yellow',
-    );
+    drawMenuText(state.camera.width * 0.5, 90, 'Space Future 2D-3D', true, 'center');
+    drawMenuText(state.camera.width * 0.5, 150, 'Super Epic Shooter', true, 'center');
 
     if (!canBeginGame) {
-        drawMenuText(0, 400, 'Прогрузка...');
+        drawMenuText(state.camera.width * 0.5, state.camera.height - 80, 'Прогрузка...', false, 'center');
+    }
+}
+
+function loopRecords() {
+    //задник
+    drawSprite(state.camera.width / 2, state.camera.height / 2, imgScreen, 0, canvas.width, canvas.height);
+
+    drawMenuText(state.camera.width * 0.5, 90, 'Рекорды', true, 'center');
+
+    const RECORD_HEIGHT = 60;
+    for (let recordIndex = 1; recordIndex <= globalRecords.length; recordIndex++) {
+        let record = globalRecords[recordIndex - 1];
+        drawMenuText(state.camera.width * 0.5, 100 + recordIndex * RECORD_HEIGHT, `${recordIndex}) ${record.name} - ${record.score}`, false, 'center');
+    }
+
+    if (qKey.wentDown || spaceKey.wentDown) {
+        state.currentScreen = SCREEN_MENU;
+    }
+}
+
+function loopCharacters() {
+    //задник
+    drawSprite(state.camera.width / 2, state.camera.height / 2, imgScreen, 0, canvas.width, canvas.height);
+
+    drawMenuText(state.camera.width * 0.5, 90, 'Выберите персонажа', true, 'center');
+    //спрайты персонажей
+    const playerSprites = [imgPlayerVadim1, imgPlayerVadim2, imgPlayerVadim3];
+    for (let i = 0; i < playerSprites.length; i++) {
+        drawSprite(
+            state.camera.x + state.camera.width * 0.5 + (i - 1) * 150,
+            state.camera.y + state.camera.height * 0.5 - 250,
+            playerSprites[i], 0, ctx.width, ctx.height
+        );
+    }
+
+    if (rightKey.wentDown) {
+        playerType++;
+    }
+    if (leftKey.wentDown) {
+        playerType--;
+    }
+    playerType = clipValue(playerType, PLAYER_TYPE_FAST, PLAYER_TYPE_DOUBLE);
+
+    let arrowX = (playerType - 1) * 150;
+    drawMenuText(state.camera.width * 0.5 + arrowX, 300, '▲', true, 'center');
+
+    if (spaceKey.wentDown) {
+        state.currentScreen = SCREEN_GAME;
+        if (lap === 0) {
+            playSound(sndSong, 0.75, true);
+        }
+        if (playerType === PLAYER_TYPE_FAST) {
+            state.globalPlayer = addPlayerFast();
+        }
+        if (playerType === PLAYER_TYPE_DEFAULT) {
+            state.globalPlayer = addPlayerDefault();
+        }
+        if (playerType === PLAYER_TYPE_DOUBLE) {
+            state.globalPlayer = addPlayerDouble();
+        }
+    }
+
+    if (qKey.wentDown) {
+        state.currentScreen = SCREEN_MENU;
     }
 }
 
 function loopGame() {
-    const camera = state.camera;
     // draw background
     if (imgStars.width > 0) {
-        let minX = Math.floor((camera.x - camera.width) / imgStars.width);
-        let minY = Math.floor((camera.y - camera.height) / imgStars.height);
-        let maxX = Math.floor((camera.x + camera.width) / imgStars.width);
-        let maxY = Math.floor((camera.y + camera.height) / imgStars.height);
+        let minX = Math.floor((state.camera.x - state.camera.width) / imgStars.width);
+        let minY = Math.floor((state.camera.y - state.camera.height) / imgStars.height);
+        let maxX = Math.floor((state.camera.x + state.camera.width) / imgStars.width);
+        let maxY = Math.floor((state.camera.y + state.camera.height) / imgStars.height);
 
         for (let bgTileX = minX; bgTileX <= maxX; bgTileX++) {
             for (let bgTileY = minY; bgTileY <= maxY; bgTileY++) {
                 ctx.drawImage(
                     imgStars,
-                    -camera.x - imgStars.width / 2 + camera.width / 2 + bgTileX * imgStars.width,
-                    -camera.y - imgStars.height / 2 + camera.height / 2 + bgTileY * imgStars.height,
+                    -state.camera.x - imgStars.width / 2 + state.camera.width / 2 + bgTileX * imgStars.width,
+                    -state.camera.y - imgStars.height / 2 + state.camera.height / 2 + bgTileY * imgStars.height,
                 );
             }
         }
@@ -1333,26 +1378,19 @@ function loopGame() {
         }
 
         setTimer(state.enemySpawnTimer, state.enemySpawnInterval);
-        if (state.difficulty === DIFFICULTY_NORMAL) {
+        if (difficulty === DIFFICULTY_NORMAL) {
             state.enemySpawnInterval = 1 / Math.sqrt(Math.sqrt(state.globalTime * 50 + 100)) * 700;
         }
-        if (state.difficulty === DIFFCULTY_HARD) {
+        if (difficulty === DIFFCULTY_HARD) {
             state.enemySpawnInterval = 0;
         }
     }
 
-    // if (timers[screenShakeTimer] > 0) {
-    //     camera.angle = getRandomFloat(-0.02, 0.02);
-    // } else {
-    //     camera.angle = 0;
-    // }
     ctx.save();
 
-    //camera
-
-
-    ctx.rotate(camera.angle);
-    ctx.translate(-camera.x + camera.width / 2, -camera.y + camera.height / 2);
+    //камера
+    ctx.rotate(state.camera.angle);
+    ctx.translate(-state.camera.x + state.camera.width / 2, -state.camera.y + state.camera.height / 2);
 
     for (let gameObjectIndex = 0; gameObjectIndex < state.gameObjects.length; gameObjectIndex++) {
         let gameObject = state.gameObjects[gameObjectIndex];
@@ -1363,20 +1401,20 @@ function loopGame() {
 
     drawParticles();
 
-    if (getTimer(state.tutorialTimer) > 0) {
-        drawText(camera.x, camera.y - 160, '        W                         ', 'middle', 'center', '60px Arial', 'yellow');
-        drawText(camera.x, camera.y - 100, 'Двигаться - A    D     Стрелять - Пробел', 'middle', 'center', '60px Arial', 'yellow');
+    if (getTimer(state.tutorialTimer) > 0 && state.lap === 0) {
+        drawText(state.camera.x, state.camera.y - 160, '        W                         ', 'middle', 'center', '60px Arial', 'yellow');
+        drawText(state.camera.x, state.camera.y - 100, 'Двигаться - A    D     Стрелять - Пробел', 'middle', 'center', '60px Arial', 'yellow');
     }
 
-    if (getTimer(state.bossTimer) <= 0 && !state.globalBoss.exists) {
-        // we won
-        if (getTimer(state.showWinTextTimer) > 0) {
-            drawText(camera.x, camera.y - 30, 'Вы выиграли) Ваш счёт: ' + state.globalScore, 'middle', 'center', '60px Arial', 'yellow');
-            drawText(camera.x, camera.y + 30, 'Press R to restart', 'middle', 'center', '60px Arial', 'yellow');
+    if (!state.globalPlayer.exists) {
+        if (state.bossDefeatCount <= 0) {
+            drawText(state.camera.x, state.camera.y - 30, 'Вы были расплющены! Ваш счёт: ' + state.globalScore, 'middle', 'center', '60px Arial', 'yellow');
+            drawText(state.camera.x, state.camera.y + 30, 'Press R to restart', 'middle', 'center', '60px Arial', 'yellow');
         }
-    } else if (!state.globalPlayer.exists) {
-        drawText(camera.x, camera.y - 30, 'Вы были расплющены! Ваш счёт: ' + state.globalScore, 'middle', 'center', '60px Arial', 'yellow');
-        drawText(camera.x, camera.y + 30, 'Press R to restart', 'middle', 'center', '60px Arial', 'yellow');
+        else {
+            drawText(state.camera.x, state.camera.y - 30, 'Вы выиграли) Ваш счёт: ' + state.globalScore, 'middle', 'center', '60px Arial', 'yellow');
+            drawText(state.camera.x, state.camera.y + 30, 'Вы победили босса ' + state.bossDefeatCount + ' раз', 'middle', 'center', '60px Arial', 'yellow');
+        }
     }
 
 
@@ -1385,24 +1423,13 @@ function loopGame() {
     updateTimers();
 }
 
-function loopRecords() {
-    const camera = state.camera;
-    drawSprite(camera.width / 2, camera.height / 2, imgScreen, 0, canvas.width, canvas.height);
-    const RECORD_HEIGHT = 40;
-    for (let recordIndex = 0; recordIndex < globalRecords.length; recordIndex++) {
-        let record = globalRecords[recordIndex];
-        drawMenuText(0, recordIndex * RECORD_HEIGHT, `${recordIndex + 1}. ${record.name} - ${record.score}`);
-    }
-    if (escKey.wentDown) {
-        state.currentScreen = SCREEN_MENU;
-    }
-}
-
 function loop() {
-    if (rKey.wentDown) {
+    if (!state.inputInProgress && rKey.wentDown) {
         lap++;
         resetState();
     }
+
+    canvas.requestFullscreen();
 
     switch (state.currentScreen) {
         case SCREEN_MENU: {
@@ -1415,6 +1442,10 @@ function loop() {
 
         case SCREEN_RECORDS: {
             loopRecords();
+        } break;
+
+        case SCREEN_CHARACTERS: {
+            loopCharacters();
         } break;
     }
 

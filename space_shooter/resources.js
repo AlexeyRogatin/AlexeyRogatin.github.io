@@ -40,15 +40,6 @@ let imgPlayerVadim2 = loadImage('./sprites/Vadim/player1.png');
 let imgPlayerVadim3 = loadImage('./sprites/Vadim/player2.png');
 let imgRocketVadim = loadImage('./sprites/Vadim/rocket.png');
 
-function resourceLoaded(src) {
-  resourcesLoadedCount++;
-
-  // console.log('loaded', src);
-  if (resourcesWaitingForLoadCount === resourcesLoadedCount) {
-    canBeginGame = true;
-  }
-}
-
 function loadImage(src) {
   let img = new Image();
   img.src = src;
@@ -113,4 +104,13 @@ function playSound(sound, volume = 1, loop = false) {
   newSound.oncanplay = () => {
     newSound.play();
   };
+}
+
+function resourceLoaded(src) {
+  resourcesLoadedCount++;
+
+  // console.log('loaded', src);
+  if (resourcesWaitingForLoadCount === resourcesLoadedCount) {
+    canBeginGame = true;
+  }
 }
