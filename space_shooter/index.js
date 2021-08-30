@@ -673,7 +673,7 @@ function updateGameObject(gameObject) {
             GAME_OBJECT_ROCKETPOWERUP,
         ]);
 
-        if (eKey.wentDown && getTimer(state.skillTimer) >= SKILL_TIMER_MAX) {
+        if (eKey.isDown && getTimer(state.skillTimer) >= SKILL_TIMER_MAX) {
             state.skillMode = true;
         }
 
@@ -696,7 +696,7 @@ function updateGameObject(gameObject) {
             GAME_OBJECT_ENEMY,
             GAME_OBJECT_ENEMY_ROCKETEER,
             GAME_OBJECT_ENEMY_TANK,
-            GAME_OBJECT_TRIPLESHOOTER
+            GAME_OBJECT_TRIPLESHOOTER,
         ];
 
         if (state.skillMode) {
@@ -769,7 +769,7 @@ function updateGameObject(gameObject) {
                             gameObject.x, gameObject.y,
                             gameObject.angle, gameObject.speedX,
                             gameObject.speedY, 3,
-                            moonKillObjectTypes,
+                            killObjectTypes,
                             800, 120,
                         );
                         bullet.bounce = false;
@@ -1036,7 +1036,7 @@ function updateGameObject(gameObject) {
             if (!gameObject.bounce && !gameObject.pierce) {
                 gameObject.angle = angleBetweenPoints(1, 0, gameObject.speedX, gameObject.speedY);
             } else {
-                gameObject.angle += 0.3;
+                gameObject.angle += 0.09;
             }
         }
 
@@ -1049,15 +1049,17 @@ function updateGameObject(gameObject) {
             let isVulnerable = getTimer(hitObject.unhitableTimer) <= 0;
 
             if (isVulnerable) {
-                hitObject.hitpoints -= gameObject.damage;
+                if (hitObject.type === GAME_OBJECT_BOSS) {
+                    hitObject.hitpoints -= 10;
+                    amIDead = true;
+                } else {
+                    hitObject.hitpoints -= gameObject.damage;
+                }
                 if (hitObject.type === GAME_OBJECT_PLAYER) {
                     setTimer(hitObject.unhitableTimer, 2 * 60);
                 }
-                if (!gameObject.pierce || hitObject.type === GAME_OBJECT_BOSS) {
+                if (!gameObject.pierce) {
                     amIDead = true;
-                    if (hitObject.type === GAME_OBJECT_BOSS && gameObject.pierce) {
-                        hitObject.hitpoints -= 10;
-                    }
                 }
             }
         }
@@ -1069,7 +1071,6 @@ function updateGameObject(gameObject) {
         if (amIDead) {
             removeGameObject(gameObject);
             if (gameObject.shootParticles) {
-                explosion_knockback(gameObject);
                 burstParticles(gameObject.x, gameObject.y, 'orange', 10);
                 burstParticles(gameObject.x, gameObject.y, 'yellow', 10);
             }
@@ -1158,8 +1159,6 @@ function updateGameObject(gameObject) {
         }
 
         removeGameObject(gameObject);
-
-        explosion_knockback(gameObject);
 
         playSound(sndExplosion, 1);
         if (gameObject.type === GAME_OBJECT_BOSS) {
@@ -1317,9 +1316,8 @@ function loopMenu() {
     drawMenuText(state.camera.width * 0.5, 90, 'Space Future 2D-3D', true, 'center');
     drawMenuText(state.camera.width * 0.5, 150, 'Super Epic Shooter', true, 'center');
 
-    if (!canBeginGame) {
-        drawMenuText(state.camera.width * 0.5, state.camera.height - 80, 'Прогрузка...', false, 'center');
-    }
+
+    drawSprite(state.camera.width * 0.66, state.camera.height * 0.5, imgPlayerVadim2, (resourcesLoadedCount / resourcesWaitingForLoadCount) * Math.PI * 2);
 }
 
 function loopRecords() {
