@@ -1268,9 +1268,6 @@ function loopMenu() {
     //задник
     drawSprite(state.camera.width / 2, state.camera.height / 2, imgScreen, 0, canvas.width, canvas.height);
 
-    if (touchEvent.isDown) {
-        drawRect(0, 0, 100, 100, 0, 'red');
-    }
     if (touchEvent.wentDown || touchEvent.wentUp) {
         drawRect(0, 0, 100, 100, 0, 'green');
     }
