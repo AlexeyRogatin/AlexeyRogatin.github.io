@@ -1268,9 +1268,9 @@ function loopMenu() {
     //задник
     drawSprite(state.camera.width / 2, state.camera.height / 2, imgScreen, 0, canvas.width, canvas.height);
 
-    if (touchEvent.wentDown || touchEvent.wentUp) {
-        drawRect(0, 0, 100, 100, 0, 'green');
-    }
+
+    drawRect(mouseX, mouseY, 100, 100, 0, 'green');
+
     if (renderMenuButton(150, 300, 'Играть')) {
         state.currentScreen = SCREEN_CHARACTERS;
     }
