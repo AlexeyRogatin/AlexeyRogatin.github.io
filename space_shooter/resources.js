@@ -40,6 +40,8 @@ let imgPlayerVadim2 = loadImage('./sprites/Vadim/player1.png');
 let imgPlayerVadim3 = loadImage('./sprites/Vadim/player2.png');
 let imgRocketVadim = loadImage('./sprites/Vadim/rocket.png');
 
+const SPRITE_SCALE = 6
+
 function loadImage(src) {
   let img = new Image();
   img.src = src;
@@ -74,8 +76,9 @@ function drawSprite(x, y, sprite, angle, width, height) {
   ctx.translate(x, y);
 
   ctx.rotate(-angle);
-  let compWidth = width || sprite.width;
-  let compHeight = height || sprite.height;
+  ctx.imageSmoothingEnabled = false;
+  let compWidth = width || sprite.width * SPRITE_SCALE;
+  let compHeight = height || sprite.height * SPRITE_SCALE;
   ctx.drawImage(sprite, -compWidth / 2, -compHeight / 2, compWidth, compHeight);
   ctx.restore();
 }
