@@ -1264,11 +1264,16 @@ function renderMenuButton(x, y, text) {
 }
 
 function loopMenu() {
-    menuKey = clipValue(menuKey, MENU_OPTION_PLAY, MENU_OPTION_RECORDS);
 
     //задник
     drawSprite(state.camera.width / 2, state.camera.height / 2, imgScreen, 0, canvas.width, canvas.height);
 
+    if (touchEvent.isDown) {
+        drawRect(0, 0, 100, 100, 0, 'red');
+    }
+    if (touchEvent.wentDown || touchEvent.wentUp) {
+        drawRect(0, 0, 100, 100, 0, 'green');
+    }
     if (renderMenuButton(150, 300, 'Играть')) {
         state.currentScreen = SCREEN_CHARACTERS;
     }
