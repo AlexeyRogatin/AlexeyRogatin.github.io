@@ -1269,7 +1269,7 @@ function loopMenu() {
     drawSprite(state.camera.width / 2, state.camera.height / 2, imgScreen, 0, canvas.width, canvas.height);
 
 
-    drawRect(mouseX, mouseY, 100, 100, 0, 'green');
+    drawRect(mouseX, mouseY, 100, 100, 0, 'red');
 
     if (renderMenuButton(150, 300, 'Играть')) {
         state.currentScreen = SCREEN_CHARACTERS;

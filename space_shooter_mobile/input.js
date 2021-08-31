@@ -34,8 +34,8 @@ window.ontouchend = function ontouchend(event) {
     handleKeyUp(touchEvent);
 };
 window.ontouchmove = function ontouchmove(event) {
-    mouseX = event.clientX - canvas.clientLeft;
-    mouseY = event.clientY - canvas.clientTop;
+    mouseX = event.changedTouches[0].clientX - canvas.clientLeft;
+    mouseY = event.changedTouches[0].clientY - canvas.clientTop;
 };
 
 function clearKey(key) {
