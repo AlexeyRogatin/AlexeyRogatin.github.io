@@ -1462,7 +1462,7 @@ function loopGame() {
     updateTimers();
 }
 
-window.screen.orientation.lock("landscape-primary");
+window.screen.orientation.lock("landscape");
 
 function loop() {
     // if (!state.inputInProgress && rKey.wentDown) {
@@ -1470,7 +1470,9 @@ function loop() {
     //     resetState();
     // }
 
-    canvas.requestFullscreen();
+    if (touchEvent.wentDown) {
+        document.documentElement.requestFullscreen();
+    }
 
     switch (state.currentScreen) {
         case SCREEN_MENU: {
