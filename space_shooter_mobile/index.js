@@ -49,7 +49,7 @@ function handleResize() {
     const rect = canvas.getBoundingClientRect();
     canvas.width = 1600;
     canvas.height = 900;
-    canvas.style.height = (rect.width / SCREEN_RATIO) + 'px';
+    canvas.style.width = (rect.height * SCREEN_RATIO) + 'px';
 }
 
 handleResize();
@@ -742,7 +742,7 @@ function updateGameObject(gameObject) {
 
         let canShoot = getTimer(gameObject.shootTimer) <= 0;
 
-        if (spaceKey.isDown && canShoot) {
+        if (canShoot) {
             if (getTimer(gameObject.powerUpTimer) > 0) {
                 let bullet = null;
                 let reloadTime = 0;
@@ -1214,7 +1214,7 @@ function clipValue(value, min, max) {
 }
 
 const MENU_OFFSET_LEFT = 0.32 * state.camera.width;
-const MENU_FONT = '60px Arial';
+const MENU_FONT = '120px Arial';
 
 function drawMenuText(x, y, text, bold = false, align = 'left') {
     let font = '';
@@ -1231,15 +1231,18 @@ function measureText(text, font, boldness) {
         font_string += 'bold ';
     }
     font_string += font;
+    ctx.font = font_string;
     let result = ctx.measureText(text);
     return result;
 }
 
 function renderButton(x, y, width, height) {
     let buttonPressed = false;
-    if (mouseX >= x && mouseX <= width && mouseY >= y && mouseY <= height) {
-        if (touchEvent.wentUp) {
-            buttonPressed = true;
+    for (let touchIndex = 0; touchIndex < touchEvent.length; touchIndex++) {
+        if (touchEvent[touchIndex].x >= x - width * 0.5 && touchEvent[touchIndex].x <= x + width * 0.5 && touchEvent[touchIndex].y >= y - height * 0.5 && touchEvent[touchIndex].y <= y + height * 0.5) {
+            if (touchEvent[touchIndex].wentUp) {
+                buttonPressed = true;
+            }
         }
     }
     return buttonPressed;
@@ -1248,17 +1251,20 @@ function renderButton(x, y, width, height) {
 function renderMenuButton(x, y, text) {
     let buttonPressed = false;
     let measures = measureText(text, MENU_FONT, false);
-    let textWidth = measures.width;
-    let textHeight = measures.height;
 
-    if (mouseX >= x && mouseX <= textWidth && mouseY >= y && mouseY <= textHeight) {
-        if (touchEvent.isDown) {
-            drawMenuText(x, y, text, true);
-        } else if (touchEvent.wentUp) {
-            buttonPressed = true;
+    let textWidth = measures.width;
+    let textHeight = 120;
+
+    for (let touchIndex = 0; touchIndex < touchEvent.length; touchIndex++) {
+        if (touchEvent[touchIndex].x >= x && touchEvent[touchIndex].x <= x + textWidth && touchEvent[touchIndex].y >= y - textHeight * 0.5 && touchEvent[touchIndex].y <= y + textHeight * 0.5) {
+            if (touchEvent[touchIndex].isDown) {
+                drawMenuText(x, y, text, true);
+            } else if (touchEvent[touchIndex].wentUp) {
+                buttonPressed = true;
+            }
+        } else {
+            drawMenuText(x, y, text);
         }
-    } else {
-        drawMenuText(x, y, text);
     }
     return buttonPressed;
 }
@@ -1268,23 +1274,20 @@ function loopMenu() {
     //задник
     drawSprite(state.camera.width / 2, state.camera.height / 2, imgScreen, 0, canvas.width, canvas.height);
 
-
-    drawRect(mouseX, mouseY, 100, 100, 0, 'red');
-
-    if (renderMenuButton(150, 300, 'Играть')) {
+    if (renderMenuButton(150, 400, 'Играть')) {
         state.currentScreen = SCREEN_CHARACTERS;
     }
 
     const difficultyTexts = ['Нормально', 'Сложно'];
 
-    if (renderMenuButton(150, 400, difficultyTexts[difficulty])) {
+    if (renderMenuButton(150, 600, difficultyTexts[difficulty])) {
         difficulty++;
         if (difficulty > DIFFCULTY_HARD) {
             difficulty = DIFFICULTY_NORMAL;
         }
     }
 
-    if (renderMenuButton(150, 500, 'Рекорды')) {
+    if (renderMenuButton(150, 800, 'Рекорды')) {
         state.currentScreen = SCREEN_RECORDS;
 
         let recordsCount = globalRecords.length;
@@ -1307,7 +1310,7 @@ function loopMenu() {
 
 
     drawMenuText(state.camera.width * 0.5, 90, 'Space Future 2D-3D', true, 'center');
-    drawMenuText(state.camera.width * 0.5, 150, 'Super Epic Shooter', true, 'center');
+    drawMenuText(state.camera.width * 0.5, 200, 'Super Epic Shooter', true, 'center');
 
 
     drawSprite(state.camera.width * 0.66, state.camera.height * 0.5, imgPlayerVadim2, (resourcesLoadedCount / resourcesWaitingForLoadCount) * Math.PI * 2);
@@ -1325,8 +1328,10 @@ function loopRecords() {
         drawMenuText(state.camera.width * 0.5, 100 + recordIndex * RECORD_HEIGHT, `${recordIndex}) ${record.name} - ${record.score}`, false, 'center');
     }
 
-    if (qKey.wentDown || spaceKey.wentDown) {
-        state.currentScreen = SCREEN_MENU;
+    for (let touchIndex = 0; touchIndex < touchEvent.length; touchIndex++) {
+        if (touchEvent[touchIndex].wentUp) {
+            state.currentScreen = SCREEN_MENU;
+        }
     }
 }
 
@@ -1337,26 +1342,23 @@ function loopCharacters() {
     drawMenuText(state.camera.width * 0.5, 90, 'Выберите корабль', true, 'center');
     //спрайты персонажей
     const playerSprites = [imgPlayerVadim1, imgPlayerVadim2, imgPlayerVadim3];
+
+    playerType = -1;
+
     for (let i = 0; i < playerSprites.length; i++) {
         drawSprite(
-            state.camera.x + state.camera.width * 0.5 + (i - 1) * 150,
-            state.camera.y + state.camera.height * 0.5 - 250,
-            playerSprites[i], 0
+            state.camera.x + state.camera.width * 0.5 + (i - 1) * 450,
+            state.camera.y + state.camera.height * 0.5,
+            playerSprites[i], 0, playerSprites[i].width * 20, playerSprites[i].height * 20
         );
+        if (renderButton(state.camera.x + state.camera.width * 0.5 + (i - 1) * 450,
+            state.camera.y + state.camera.height * 0.5, playerSprites[i].width * 20, playerSprites[i].height * 20)) {
+            playerType = i;
+        }
     }
 
-    if (rightKey.wentDown) {
-        playerType++;
-    }
-    if (leftKey.wentDown) {
-        playerType--;
-    }
-    playerType = clipValue(playerType, PLAYER_TYPE_FAST, PLAYER_TYPE_DOUBLE);
 
-    let arrowX = (playerType - 1) * 150;
-    drawMenuText(state.camera.width * 0.5 + arrowX, 300, '▲', true, 'center');
-
-    if (spaceKey.wentDown) {
+    if (playerType != -1) {
         state.currentScreen = SCREEN_GAME;
         if (lap === 0) {
             playSound(sndSong, 0.75, true);
@@ -1370,10 +1372,12 @@ function loopCharacters() {
         if (playerType === PLAYER_TYPE_DOUBLE) {
             state.globalPlayer = addPlayerDouble();
         }
-    }
-
-    if (qKey.wentDown) {
-        state.currentScreen = SCREEN_MENU;
+    } else {
+        for (let touchIndex = 0; touchIndex < touchEvent.length; touchIndex++) {
+            if (touchEvent[touchIndex].wentUp) {
+                state.currentScreen = SCREEN_MENU;
+            }
+        }
     }
 }
 
@@ -1462,7 +1466,6 @@ function loopGame() {
     updateTimers();
 }
 
-window.screen.orientation.lock("landscape");
 
 function loop() {
     // if (!state.inputInProgress && rKey.wentDown) {
@@ -1470,9 +1473,7 @@ function loop() {
     //     resetState();
     // }
 
-    if (touchEvent.wentDown) {
-        document.documentElement.requestFullscreen();
-    }
+
 
     switch (state.currentScreen) {
         case SCREEN_MENU: {
@@ -1490,6 +1491,12 @@ function loop() {
         case SCREEN_CHARACTERS: {
             loopCharacters();
         } break;
+    }
+
+    for (let i = 0; i < touchEvent.length; i++) {
+        if (touchEvent[i].isDown) {
+            drawRect(touchEvent[i].x, touchEvent[i].y, 100, 100, 0, 'red');
+        }
     }
 
     clearAllKeys();
