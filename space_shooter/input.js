@@ -83,8 +83,9 @@ window.onkeyup = function onkeyup(event) {
     handleKeyUp(event, KEY_E, eKey);
 };
 window.onmousemove = function onmousemove(event) {
-    mouseX = event.clientX - canvas.clientLeft;
-    mouseY = event.clientY - canvas.clientTop;
+    const rect = canvas.getBoundingClientRect();
+    mouseX = (event.clientX - rect.left) / canvas.clientWidth * canvas.width;
+    mouseY = (event.clientY - rect.top) / canvas.clientHeight * canvas.height;
 };
 
 function clearKey(key) {

@@ -1239,6 +1239,8 @@ function loopMenu() {
     //задник
     drawSprite(state.camera.width / 2, state.camera.height / 2, imgScreen, 0, canvas.width, canvas.height);
 
+    drawRect(state.camera.x + mouseX, state.camera.y + mouseY, 3, 3, 0, 'red');
+
     if (menuKey === MENU_OPTION_PLAY) {
         if (spaceKey.wentDown && canBeginGame) {
             state.currentScreen = SCREEN_CHARACTERS;
@@ -1475,7 +1477,7 @@ function loop() {
         resetState();
     }
 
-    canvas.requestFullscreen();
+    // canvas.requestFullscreen();
 
     switch (state.currentScreen) {
         case SCREEN_MENU: {
