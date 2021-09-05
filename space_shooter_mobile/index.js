@@ -89,7 +89,7 @@ function resetState() {
         bossDefeatCount: 0,
     };
 
-    state.skillTimer = addTimer();
+    state.skillTimer = 0;
     state.enemySpawnTimer = addTimer();
     state.screenShakeTimer = addTimer();
     state.bossTimer = addTimer(TIME_UNTIL_BOSS);
@@ -98,9 +98,7 @@ function resetState() {
 }
 
 let playerType = PLAYER_TYPE_DEFAULT;
-let playersName = DEFAULT_PLAYER_NAME;
 let difficulty = DIFFICULTY_NORMAL;
-let menuKey = MENU_OPTION_PLAY;
 
 let lap = 0;
 
@@ -656,6 +654,31 @@ function explosion_knockback(gameObject) {
     }
 }
 
+function renderButton(x, y, width, height) {
+    let buttonPressed = false;
+    for (let touchIndex = 0; touchIndex < touchEvents.length; touchIndex++) {
+        let touchPos = { x: touchEvents[touchIndex].x + state.camera.x - state.camera.width * 0.5, y: touchEvents[touchIndex].y + state.camera.y - state.camera.height * 0.5 };
+        if (touchPos.x >= x - width * 0.5 && touchPos.x <= x + width * 0.5 && touchPos.y >= y - height * 0.5 && touchPos.y <= y + height * 0.5) {
+            if (touchEvents[touchIndex].wentUp) {
+                buttonPressed = true;
+            }
+        }
+    }
+    return buttonPressed;
+}
+
+function renderRoundButton(x, y, radius) {
+    let buttonPressed = false;
+    for (let touchIndex = 0; touchIndex < touchEvents.length; touchIndex++) {
+        let touchPos = { x: touchEvents[touchIndex].x + state.camera.x - state.camera.width * 0.5, y: touchEvents[touchIndex].y + state.camera.y - state.camera.height * 0.5 };
+        if (distanceBetweenPoints(x, y, touchPos.x, touchPos.y) <= radius) {
+            if (touchEvents[touchIndex].wentUp) {
+                buttonPressed = true;
+            }
+        }
+    }
+    return buttonPressed;
+}
 
 function updateGameObject(gameObject) {
     if (gameObject.type === GAME_OBJECT_PLAYER) {
@@ -672,14 +695,6 @@ function updateGameObject(gameObject) {
             GAME_OBJECT_BOUNCINGPOWERUP,
             GAME_OBJECT_ROCKETPOWERUP,
         ]);
-
-        if (eKey.isDown && getTimer(state.skillTimer) >= SKILL_TIMER_MAX) {
-            state.skillMode = true;
-        }
-
-        if (getTimer(state.skillTimer) <= 0) {
-            state.skillMode = false;
-        }
 
         let rateMultiplier = 1;
         state.killBullet = false;
@@ -699,6 +714,9 @@ function updateGameObject(gameObject) {
             GAME_OBJECT_TRIPLESHOOTER,
         ];
 
+        let SKILL_RECHARGE_VALUE = 0.7;
+        let SKILL_DISCHARGE_VALUE = 1;
+
         if (state.skillMode) {
             if (playerType === PLAYER_TYPE_FAST) {
                 rateMultiplier = 0.5;
@@ -717,7 +735,7 @@ function updateGameObject(gameObject) {
             }
             if (playerType === PLAYER_TYPE_DOUBLE) {
                 state.killBullet = true;
-                setTimer(state.skillTimer, getTimer(state.skillTimer) - 0.5);
+                SKILL_DISCHARGE_VALUE = 1.3;
                 if (state.cleanWidth < 1000) {
                     drawSprite(gameObject.x, gameObject.y, imgCleaning, 0, state.cleanWidth, state.cleanHeight);
                     state.cleanHeight += 50;
@@ -727,11 +745,22 @@ function updateGameObject(gameObject) {
                     state.cleanHeight = 30;
                 }
             }
+            state.skillTimer -= SKILL_DISCHARGE_VALUE;
+        } else {
+
+            state.skillTimer += SKILL_RECHARGE_VALUE;
         }
 
-        let skillModeTimerValue = getTimer(state.skillTimer);
-        if (skillModeTimerValue <= SKILL_TIMER_MAX && !state.skillMode) {
-            setTimer(state.skillTimer, skillModeTimerValue + 1.7);
+        if (state.skillTimer >= SKILL_TIMER_MAX) {
+            state.skillTimer = SKILL_TIMER_MAX;
+            drawSprite(state.camera.x + state.camera.width * 0.5 - 100, state.camera.y + state.camera.height * 0.5 - 100, imgPowerButton, 0);
+            if (renderRoundButton(state.camera.x + state.camera.width * 0.5 - 100, state.camera.y + state.camera.height * 0.5 - 100, 100)) {
+                state.skillMode = true;
+            }
+        }
+
+        if (state.skillTimer <= 0) {
+            state.skillMode = false;
         }
 
         if (hitPowerUp) {
@@ -835,10 +864,56 @@ function updateGameObject(gameObject) {
             playSound(sndGun, 0.2);
         }
 
-        controlShip(gameObject, rightKey.isDown, leftKey.isDown, upKey.isDown);
+        {
+            drawSprite(state.camera.x - state.camera.width * 0.5 + 170, state.camera.y + state.camera.height * 0.5 - 170, imgJoystickBig, 0);
+            let neededAngle = gameObject.angle;
+            let force = 0;
+            for (let touchIndex = 0; touchIndex < touchEvents.length; touchIndex++) {
+                let touchEvent = touchEvents[touchIndex];
+                if (touchEvent.isDown) {
+                    if (distanceBetweenPoints(state.camera.x - state.camera.width * 0.5 + 170, state.camera.y + state.camera.height * 0.5 - 170, state.camera.x - state.camera.width * 0.5 + touchEvent.firstX, state.camera.y - state.camera.height * 0.5 + touchEvent.firstY) <= 150) {
+                        neededAngle = angleBetweenPoints(state.camera.x - state.camera.width * 0.5 + 170, state.camera.y + state.camera.height * 0.5 - 170, state.camera.x - state.camera.width * 0.5 + touchEvent.x, state.camera.y - state.camera.height * 0.5 + touchEvent.y);
+                        force = distanceBetweenPoints(state.camera.x - state.camera.width * 0.5 + 170, state.camera.y + state.camera.height * 0.5 - 170, state.camera.x - state.camera.width * 0.5 + touchEvent.x, state.camera.y - state.camera.height * 0.5 + touchEvent.y) / 150;
+                    }
+                }
+            }
 
-        state.camera.x = gameObject.x;
-        state.camera.y = gameObject.y;
+            let goForward = false;
+            let goRight = false;
+            let goLeft = false;
+
+            if (force >= 0.5) {
+                goForward = true;
+            }
+
+            let angle = (gameObject.angle / (Math.PI * 2) - Math.trunc(gameObject.angle / (Math.PI * 2))) * Math.PI * 2;
+            if (neededAngle != gameObject.angle) {
+                let leftAngle = Infinity;
+                let rightAngle = Infinity;
+                for (let index = -1; index <= 1; index++) {
+                    if (angle - (neededAngle + index * Math.PI * 2) > 0 && angle - (neededAngle + index * Math.PI * 2) < leftAngle) {
+                        leftAngle = angle - (neededAngle + index * Math.PI * 2);
+                    }
+                    if ((neededAngle + index * Math.PI * 2) - angle > 0 && (neededAngle + index * Math.PI * 2) - angle < rightAngle) {
+                        rightAngle = (neededAngle + index * Math.PI * 2) - angle;
+                    }
+                    if (rightAngle >= leftAngle) {
+                        goRight = true;
+                    } else {
+                        goLeft = true;
+                    }
+                }
+            }
+
+            controlShip(gameObject, goRight, goLeft, goForward);
+            let newAngle = (gameObject.angle / (Math.PI * 2) - Math.trunc(gameObject.angle / (Math.PI * 2))) * Math.PI * 2;
+            if (angle < neededAngle && newAngle > neededAngle || angle > neededAngle && newAngle < neededAngle) {
+                gameObject.angle = neededAngle;
+            }
+
+            state.camera.x = gameObject.x;
+            state.camera.y = gameObject.y;
+        }
 
         const STRIPE_WIDTH = 100;
         const STRIPE_HEIGHT = 30;
@@ -865,14 +940,10 @@ function updateGameObject(gameObject) {
             );
         }
 
-        const skillTimeLeftPercentage = getTimer(state.skillTimer) / SKILL_TIMER_MAX;
+        const skillTimeLeftPercentage = state.skillTimer / SKILL_TIMER_MAX;
         const skillLeftTimeWidth = skillTimeLeftPercentage * STRIPE_WIDTH;
 
         drawRect(400 + skillLeftTimeWidth / 2 + state.camera.x - state.camera.width / 2, 10 + STRIPE_HEIGHT / 2 + state.camera.y - state.camera.height / 2, skillLeftTimeWidth, STRIPE_HEIGHT, 0, 'white');
-
-        if (getTimer(state.skillTimer) >= SKILL_TIMER_MAX) {
-            drawText(400 + skillLeftTimeWidth / 2 + state.camera.x - state.camera.width / 2 + 300, state.camera.y - state.camera.height / 2 + 10, 'Жми "E"!!!', 'top', 'right', '30px Arial', 'yellow');
-        }
 
         //draw hitpoints
 
@@ -1144,7 +1215,6 @@ function updateGameObject(gameObject) {
             } break;
             case GAME_OBJECT_PLAYER: {
                 globalRecords.push({
-                    name: playersName,
                     score: state.globalScore,
                 });
             } break;
@@ -1236,18 +1306,6 @@ function measureText(text, font, boldness) {
     return result;
 }
 
-function renderButton(x, y, width, height) {
-    let buttonPressed = false;
-    for (let touchIndex = 0; touchIndex < touchEvent.length; touchIndex++) {
-        if (touchEvent[touchIndex].x >= x - width * 0.5 && touchEvent[touchIndex].x <= x + width * 0.5 && touchEvent[touchIndex].y >= y - height * 0.5 && touchEvent[touchIndex].y <= y + height * 0.5) {
-            if (touchEvent[touchIndex].wentUp) {
-                buttonPressed = true;
-            }
-        }
-    }
-    return buttonPressed;
-}
-
 function renderMenuButton(x, y, text) {
     let buttonPressed = false;
     let measures = measureText(text, MENU_FONT, false);
@@ -1255,11 +1313,12 @@ function renderMenuButton(x, y, text) {
     let textWidth = measures.width;
     let textHeight = 120;
 
-    for (let touchIndex = 0; touchIndex < touchEvent.length; touchIndex++) {
-        if (touchEvent[touchIndex].x >= x && touchEvent[touchIndex].x <= x + textWidth && touchEvent[touchIndex].y >= y - textHeight * 0.5 && touchEvent[touchIndex].y <= y + textHeight * 0.5) {
-            if (touchEvent[touchIndex].isDown) {
+    for (let touchIndex = 0; touchIndex < touchEvents.length; touchIndex++) {
+        let touchPos = { x: touchEvents[touchIndex].x + state.camera.x - state.camera.width * 0.5, y: touchEvents[touchIndex].y + state.camera.y - state.camera.height * 0.5 };
+        if (touchPos.x >= x && touchPos.x <= x + textWidth && touchPos.y >= y - textHeight * 0.5 && touchPos.y <= y + textHeight * 0.5) {
+            if (touchEvents[touchIndex].isDown) {
                 drawMenuText(x, y, text, true);
-            } else if (touchEvent[touchIndex].wentUp) {
+            } else if (touchEvents[touchIndex].wentUp) {
                 buttonPressed = true;
             }
         } else {
@@ -1272,22 +1331,22 @@ function renderMenuButton(x, y, text) {
 function loopMenu() {
 
     //задник
-    drawSprite(state.camera.width / 2, state.camera.height / 2, imgScreen, 0, canvas.width, canvas.height);
+    drawSprite(0, 0, imgScreen, 0, canvas.width, canvas.height);
 
-    if (renderMenuButton(150, 400, 'Играть')) {
+    if (renderMenuButton(-state.camera.width * 0.5 + 150, -state.camera.height * 0.5 + 400, 'Играть')) {
         state.currentScreen = SCREEN_CHARACTERS;
     }
 
     const difficultyTexts = ['Нормально', 'Сложно'];
 
-    if (renderMenuButton(150, 600, difficultyTexts[difficulty])) {
+    if (renderMenuButton(-state.camera.width * 0.5 + 150, -state.camera.height * 0.5 + 600, difficultyTexts[difficulty])) {
         difficulty++;
         if (difficulty > DIFFCULTY_HARD) {
             difficulty = DIFFICULTY_NORMAL;
         }
     }
 
-    if (renderMenuButton(150, 800, 'Рекорды')) {
+    if (renderMenuButton(-state.camera.width * 0.5 + 150, -state.camera.height * 0.5 + 800, 'Рекорды')) {
         state.currentScreen = SCREEN_RECORDS;
 
         let recordsCount = globalRecords.length;
@@ -1309,27 +1368,27 @@ function loopMenu() {
     }
 
 
-    drawMenuText(state.camera.width * 0.5, 90, 'Space Future 2D-3D', true, 'center');
-    drawMenuText(state.camera.width * 0.5, 200, 'Super Epic Shooter', true, 'center');
+    drawMenuText(0, -state.camera.height * 0.5 + 90, 'Space Future 2D-3D', true, 'center');
+    drawMenuText(0, -state.camera.height * 0.5 + 200, 'Super Epic Shooter', true, 'center');
 
 
-    drawSprite(state.camera.width * 0.66, state.camera.height * 0.5, imgPlayerVadim2, (resourcesLoadedCount / resourcesWaitingForLoadCount) * Math.PI * 2);
+    drawSprite(state.camera.width * 0.16, 0, imgPlayerVadim2, (resourcesLoadedCount / resourcesWaitingForLoadCount) * Math.PI * 2);
 }
 
 function loopRecords() {
     //задник
-    drawSprite(state.camera.width / 2, state.camera.height / 2, imgScreen, 0, canvas.width, canvas.height);
+    drawSprite(0, 0, imgScreen, 0, canvas.width, canvas.height);
 
-    drawMenuText(state.camera.width * 0.5, 90, 'Рекорды', true, 'center');
+    drawMenuText(0, -state.camera.height * 0.5 + 90, 'Рекорды', true, 'center');
 
-    const RECORD_HEIGHT = 60;
+    const RECORD_HEIGHT = 130;
     for (let recordIndex = 1; recordIndex <= globalRecords.length; recordIndex++) {
         let record = globalRecords[recordIndex - 1];
-        drawMenuText(state.camera.width * 0.5, 100 + recordIndex * RECORD_HEIGHT, `${recordIndex}) ${record.name} - ${record.score}`, false, 'center');
+        drawMenuText(0, -state.camera.height * 0.5 + 150 + recordIndex * RECORD_HEIGHT, `${recordIndex}) ${record.score}`, false, 'center');
     }
 
-    for (let touchIndex = 0; touchIndex < touchEvent.length; touchIndex++) {
-        if (touchEvent[touchIndex].wentUp) {
+    for (let touchIndex = 0; touchIndex < touchEvents.length; touchIndex++) {
+        if (touchEvents[touchIndex].wentUp) {
             state.currentScreen = SCREEN_MENU;
         }
     }
@@ -1337,9 +1396,9 @@ function loopRecords() {
 
 function loopCharacters() {
     //задник
-    drawSprite(state.camera.width / 2, state.camera.height / 2, imgScreen, 0, canvas.width, canvas.height);
+    drawSprite(0, 0, imgScreen, 0, canvas.width, canvas.height);
 
-    drawMenuText(state.camera.width * 0.5, 90, 'Выберите корабль', true, 'center');
+    drawMenuText(0, -state.camera.height * 0.5 + 90, 'Выберите корабль', true, 'center');
     //спрайты персонажей
     const playerSprites = [imgPlayerVadim1, imgPlayerVadim2, imgPlayerVadim3];
 
@@ -1347,12 +1406,12 @@ function loopCharacters() {
 
     for (let i = 0; i < playerSprites.length; i++) {
         drawSprite(
-            state.camera.x + state.camera.width * 0.5 + (i - 1) * 450,
-            state.camera.y + state.camera.height * 0.5,
+            state.camera.x + (i - 1) * 450,
+            state.camera.y,
             playerSprites[i], 0, playerSprites[i].width * 20, playerSprites[i].height * 20
         );
-        if (renderButton(state.camera.x + state.camera.width * 0.5 + (i - 1) * 450,
-            state.camera.y + state.camera.height * 0.5, playerSprites[i].width * 20, playerSprites[i].height * 20)) {
+        if (renderButton(state.camera.x + (i - 1) * 450,
+            state.camera.y, playerSprites[i].width * 20, playerSprites[i].height * 20)) {
             playerType = i;
         }
     }
@@ -1373,8 +1432,8 @@ function loopCharacters() {
             state.globalPlayer = addPlayerDouble();
         }
     } else {
-        for (let touchIndex = 0; touchIndex < touchEvent.length; touchIndex++) {
-            if (touchEvent[touchIndex].wentUp) {
+        for (let touchIndex = 0; touchIndex < touchEvents.length; touchIndex++) {
+            if (touchEvents[touchIndex].wentUp) {
                 state.currentScreen = SCREEN_MENU;
             }
         }
@@ -1429,16 +1488,19 @@ function loopGame() {
         }
     }
 
-    ctx.save();
 
-    //камера
-    ctx.rotate(state.camera.angle);
-    ctx.translate(-state.camera.x + state.camera.width / 2, -state.camera.y + state.camera.height / 2);
 
     for (let gameObjectIndex = 0; gameObjectIndex < state.gameObjects.length; gameObjectIndex++) {
         let gameObject = state.gameObjects[gameObjectIndex];
         if (gameObject.exists) {
             updateGameObject(gameObject);
+        }
+    }
+
+    for (let i = 0; i < touchEvents.length; i++) {
+        if (touchEvents[i].isDown) {
+            drawRect(touchEvents[i].x, touchEvents[i].y, 100, 100, 0, 'red');
+            drawRect(state.camera.x - state.camera.width * 0.5 + touchEvents[i].firstX, state.camera.y - state.camera.height * 0.5 + touchEvents[i].firstY, 100, 100, 0, 'green');
         }
     }
 
@@ -1451,29 +1513,32 @@ function loopGame() {
 
     if (!state.globalPlayer.exists) {
         if (state.bossDefeatCount <= 0) {
-            drawText(state.camera.x, state.camera.y - 30, 'Вы были расплющены! Ваш счёт: ' + state.globalScore, 'middle', 'center', '60px Arial', 'yellow');
-            drawText(state.camera.x, state.camera.y + 30, 'Нажмите "R" для меню', 'middle', 'center', '60px Arial', 'yellow');
+            drawText(state.camera.x, state.camera.y - 30, 'Вы были расплющены! Ваш счёт: ' + state.globalScore, 'middle', 'center', '80px Arial', 'yellow');
         }
         else {
-            drawText(state.camera.x, state.camera.y - 30, 'Вы выиграли) Ваш счёт: ' + state.globalScore, 'middle', 'center', '60px Arial', 'yellow');
-            drawText(state.camera.x, state.camera.y + 30, 'Вы победили босса ' + state.bossDefeatCount + ' раз', 'middle', 'center', '60px Arial', 'yellow');
+            drawText(state.camera.x, state.camera.y - 30, 'Вы выиграли) Ваш счёт: ' + state.globalScore, 'middle', 'center', '80px Arial', 'yellow');
+            drawText(state.camera.x, state.camera.y + 30, 'Вы победили босса ' + state.bossDefeatCount + ' раз', 'middle', 'center', '80px Arial', 'yellow');
+        }
+
+        for (let touchIndex = 0; touchIndex < touchEvents.length; touchIndex++) {
+            if (touchEvents[touchIndex].wentDown) {
+                resetState();
+                lap++;
+            }
         }
     }
 
-
-    ctx.restore();
     state.globalTime += 1;
     updateTimers();
 }
 
 
 function loop() {
-    // if (!state.inputInProgress && rKey.wentDown) {
-    //     lap++;
-    //     resetState();
-    // }
+    ctx.save();
 
-
+    //камера
+    ctx.rotate(state.camera.angle);
+    ctx.translate(-state.camera.x + state.camera.width / 2, -state.camera.y + state.camera.height / 2);
 
     switch (state.currentScreen) {
         case SCREEN_MENU: {
@@ -1492,12 +1557,7 @@ function loop() {
             loopCharacters();
         } break;
     }
-
-    for (let i = 0; i < touchEvent.length; i++) {
-        if (touchEvent[i].isDown) {
-            drawRect(touchEvent[i].x, touchEvent[i].y, 100, 100, 0, 'red');
-        }
-    }
+    ctx.restore();
 
     clearAllKeys();
     requestAnimationFrame(loop);

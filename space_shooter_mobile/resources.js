@@ -40,6 +40,11 @@ let imgPlayerVadim2 = loadImage('./sprites/Vadim/player1.png');
 let imgPlayerVadim3 = loadImage('./sprites/Vadim/player2.png');
 let imgRocketVadim = loadImage('./sprites/Vadim/rocket.png');
 
+let imgPowerButton = loadImage('./sprites/powerButton.png');
+let imgShootButton = loadImage('./sprites/shootButton.png');
+let imgJoystickBig = loadImage('./sprites/joystick1.png');
+let imgJoystickSmall = loadImage('./sprites/joystick.png');
+
 const SPRITE_SCALE = 6
 
 function loadImage(src) {

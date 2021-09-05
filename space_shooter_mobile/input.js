@@ -15,11 +15,13 @@ function makeTouch() {
         wentUp: false,
         x: 0,
         y: 0,
+        firstX: 0,
+        firstY: 0,
         id: -1,
     };
 }
 
-let touchEvent = [];
+let touchEvents = [];
 
 function handleKeyDown(key) {
     if (!key.isDown) {
@@ -38,17 +40,19 @@ function handleKeyUp(key) {
 window.ontouchstart = function ontouchstart(event) {
     for (let index = 0; index < event.changedTouches.length; index++) {
         let id = event.changedTouches[index].identifier;
-        if (id > touchEvent.length) {
-            touchEvent.push(makeTouch());
+        if (id > touchEvents.length) {
+            touchEvents.push(makeTouch());
         } else {
-            touchEvent[id] = makeTouch();
+            touchEvents[id] = makeTouch();
         }
-        touchEvent[id].id = id;
-        handleKeyDown(touchEvent[id]);
+        touchEvents[id].id = id;
+        handleKeyDown(touchEvents[id]);
 
         const rect = canvas.getBoundingClientRect();
-        touchEvent[id].x = (event.changedTouches[index].clientX - rect.left) / canvas.clientWidth * canvas.width;
-        touchEvent[id].y = (event.changedTouches[index].clientY - rect.top) / canvas.clientHeight * canvas.height;
+        touchEvents[id].x = (event.changedTouches[index].clientX - rect.left) / canvas.clientWidth * canvas.width;
+        touchEvents[id].y = (event.changedTouches[index].clientY - rect.top) / canvas.clientHeight * canvas.height;
+        touchEvents[id].firstX = touchEvents[id].x;
+        touchEvents[id].firstY = touchEvents[id].y;
     }
 }
 
@@ -56,8 +60,8 @@ window.ontouchmove = function ontouchmove(event) {
     const rect = canvas.getBoundingClientRect();
     for (let index = 0; index < event.touches.length; index++) {
         let id = event.touches[index].identifier;
-        touchEvent[id].x = (event.touches[index].clientX - rect.left) / canvas.clientWidth * canvas.width;
-        touchEvent[id].y = (event.touches[index].clientY - rect.top) / canvas.clientHeight * canvas.height;
+        touchEvents[id].x = (event.touches[index].clientX - rect.left) / canvas.clientWidth * canvas.width;
+        touchEvents[id].y = (event.touches[index].clientY - rect.top) / canvas.clientHeight * canvas.height;
     }
 };
 
@@ -70,7 +74,7 @@ window.ontouchend = function ontouchend(event) {
 
     for (let index = 0; index < event.changedTouches.length; index++) {
         let id = event.changedTouches[index].identifier;
-        handleKeyUp(touchEvent[id]);
+        handleKeyUp(touchEvents[id]);
     }
 };
 
@@ -89,7 +93,7 @@ function clearTouch(touch) {
 }
 
 function clearAllKeys() {
-    for (let touchIndex = 0; touchIndex < touchEvent.length; touchIndex++) {
-        clearTouch(touchEvent[touchIndex]);
+    for (let touchIndex = 0; touchIndex < touchEvents.length; touchIndex++) {
+        clearTouch(touchEvents[touchIndex]);
     }
 }
