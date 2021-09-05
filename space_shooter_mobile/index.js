@@ -1451,11 +1451,10 @@ function loopGame() {
         for (let bgTileX = minX; bgTileX <= maxX; bgTileX++) {
             for (let bgTileY = minY; bgTileY <= maxY; bgTileY++) {
                 drawSprite(
-                    -state.camera.x - imgStars.width * SPRITE_SCALE / 2 + state.camera.width / 2 + bgTileX * imgStars.width * SPRITE_SCALE,
-                    -state.camera.y - imgStars.height * SPRITE_SCALE / 2 + state.camera.height / 2 + bgTileY * imgStars.height * SPRITE_SCALE,
+                    bgTileX * imgStars.width * SPRITE_SCALE,
+                    bgTileY * imgStars.height * SPRITE_SCALE,
                     imgStars,
-                    0,
-                    imgStars.width * SPRITE_SCALE, imgStars.height * SPRITE_SCALE
+                    0
                 );
             }
         }
