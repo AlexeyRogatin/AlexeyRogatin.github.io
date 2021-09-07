@@ -655,12 +655,12 @@ function explosion_knockback(gameObject) {
 }
 
 function renderButton(x, y, width, height) {
-    let buttonPressed = false;
+    let buttonPressed = { wentDown: false, isDown: false, wentUp: false };
     for (let touchIndex = 0; touchIndex < touchEvents.length; touchIndex++) {
         let touchPos = { x: touchEvents[touchIndex].x + state.camera.x - state.camera.width * 0.5, y: touchEvents[touchIndex].y + state.camera.y - state.camera.height * 0.5 };
         if (touchPos.x >= x - width * 0.5 && touchPos.x <= x + width * 0.5 && touchPos.y >= y - height * 0.5 && touchPos.y <= y + height * 0.5) {
-            if (touchEvents[touchIndex].wentUp) {
-                buttonPressed = true;
+            if (touchEvents[touchIndex].isDown || touchEvents[touchIndex].wentUp) {
+                buttonPressed = touchEvents[touchIndex];
             }
         }
     }
@@ -668,29 +668,29 @@ function renderButton(x, y, width, height) {
 }
 
 function renderRoundButton(x, y, radius) {
-    let buttonPressed = false;
+    let buttonPressed = { wentDown: false, isDown: false, wentUp: false };
     for (let touchIndex = 0; touchIndex < touchEvents.length; touchIndex++) {
         let touchPos = { x: touchEvents[touchIndex].x + state.camera.x - state.camera.width * 0.5, y: touchEvents[touchIndex].y + state.camera.y - state.camera.height * 0.5 };
         if (distanceBetweenPoints(x, y, touchPos.x, touchPos.y) <= radius) {
-            if (touchEvents[touchIndex].wentUp) {
-                buttonPressed = true;
+            if (touchEvents[touchIndex].isDown || touchEvents[touchIndex].wentUp) {
+                buttonPressed = touchEvents[touchIndex];
             }
         }
     }
     return buttonPressed;
 }
 
+function dotProduct(x1, y1, x2, y2) {
+    let result = x1 * x2 + y1 * y2;
+    return result;
+}
+
 function updateGameObject(gameObject) {
     if (gameObject.type === GAME_OBJECT_PLAYER) {
-        let hitHeal = checkCollision(gameObject, [GAME_OBJECT_HEAL]);
-        if (hitHeal !== null) {
-            removeGameObject(hitHeal);
-            if (gameObject.hitpoints !== gameObject.maxHitpoints) {
-                gameObject.hitpoints++;
-            }
-        }
+
 
         const hitPowerUp = checkCollision(gameObject, [
+            GAME_OBJECT_HEAL,
             GAME_OBJECT_BEANPOWERUP,
             GAME_OBJECT_BOUNCINGPOWERUP,
             GAME_OBJECT_ROCKETPOWERUP,
@@ -753,8 +753,8 @@ function updateGameObject(gameObject) {
 
         if (state.skillTimer >= SKILL_TIMER_MAX) {
             state.skillTimer = SKILL_TIMER_MAX;
-            drawSprite(state.camera.x + state.camera.width * 0.5 - 100, state.camera.y + state.camera.height * 0.5 - 100, imgPowerButton, 0);
-            if (renderRoundButton(state.camera.x + state.camera.width * 0.5 - 100, state.camera.y + state.camera.height * 0.5 - 100, 100)) {
+            drawSprite(state.camera.x + state.camera.width * 0.5 - 120, state.camera.y + state.camera.height * 0.5 - 400, imgPowerButton, 0);
+            if (renderRoundButton(state.camera.x + state.camera.width * 0.5 - 120, state.camera.y + state.camera.height * 0.5 - 400, 100).wentUp) {
                 state.skillMode = true;
             }
         }
@@ -764,14 +764,27 @@ function updateGameObject(gameObject) {
         }
 
         if (hitPowerUp) {
-            setTimer(gameObject.powerUpTimer, hitPowerUp.powerUpTime);
-            gameObject.powerUpType = hitPowerUp.type;
+            if (hitPowerUp.type == GAME_OBJECT_HEAL) {
+                if (gameObject.hitpoints !== gameObject.maxHitpoints) {
+                    gameObject.hitpoints++;
+                }
+            } else {
+                setTimer(gameObject.powerUpTimer, hitPowerUp.powerUpTime);
+                gameObject.powerUpType = hitPowerUp.type;
+            }
             removeGameObject(hitPowerUp);
         }
 
         let canShoot = getTimer(gameObject.shootTimer) <= 0;
 
-        if (canShoot) {
+        let shoot = false;
+
+        drawSprite(state.camera.x + state.camera.width * 0.5 - 120, state.camera.y + state.camera.height * 0.5 - 120, imgShootButton, 0);
+        if (renderRoundButton(state.camera.x + state.camera.width * 0.5 - 120, state.camera.y + state.camera.height * 0.5 - 120, 100).isDown) {
+            shoot = true;
+        }
+
+        if (shoot && canShoot) {
             if (getTimer(gameObject.powerUpTimer) > 0) {
                 let bullet = null;
                 let reloadTime = 0;
@@ -866,14 +879,18 @@ function updateGameObject(gameObject) {
 
         {
             drawSprite(state.camera.x - state.camera.width * 0.5 + 170, state.camera.y + state.camera.height * 0.5 - 170, imgJoystickBig, 0);
-            let neededAngle = gameObject.angle;
+            let touchPosX = 0;
+            let touchPosY = 0;
             let force = 0;
             for (let touchIndex = 0; touchIndex < touchEvents.length; touchIndex++) {
                 let touchEvent = touchEvents[touchIndex];
                 if (touchEvent.isDown) {
-                    if (distanceBetweenPoints(state.camera.x - state.camera.width * 0.5 + 170, state.camera.y + state.camera.height * 0.5 - 170, state.camera.x - state.camera.width * 0.5 + touchEvent.firstX, state.camera.y - state.camera.height * 0.5 + touchEvent.firstY) <= 150) {
-                        neededAngle = angleBetweenPoints(state.camera.x - state.camera.width * 0.5 + 170, state.camera.y + state.camera.height * 0.5 - 170, state.camera.x - state.camera.width * 0.5 + touchEvent.x, state.camera.y - state.camera.height * 0.5 + touchEvent.y);
-                        force = distanceBetweenPoints(state.camera.x - state.camera.width * 0.5 + 170, state.camera.y + state.camera.height * 0.5 - 170, state.camera.x - state.camera.width * 0.5 + touchEvent.x, state.camera.y - state.camera.height * 0.5 + touchEvent.y) / 150;
+                    let joyStickX = 170;
+                    let joyStickY = state.camera.height - 170;
+                    if (distanceBetweenPoints(joyStickX, joyStickY, touchEvent.firstX, touchEvent.firstY) <= 150) {
+                        touchPosX = touchEvent.x - joyStickX;
+                        touchPosY = touchEvent.y - joyStickY;
+                        force = distanceBetweenPoints(joyStickX, joyStickY, touchEvent.x, touchEvent.y) / 150;
                     }
                 }
             }
@@ -886,34 +903,29 @@ function updateGameObject(gameObject) {
                 goForward = true;
             }
 
-            let angle = (gameObject.angle / (Math.PI * 2) - Math.trunc(gameObject.angle / (Math.PI * 2))) * Math.PI * 2;
-            if (neededAngle != gameObject.angle) {
-                let leftAngle = Infinity;
-                let rightAngle = Infinity;
-                for (let index = -1; index <= 1; index++) {
-                    if (angle - (neededAngle + index * Math.PI * 2) > 0 && angle - (neededAngle + index * Math.PI * 2) < leftAngle) {
-                        leftAngle = angle - (neededAngle + index * Math.PI * 2);
-                    }
-                    if ((neededAngle + index * Math.PI * 2) - angle > 0 && (neededAngle + index * Math.PI * 2) - angle < rightAngle) {
-                        rightAngle = (neededAngle + index * Math.PI * 2) - angle;
-                    }
-                    if (rightAngle >= leftAngle) {
-                        goRight = true;
-                    } else {
-                        goLeft = true;
-                    }
-                }
+            let rightNormalVector = rotateVector(1, 0, gameObject.angle - Math.PI * 0.5);
+
+            let rightness = dotProduct(rightNormalVector.x, rightNormalVector.y, touchPosX, touchPosY);
+
+            if (rightness > 0) {
+                goRight = true;
+            } else if (rightness < 0) {
+                goLeft = true;
             }
 
             controlShip(gameObject, goRight, goLeft, goForward);
-            let newAngle = (gameObject.angle / (Math.PI * 2) - Math.trunc(gameObject.angle / (Math.PI * 2))) * Math.PI * 2;
-            if (angle < neededAngle && newAngle > neededAngle || angle > neededAngle && newAngle < neededAngle) {
-                gameObject.angle = neededAngle;
-            }
 
-            state.camera.x = gameObject.x;
-            state.camera.y = gameObject.y;
+            if (touchPosX != 0 || touchPosY != 0) {
+                let neededAngle = angleBetweenPoints(0, 0, touchPosX, touchPosY);
+                gameObject.angle = (gameObject.angle / (Math.PI * 2) - Math.trunc(gameObject.angle / (Math.PI * 2))) * Math.PI * 2;
+                if (Math.abs(gameObject.angle - neededAngle) <= gameObject.rotationSpeed * 2) {
+                    gameObject.angle = neededAngle;
+                }
+            }
         }
+
+        state.camera.x = gameObject.x;
+        state.camera.y = gameObject.y;
 
         const STRIPE_WIDTH = 100;
         const STRIPE_HEIGHT = 30;
@@ -1411,7 +1423,7 @@ function loopCharacters() {
             playerSprites[i], 0, playerSprites[i].width * 20, playerSprites[i].height * 20
         );
         if (renderButton(state.camera.x + (i - 1) * 450,
-            state.camera.y, playerSprites[i].width * 20, playerSprites[i].height * 20)) {
+            state.camera.y, playerSprites[i].width * 20, playerSprites[i].height * 20).wentUp) {
             playerType = i;
         }
     }
@@ -1493,13 +1505,6 @@ function loopGame() {
         let gameObject = state.gameObjects[gameObjectIndex];
         if (gameObject.exists) {
             updateGameObject(gameObject);
-        }
-    }
-
-    for (let i = 0; i < touchEvents.length; i++) {
-        if (touchEvents[i].isDown) {
-            drawRect(touchEvents[i].x, touchEvents[i].y, 100, 100, 0, 'red');
-            drawRect(state.camera.x - state.camera.width * 0.5 + touchEvents[i].firstX, state.camera.y - state.camera.height * 0.5 + touchEvents[i].firstY, 100, 100, 0, 'green');
         }
     }
 
