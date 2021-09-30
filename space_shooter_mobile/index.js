@@ -1533,6 +1533,7 @@ function loopGame() {
 
 
 function loop() {
+    let save_performance = performance.now();
     ctx.save();
 
     //камера
@@ -1556,9 +1557,12 @@ function loop() {
             loopCharacters();
         } break;
     }
-    ctx.restore();
 
     clearAllKeys();
+
+    drawText(state.camera.x + state.camera.width / 2 - 100, state.camera.y + 100, Math.floor(1000 / (performance.now() - save_performance)), 'middle', 'center', '80px Arial', 'yellow')
+    ctx.restore();
+
     requestAnimationFrame(loop);
 }
 
