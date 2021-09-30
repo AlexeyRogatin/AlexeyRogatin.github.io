@@ -21,7 +21,7 @@ function makeTouch() {
     };
 }
 
-let touchEvents = [];
+let touchEvents = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
 
 function handleKeyDown(key) {
     if (!key.isDown) {
@@ -38,19 +38,20 @@ function handleKeyUp(key) {
 }
 
 window.ontouchstart = function ontouchstart(event) {
+    const rect = canvas.getBoundingClientRect();
+    let canvasToScreenWidth = canvas.width / canvas.clientWidth;
+    let canvasToScreenHeight = canvas.height / canvas.clientHeight;
+
     for (let index = 0; index < event.changedTouches.length; index++) {
         let id = event.changedTouches[index].identifier;
-        if (id > touchEvents.length) {
-            touchEvents.push(makeTouch());
-        } else {
-            touchEvents[id] = makeTouch();
-        }
+
+        touchEvents[id] = makeTouch();
+
         touchEvents[id].id = id;
         handleKeyDown(touchEvents[id]);
 
-        const rect = canvas.getBoundingClientRect();
-        touchEvents[id].x = (event.changedTouches[index].clientX - rect.left) / canvas.clientWidth * canvas.width;
-        touchEvents[id].y = (event.changedTouches[index].clientY - rect.top) / canvas.clientHeight * canvas.height;
+        touchEvents[id].x = (event.changedTouches[index].clientX - rect.left) * canvasToScreenWidth;
+        touchEvents[id].y = (event.changedTouches[index].clientY - rect.top) * canvasToScreenHeight;
         touchEvents[id].firstX = touchEvents[id].x;
         touchEvents[id].firstY = touchEvents[id].y;
     }
@@ -58,15 +59,19 @@ window.ontouchstart = function ontouchstart(event) {
 
 window.ontouchmove = function ontouchmove(event) {
     const rect = canvas.getBoundingClientRect();
-    for (let index = 0; index < event.touches.length; index++) {
-        let id = event.touches[index].identifier;
-        touchEvents[id].x = (event.touches[index].clientX - rect.left) / canvas.clientWidth * canvas.width;
-        touchEvents[id].y = (event.touches[index].clientY - rect.top) / canvas.clientHeight * canvas.height;
+    let canvasToScreenWidth = canvas.width / canvas.clientWidth;
+    let canvasToScreenHeight = canvas.height / canvas.clientHeight;
+
+    for (let index = 0; index < event.changedTouches.length; index++) {
+        let id = event.changedTouches[index].identifier;
+        touchEvents[id].x = (event.changedTouches[index].clientX - rect.left) * canvasToScreenWidth;
+        touchEvents[id].y = (event.changedTouches[index].clientY - rect.top) * canvasToScreenHeight;
     }
 };
 
 window.ontouchend = function ontouchend(event) {
     if (document.fullscreenElement != document.documentElement) {
+
         document.documentElement.requestFullscreen().then(() => {
             window.screen.orientation.lock("landscape");
         });

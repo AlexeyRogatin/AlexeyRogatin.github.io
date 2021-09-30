@@ -2,7 +2,7 @@ let resourcesWaitingForLoadCount = 0;
 let resourcesLoadedCount = 0;
 let canBeginGame = false;
 
-let sndSong = loadSound('./sounds/Vadim/Moya_pesnya_6.wav');
+let sndMusic = loadSound('./sounds/Vadim/Moya_pesnya_6.wav');
 let sndEngine = loadSound('./sounds/engine.mp3');
 let sndShot = loadSound('./sounds/shot.mp3');
 let sndExplosion = loadSound('./sounds/boom4.mp3');
@@ -68,23 +68,23 @@ function loadSound(src) {
 
 function drawRect(x, y, width, height, angle, color) {
   ctx.save();	//Сохраняется, чтобы потом можно было вернуть экран
-  ctx.translate(x, y);	//Сохраняет предыдущие координаты, чтобы переместить экран обратно
+  ctx.translate(Math.round(x), Math.round(y));	//Сохраняет предыдущие координаты, чтобы переместить экран обратно
   ctx.fillStyle = color;	//Выбирается окраска
 
   ctx.rotate(-angle);	//Экран поворачивается на угол
-  ctx.fillRect(-width / 2, -height / 2, width, height);	//Рисуется четырёхугольник
+  ctx.fillRect(Math.round(-width / 2), Math.round(-height / 2), Math.round(width), Math.round(height));	//Рисуется четырёхугольник
   ctx.restore();	//Экран возвращается
 }
 
 function drawSprite(x, y, sprite, angle, width, height) {
   ctx.save();
-  ctx.translate(x, y);
+  ctx.translate(Math.round(x), Math.round(y));
 
   ctx.rotate(-angle);
   ctx.imageSmoothingEnabled = false;
   let compWidth = width || sprite.width * SPRITE_SCALE;
   let compHeight = height || sprite.height * SPRITE_SCALE;
-  ctx.drawImage(sprite, -compWidth / 2, -compHeight / 2, compWidth, compHeight);
+  ctx.drawImage(sprite, Math.round(-compWidth / 2), Math.round(-compHeight / 2), Math.round(compWidth), Math.round(compHeight));
   ctx.restore();
 }
 
@@ -94,14 +94,14 @@ function drawText(x, y, text, textBaseline, textAlign, font, fillStyle) {
   ctx.font = font;
   ctx.textBaseline = textBaseline;
   ctx.textAlign = textAlign;
-  ctx.fillText(text, x, y);
+  ctx.fillText(text, Math.round(x), Math.round(y));
   ctx.restore();
 }
 
 function drawCircle(x, y, radius, color) {
   ctx.strokeStyle = color;
   ctx.beginPath();
-  ctx.arc(x, y, radius, 0, Math.PI * 2);
+  ctx.arc(Math.round(x), Math.round(y), Math.round(radius), 0, Math.PI * 2);
   ctx.stroke();
 }
 
@@ -112,6 +112,7 @@ function playSound(sound, volume = 1, loop = false) {
   newSound.oncanplay = () => {
     newSound.play();
   };
+  return true;
 }
 
 function resourceLoaded(src) {

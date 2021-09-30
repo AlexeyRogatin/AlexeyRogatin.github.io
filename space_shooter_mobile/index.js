@@ -60,8 +60,6 @@ const ctx = canvas.getContext("2d");
 let state = null;
 let globalRecords = [];
 
-const DEFAULT_PLAYER_NAME = 'player';
-
 function resetState() {
     state = {
         camera: {
@@ -79,13 +77,12 @@ function resetState() {
         globalScore: 0,
         skillMode: false,
         killBullet: false,
-        cleanHeight: 30,
-        cleanWidth: 30,
+        cleanRadius: 30,
         enemySpawnInterval: 2 * 60,
         globalTime: 0,
 
         inputInProgress: false,
-        currentScreen: SCREEN_MENU,
+        currentScreen: SCREEN_GAME,
         bossDefeatCount: 0,
     };
 
@@ -106,8 +103,6 @@ resetState();
 
 const HUNT_RADIUS = state.camera.width + 200;
 const SKILL_TIMER_MAX = 600;
-
-
 
 function addParticle(x, y, color, minRadius, maxRadius) {
     let randomAngle = getRandomFloat(0, Math.PI + Math.PI);
@@ -154,7 +149,6 @@ function removeParticle(particleIndex) {
     state.particles[particleIndex] = lastParticle;
     state.particles.pop();
 }
-
 
 function addTimer(initialValue = 0) {
     let timerIndex = state.timers.length;
@@ -736,13 +730,13 @@ function updateGameObject(gameObject) {
             if (playerType === PLAYER_TYPE_DOUBLE) {
                 state.killBullet = true;
                 SKILL_DISCHARGE_VALUE = 1.3;
-                if (state.cleanWidth < 1000) {
-                    drawSprite(gameObject.x, gameObject.y, imgCleaning, 0, state.cleanWidth, state.cleanHeight);
-                    state.cleanHeight += 50;
-                    state.cleanWidth += 50;
+                if (state.cleanRadius < 1000) {
+                    drawSprite(gameObject.x, gameObject.y, imgCleaning, 0, state.cleanRadius, state.cleanRadius);
+                    state.cleanRadius += 50;
+                    state.cleanRadius += 50;
                 } else {
-                    state.cleanWidth = 30;
-                    state.cleanHeight = 30;
+                    state.cleanRadius = 30;
+                    state.cleanRadius = 30;
                 }
             }
             state.skillTimer -= SKILL_DISCHARGE_VALUE;
@@ -878,15 +872,16 @@ function updateGameObject(gameObject) {
         }
 
         {
-            drawSprite(state.camera.x - state.camera.width * 0.5 + 170, state.camera.y + state.camera.height * 0.5 - 170, imgJoystickBig, 0);
+            let joyStickX = 170;
+            let joyStickY = state.camera.height - 170;
+            drawSprite(state.camera.x - state.camera.width * 0.5 + joyStickX, state.camera.y - state.camera.height * 0.5 + joyStickY, imgJoystickBig, 0);
             let touchPosX = 0;
             let touchPosY = 0;
             let force = 0;
             for (let touchIndex = 0; touchIndex < touchEvents.length; touchIndex++) {
                 let touchEvent = touchEvents[touchIndex];
                 if (touchEvent.isDown) {
-                    let joyStickX = 170;
-                    let joyStickY = state.camera.height - 170;
+
                     if (distanceBetweenPoints(joyStickX, joyStickY, touchEvent.firstX, touchEvent.firstY) <= 150) {
                         touchPosX = touchEvent.x - joyStickX;
                         touchPosY = touchEvent.y - joyStickY;
@@ -895,12 +890,12 @@ function updateGameObject(gameObject) {
                 }
             }
 
-            let goForward = false;
-            let goRight = false;
-            let goLeft = false;
+            let moveForward = false;
+            let rotateRight = false;
+            let rotateLeft = false;
 
             if (force >= 0.5) {
-                goForward = true;
+                moveForward = true;
             }
 
             let rightNormalVector = rotateVector(1, 0, gameObject.angle - Math.PI * 0.5);
@@ -908,12 +903,12 @@ function updateGameObject(gameObject) {
             let rightness = dotProduct(rightNormalVector.x, rightNormalVector.y, touchPosX, touchPosY);
 
             if (rightness > 0) {
-                goRight = true;
+                rotateRight = true;
             } else if (rightness < 0) {
-                goLeft = true;
+                rotateLeft = true;
             }
 
-            controlShip(gameObject, goRight, goLeft, goForward);
+            controlShip(gameObject, rotateRight, rotateLeft, moveForward);
 
             if (touchPosX != 0 || touchPosY != 0) {
                 let neededAngle = angleBetweenPoints(0, 0, touchPosX, touchPosY);
@@ -1332,6 +1327,7 @@ function renderMenuButton(x, y, text) {
                 drawMenuText(x, y, text, true);
             } else if (touchEvents[touchIndex].wentUp) {
                 buttonPressed = true;
+                break;
             }
         } else {
             drawMenuText(x, y, text);
@@ -1341,7 +1337,6 @@ function renderMenuButton(x, y, text) {
 }
 
 function loopMenu() {
-
     //задник
     drawSprite(0, 0, imgScreen, 0, canvas.width, canvas.height);
 
@@ -1434,15 +1429,6 @@ function loopCharacters() {
         if (lap === 0) {
             playSound(sndSong, 0.75, true);
         }
-        if (playerType === PLAYER_TYPE_FAST) {
-            state.globalPlayer = addPlayerFast();
-        }
-        if (playerType === PLAYER_TYPE_DEFAULT) {
-            state.globalPlayer = addPlayerDefault();
-        }
-        if (playerType === PLAYER_TYPE_DOUBLE) {
-            state.globalPlayer = addPlayerDouble();
-        }
     } else {
         for (let touchIndex = 0; touchIndex < touchEvents.length; touchIndex++) {
             if (touchEvents[touchIndex].wentUp) {
@@ -1453,6 +1439,17 @@ function loopCharacters() {
 }
 
 function loopGame() {
+    if (!state.globalPlayer) {
+        if (playerType === PLAYER_TYPE_FAST) {
+            state.globalPlayer = addPlayerFast();
+        }
+        if (playerType === PLAYER_TYPE_DEFAULT) {
+            state.globalPlayer = addPlayerDefault();
+        }
+        if (playerType === PLAYER_TYPE_DOUBLE) {
+            state.globalPlayer = addPlayerDouble();
+        }
+    }
     // draw background
     if (imgStars.width > 0) {
         let minX = Math.floor((state.camera.x - state.camera.width * 0.5) / imgStars.width / SPRITE_SCALE);
@@ -1570,6 +1567,5 @@ function loop() {
 function beginGame() {
     resetState();
     requestAnimationFrame(loop);
-    console.log('game started');
 }
 requestAnimationFrame(loop);
