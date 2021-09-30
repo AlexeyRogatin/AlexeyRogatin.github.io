@@ -82,7 +82,7 @@ function resetState() {
         globalTime: 0,
 
         inputInProgress: false,
-        currentScreen: SCREEN_GAME,
+        currentScreen: SCREEN_MENU,
         bossDefeatCount: 0,
     };
 
@@ -104,18 +104,18 @@ resetState();
 const HUNT_RADIUS = state.camera.width + 200;
 const SKILL_TIMER_MAX = 600;
 
-function addParticle(x, y, color, minRadius, maxRadius) {
+function addParticle(x, y, color, minDiameter, maxDiameter) {
     let randomAngle = getRandomFloat(0, Math.PI + Math.PI);
 
     let randomSpeed = getRandomFloat(1, 4);
     let speedVector = rotateVector(randomSpeed, 0, randomAngle);
-    let randomRadius = getRandomFloat(minRadius, maxRadius);
-    let randomSizeDecrease = getRandomFloat(0.09, 0.3);
+    let randomDiameter = getRandomFloat(minDiameter, maxDiameter);
+    let randomSizeDecrease = getRandomFloat(0.18, 0.6);
 
     let p = {
         x: x,
         y: y,
-        r: randomRadius,
+        d: randomDiameter,
         speedX: speedVector.x,
         speedY: speedVector.y,
         sizeDecrease: randomSizeDecrease,
@@ -124,21 +124,21 @@ function addParticle(x, y, color, minRadius, maxRadius) {
     state.particles.push(p);
 }
 
-function burstParticles(x, y, color, count, minRadius = 2, maxRadius = 8) {
+function burstParticles(x, y, color, count, minDiameter = 4, maxDiameter = 16) {
     for (let pIndex = 0; pIndex < count; pIndex++) {
-        addParticle(x, y, color, minRadius, maxRadius);
+        addParticle(x, y, color, minDiameter, maxDiameter);
     }
 }
 
 function drawParticles() {
     for (let particleIndex = 0; particleIndex < state.particles.length; particleIndex++) {
         let p = state.particles[particleIndex];
-        drawRect(p.x, p.y, p.r + p.r, p.r + p.r, 0, p.color);
+        drawRect(p.x, p.y, p.d, p.d, 0, p.color);
         p.x += p.speedX;
         p.y += p.speedY;
-        p.r -= p.sizeDecrease;
+        p.d -= p.sizeDecrease;
 
-        if (p.r <= 0) {
+        if (p.d <= 0) {
             removeParticle(particleIndex);
         }
     }
@@ -1149,14 +1149,14 @@ function updateGameObject(gameObject) {
         if (amIDead) {
             removeGameObject(gameObject);
             if (gameObject.shootParticles) {
-                burstParticles(gameObject.x, gameObject.y, 'orange', 10);
-                burstParticles(gameObject.x, gameObject.y, 'yellow', 10);
+                burstParticles(gameObject.x, gameObject.y, 'orange', 7);
+                burstParticles(gameObject.x, gameObject.y, 'yellow', 7);
             }
         }
 
         if (gameObject.shootParticles) {
-            burstParticles(gameObject.x, gameObject.y, 'orange', 1, 3, 5);
-            burstParticles(gameObject.x, gameObject.y, 'yellow', 1, 3, 5);
+            burstParticles(gameObject.x, gameObject.y, 'orange', 1, 6, 7);
+            burstParticles(gameObject.x, gameObject.y, 'yellow', 1, 6, 7);
         }
     }
 
@@ -1239,11 +1239,11 @@ function updateGameObject(gameObject) {
 
         playSound(sndExplosion, 1);
         if (gameObject.type === GAME_OBJECT_BOSS) {
-            burstParticles(gameObject.x, gameObject.y, 'green', 250, 10, 15);
-            burstParticles(gameObject.x, gameObject.y, 'orange', 250, 10, 15);
+            burstParticles(gameObject.x, gameObject.y, 'green', 40, 20, 30);
+            burstParticles(gameObject.x, gameObject.y, 'orange', 120, 20, 30);
         } else {
-            burstParticles(gameObject.x, gameObject.y, 'orange', 50);
-            burstParticles(gameObject.x, gameObject.y, 'yellow', 50);
+            burstParticles(gameObject.x, gameObject.y, 'orange', 25);
+            burstParticles(gameObject.x, gameObject.y, 'yellow', 25);
         }
     }
 
@@ -1401,6 +1401,8 @@ function loopRecords() {
     }
 }
 
+let music = null;
+
 function loopCharacters() {
     //задник
     drawSprite(0, 0, imgScreen, 0, canvas.width, canvas.height);
@@ -1427,7 +1429,14 @@ function loopCharacters() {
     if (playerType != -1) {
         state.currentScreen = SCREEN_GAME;
         if (lap === 0) {
-            playSound(sndSong, 0.75, true);
+            music = playSound(sndMusic, 0.75, true);
+        }
+        if (playerType === PLAYER_TYPE_FAST) {
+            state.globalPlayer = addPlayerFast();
+        } else if (playerType === PLAYER_TYPE_DEFAULT) {
+            state.globalPlayer = addPlayerDefault();
+        } else if (playerType === PLAYER_TYPE_DOUBLE) {
+            state.globalPlayer = addPlayerDouble();
         }
     } else {
         for (let touchIndex = 0; touchIndex < touchEvents.length; touchIndex++) {
@@ -1439,17 +1448,6 @@ function loopCharacters() {
 }
 
 function loopGame() {
-    if (!state.globalPlayer) {
-        if (playerType === PLAYER_TYPE_FAST) {
-            state.globalPlayer = addPlayerFast();
-        }
-        if (playerType === PLAYER_TYPE_DEFAULT) {
-            state.globalPlayer = addPlayerDefault();
-        }
-        if (playerType === PLAYER_TYPE_DOUBLE) {
-            state.globalPlayer = addPlayerDouble();
-        }
-    }
     // draw background
     if (imgStars.width > 0) {
         let minX = Math.floor((state.camera.x - state.camera.width * 0.5) / imgStars.width / SPRITE_SCALE);
