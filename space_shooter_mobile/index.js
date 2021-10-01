@@ -1127,7 +1127,7 @@ function updateGameObject(gameObject) {
             let isVulnerable = getTimer(hitObject.unhitableTimer) <= 0;
 
             if (isVulnerable) {
-                if (hitObject.type === GAME_OBJECT_BOSS) {
+                if (hitObject.type === GAME_OBJECT_BOSS && gameObject.pierce) {
                     hitObject.hitpoints -= 10;
                     amIDead = true;
                 } else {
