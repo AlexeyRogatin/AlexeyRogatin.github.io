@@ -1,5 +1,4 @@
 ﻿'use strict';
-const ROTATION_SPEED = 0.05;
 
 const MENU_OPTION_PLAY = 1;
 const MENU_OPTION_DIFFICULTY = 2;
@@ -29,7 +28,6 @@ const GAME_OBJECT_HEAL = 7;
 const GAME_OBJECT_ENEMY_TANK = 9;
 const GAME_OBJECT_TRIPLESHOOTER = 11;
 const GAME_OBJECT_BOSS = 12;
-
 const GAME_OBJECT_ROCKETPOWERUP = 13;
 const GAME_OBJECT_BEANPOWERUP = 14;
 const GAME_OBJECT_BOUNCINGPOWERUP = 15;
@@ -90,19 +88,17 @@ function resetState() {
     state.enemySpawnTimer = addTimer();
     state.screenShakeTimer = addTimer();
     state.bossTimer = addTimer(TIME_UNTIL_BOSS);
-
-    state.tutorialTimer = addTimer(300);
 }
-
-let playerType = PLAYER_TYPE_DEFAULT;
-let difficulty = DIFFICULTY_NORMAL;
-
-let lap = 0;
 
 resetState();
 
 const HUNT_RADIUS = state.camera.width + 200;
 const SKILL_TIMER_MAX = 600;
+
+let playerType = PLAYER_TYPE_DEFAULT;
+let difficulty = DIFFICULTY_NORMAL;
+
+let lap = 0;
 
 function addParticle(x, y, color, minDiameter, maxDiameter) {
     let randomAngle = getRandomFloat(0, Math.PI + Math.PI);
@@ -159,9 +155,7 @@ function addTimer(initialValue = 0) {
 function updateTimers() {
     for (let timerIndex = 0; timerIndex < state.timers.length; timerIndex++) {
         const value = getTimer(timerIndex);
-        if (value > 0) {
-            setTimer(timerIndex, value - 1);
-        }
+        setTimer(timerIndex, value - 1);
     }
 }
 
@@ -320,20 +314,20 @@ function getRandomSpawnPosition() {
     };
     switch (chance) {
         case 1: {
-            result.x = state.camera.x - state.camera.width / 2;
-            result.y = state.camera.y - state.camera.height / 2;
+            result.x = state.camera.x - state.camera.width / 2 - 200;
+            result.y = getRandomFloat(state.camera.y - state.camera.height / 2, state.camera.y + state.camera.height / 2);
         } break;
         case 2: {
-            result.x = state.camera.x + state.camera.width / 2;
-            result.y = state.camera.y - state.camera.height / 2;
+            result.x = state.camera.x + state.camera.width / 2 + 200;
+            result.y = getRandomFloat(state.camera.y - state.camera.height / 2, state.camera.y + state.camera.height / 2);
         } break;
         case 3: {
-            result.x = state.camera.x - state.camera.width / 2;
-            result.y = state.camera.y + state.camera.height / 2;
+            result.x = getRandomFloat(state.camera.x - state.camera.width / 2, state.camera.x + state.camera.width / 2);
+            result.y = state.camera.y - state.camera.height / 2 - 200;
         } break;
         case 4: {
-            result.x = state.camera.x + state.camera.width / 2;
-            result.y = state.camera.y + state.camera.height / 2;
+            result.x = getRandomFloat(state.camera.x - state.camera.width / 2, state.camera.x + state.camera.width / 2);
+            result.y = state.camera.y + state.camera.height / 2 + 200;
         } break;
     }
     return result;
@@ -409,7 +403,6 @@ function getRandomFloat(start, end) {
     let result = intervalFloat + start;
     return result;
 }
-
 
 function getRandomInt(start, end) {
     let result = Math.round(getRandomFloat(start, end));
@@ -528,7 +521,6 @@ function bossProcessAI(gameObject) {
     let rotateRight = false;
 
     let stateChanged = false;
-
     let rotationChance = 0;
 
     let distance = distanceBetweenPoints(gameObject.x, gameObject.y, state.globalPlayer.x, state.globalPlayer.y);
@@ -631,22 +623,22 @@ function processAI(gameObject) {
     };
 }
 
-function explosion_knockback(gameObject) {
-    for (let objIndex = 0; objIndex < state.gameObjects.length; objIndex++) {
-        let otherObject = state.gameObjects[objIndex];
-        if (otherObject.exists && !(gameObject.pierce || gameObject.type === GAME_OBJECT_BOSS)) {
-            let distance = distanceBetweenPoints(gameObject.x, gameObject.y, otherObject.x, otherObject.y);
-            if (distance <= 200) {
-                let speed = rotateVector((distance / 200) * 10, 0, angleBetweenPoints(gameObject.x, gameObject.y, otherObject.x, otherObject.y));
-                otherObject.speedX += speed.x;
-                otherObject.speedY += speed.y;
-                if (otherObject.shootParticles) {
-                    setTimer(otherObject.lifetime, 1);
-                }
-            }
-        }
-    }
-}
+// function explosion_knockback(gameObject) {
+//     for (let objIndex = 0; objIndex < state.gameObjects.length; objIndex++) {
+//         let otherObject = state.gameObjects[objIndex];
+//         if (otherObject.exists && !(gameObject.pierce || gameObject.type === GAME_OBJECT_BOSS)) {
+//             let distance = distanceBetweenPoints(gameObject.x, gameObject.y, otherObject.x, otherObject.y);
+//             if (distance <= 200) {
+//                 let speed = rotateVector((distance / 200) * 10, 0, angleBetweenPoints(gameObject.x, gameObject.y, otherObject.x, otherObject.y));
+//                 otherObject.speedX += speed.x;
+//                 otherObject.speedY += speed.y;
+//                 if (otherObject.shootParticles) {
+//                     setTimer(otherObject.lifetime, 1);
+//                 }
+//             }
+//         }
+//     }
+// }
 
 function renderButton(x, y, width, height) {
     let buttonPressed = { wentDown: false, isDown: false, wentUp: false };
@@ -681,17 +673,7 @@ function dotProduct(x1, y1, x2, y2) {
 
 function updateGameObject(gameObject) {
     if (gameObject.type === GAME_OBJECT_PLAYER) {
-
-
-        const hitPowerUp = checkCollision(gameObject, [
-            GAME_OBJECT_HEAL,
-            GAME_OBJECT_BEANPOWERUP,
-            GAME_OBJECT_BOUNCINGPOWERUP,
-            GAME_OBJECT_ROCKETPOWERUP,
-        ]);
-
         let rateMultiplier = 1;
-        state.killBullet = false;
 
         let killObjectTypes = [
             GAME_OBJECT_ENEMY,
@@ -728,10 +710,8 @@ function updateGameObject(gameObject) {
                 setTimer(gameObject.unhitableTimer, 1);
             }
             if (playerType === PLAYER_TYPE_DOUBLE) {
-                state.killBullet = true;
                 SKILL_DISCHARGE_VALUE = 1.3;
                 if (state.cleanRadius < 1000) {
-                    drawSprite(gameObject.x, gameObject.y, imgCleaning, 0, state.cleanRadius, state.cleanRadius);
                     state.cleanRadius += 50;
                     state.cleanRadius += 50;
                 } else {
@@ -739,9 +719,10 @@ function updateGameObject(gameObject) {
                     state.cleanRadius = 30;
                 }
             }
+            drawSprite(gameObject.x, gameObject.y, imgCleaning, 0, state.cleanRadius, state.cleanRadius);
             state.skillTimer -= SKILL_DISCHARGE_VALUE;
         } else {
-
+            state.cleanRadius = 0;
             state.skillTimer += SKILL_RECHARGE_VALUE;
         }
 
@@ -756,6 +737,13 @@ function updateGameObject(gameObject) {
         if (state.skillTimer <= 0) {
             state.skillMode = false;
         }
+
+        const hitPowerUp = checkCollision(gameObject, [
+            GAME_OBJECT_HEAL,
+            GAME_OBJECT_BEANPOWERUP,
+            GAME_OBJECT_BOUNCINGPOWERUP,
+            GAME_OBJECT_ROCKETPOWERUP,
+        ]);
 
         if (hitPowerUp) {
             if (hitPowerUp.type == GAME_OBJECT_HEAL) {
@@ -922,8 +910,8 @@ function updateGameObject(gameObject) {
         state.camera.x = gameObject.x;
         state.camera.y = gameObject.y;
 
-        const STRIPE_WIDTH = 100;
-        const STRIPE_HEIGHT = 30;
+        const STRIPE_WIDTH = 140;
+        const STRIPE_HEIGHT = 50;
         const powerUpTimeLeftPercentage = getTimer(gameObject.powerUpTimer) / 400;
         const leftTimeWidth = STRIPE_WIDTH * powerUpTimeLeftPercentage;
 
@@ -950,7 +938,7 @@ function updateGameObject(gameObject) {
         const skillTimeLeftPercentage = state.skillTimer / SKILL_TIMER_MAX;
         const skillLeftTimeWidth = skillTimeLeftPercentage * STRIPE_WIDTH;
 
-        drawRect(400 + skillLeftTimeWidth / 2 + state.camera.x - state.camera.width / 2, 10 + STRIPE_HEIGHT / 2 + state.camera.y - state.camera.height / 2, skillLeftTimeWidth, STRIPE_HEIGHT, 0, 'white');
+        drawRect(420 + skillLeftTimeWidth / 2 + state.camera.x - state.camera.width / 2, 10 + STRIPE_HEIGHT / 2 + state.camera.y - state.camera.height / 2, skillLeftTimeWidth, STRIPE_HEIGHT, 0, 'white');
 
         //draw hitpoints
 
@@ -977,7 +965,7 @@ function updateGameObject(gameObject) {
             state.camera.x + state.camera.width / 2 - 10,
             state.camera.y - state.camera.height / 2 + 10,
             'Score: ' + state.globalScore,
-            'top', 'right', '30px Arial', 'yellow',
+            'top', 'right', '45px Arial', 'yellow',
         );
 
         if (state.timers[state.screenShakeTimer] > 0) {
@@ -1047,30 +1035,16 @@ function updateGameObject(gameObject) {
 
         let canShoot = getTimer(gameObject.shootTimer) <= 0;
         if (shoot && canShoot) {
-            let bullet = addBullet(
-                GAME_OBJECT_ENEMY_BULLET,
-                gameObject.x, gameObject.y, gameObject.angle,
-                gameObject.speedX, gameObject.speedY, 8, [GAME_OBJECT_PLAYER], 30, 15,
-            );
-            bullet.damage = 1;
-            bullet.sprite = imgEnemyBullet;
-            bullet.shootParticles = false;
-            let bullet1 = addBullet(
-                GAME_OBJECT_ENEMY_BULLET,
-                gameObject.x, gameObject.y, gameObject.angle - 0.3,
-                gameObject.speedX, gameObject.speedY, 8, [GAME_OBJECT_PLAYER], 30, 15,
-            );
-            bullet1.damage = 1;
-            bullet1.sprite = imgEnemyBullet;
-            bullet1.shootParticles = false;
-            let bullet2 = addBullet(
-                GAME_OBJECT_ENEMY_BULLET,
-                gameObject.x, gameObject.y, gameObject.angle + 0.3,
-                gameObject.speedX, gameObject.speedY, 8, [GAME_OBJECT_PLAYER], 30, 15,
-            );
-            bullet2.damage = 1;
-            bullet2.sprite = imgEnemyBullet;
-            bullet2.shootParticles = false;
+            for (let bulletIndex = -1; bulletIndex <= 1; bulletIndex++) {
+                let bullet = addBullet(
+                    GAME_OBJECT_ENEMY_BULLET,
+                    gameObject.x, gameObject.y, gameObject.angle + 0.3 * bulletIndex,
+                    gameObject.speedX, gameObject.speedY, 8, [GAME_OBJECT_PLAYER], 30, 15,
+                );
+                bullet.damage = 1;
+                bullet.sprite = imgEnemyBullet;
+                bullet.shootParticles = false;
+            }
             setTimer(gameObject.shootTimer, 20);
         };
 
@@ -1119,9 +1093,11 @@ function updateGameObject(gameObject) {
         }
 
         let amIDead = false;
-        let hitObject = checkCollision(gameObject, gameObject.killObjectTypes);
-        if (state.killBullet && gameObject.type === GAME_OBJECT_ENEMY_BULLET) {
+        let hitObject = null;
+        if (distanceBetweenPoints(gameObject.x, gameObject.y, state.globalPlayer.x, state.globalPlayer.y) < state.cleanRadius && gameObject.type === GAME_OBJECT_ENEMY_BULLET || getTimer(gameObject.lifetime) <= 0) {
             amIDead = true;
+        } else {
+            hitObject = checkCollision(gameObject, gameObject.killObjectTypes);
         }
         if (hitObject !== null) {
             let isVulnerable = getTimer(hitObject.unhitableTimer) <= 0;
@@ -1140,10 +1116,6 @@ function updateGameObject(gameObject) {
                     amIDead = true;
                 }
             }
-        }
-
-        if (getTimer(gameObject.lifetime) <= 0) {
-            amIDead = true;
         }
 
         if (amIDead) {
@@ -1239,11 +1211,11 @@ function updateGameObject(gameObject) {
 
         playSound(sndExplosion, 1);
         if (gameObject.type === GAME_OBJECT_BOSS) {
-            burstParticles(gameObject.x, gameObject.y, 'green', 40, 20, 30);
-            burstParticles(gameObject.x, gameObject.y, 'orange', 120, 20, 30);
+            burstParticles(gameObject.x, gameObject.y, 'green', 25, 20, 30);
+            burstParticles(gameObject.x, gameObject.y, 'orange', 100, 20, 30);
         } else {
-            burstParticles(gameObject.x, gameObject.y, 'orange', 25);
-            burstParticles(gameObject.x, gameObject.y, 'yellow', 25);
+            burstParticles(gameObject.x, gameObject.y, 'orange', 15);
+            burstParticles(gameObject.x, gameObject.y, 'yellow', 15);
         }
     }
 
@@ -1341,7 +1313,9 @@ function loopMenu() {
     drawSprite(0, 0, imgScreen, 0, canvas.width, canvas.height);
 
     if (renderMenuButton(-state.camera.width * 0.5 + 150, -state.camera.height * 0.5 + 400, 'Играть')) {
-        state.currentScreen = SCREEN_CHARACTERS;
+        if (canBeginGame) {
+            state.currentScreen = SCREEN_CHARACTERS;
+        }
     }
 
     const difficultyTexts = ['Нормально', 'Сложно'];
@@ -1504,11 +1478,6 @@ function loopGame() {
     }
 
     drawParticles();
-
-    if (getTimer(state.tutorialTimer) > 0 && state.lap === 0) {
-        drawText(state.camera.x, state.camera.y - 160, '        W                         ', 'middle', 'center', '60px Arial', 'yellow');
-        drawText(state.camera.x, state.camera.y - 100, 'Двигаться - A    D     Стрелять - Пробел', 'middle', 'center', '60px Arial', 'yellow');
-    }
 
     if (!state.globalPlayer.exists) {
         if (state.bossDefeatCount <= 0) {

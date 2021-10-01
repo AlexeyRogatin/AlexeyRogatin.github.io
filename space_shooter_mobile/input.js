@@ -1,13 +1,3 @@
-let globalInputString = '';
-
-function makeKey() {
-    return {
-        isDown: false,
-        wentDown: false,
-        wentUp: false,
-    };
-}
-
 function makeTouch() {
     return {
         isDown: false,
@@ -83,18 +73,9 @@ window.ontouchend = function ontouchend(event) {
     }
 };
 
-function clearKey(key) {
-    key.wentDown = false;
-    key.wentUp = false;
-}
-
 function clearTouch(touch) {
     touch.wentDown = false;
     touch.wentUp = false;
-    if (!touch.isDown) {
-        touch.x = 0;
-        touch.y = 0;
-    }
 }
 
 function clearAllKeys() {
