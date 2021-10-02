@@ -10,6 +10,7 @@ let sndLaser = loadSound('./sounds/Vystrel_lazera.wav');
 let sndGun = loadSound('./sounds/gun_shot.mp3');
 let sndMoon = loadSound('./sounds/moon.mp3');
 let sndRocket = loadSound('./sounds/rocket_voice.wav');
+let sndCoffee = loadSound('./sounds/hitsound.wav');
 
 let imgBouncingPowerUp = loadImage('./sprites/powerUp2.png');
 let imgBeanPowerUp = loadImage('./sprites/powerUp1.png');
@@ -44,6 +45,7 @@ let imgPowerButton = loadImage('./sprites/powerButton.png');
 let imgShootButton = loadImage('./sprites/shootButton.png');
 let imgJoystickBig = loadImage('./sprites/joystick1.png');
 let imgJoystickSmall = loadImage('./sprites/joystick.png');
+let imgExitButton = loadImage('./sprites/exitButton.png');
 
 const SPRITE_SCALE = 6
 
@@ -107,7 +109,11 @@ function drawCircle(x, y, radius, color) {
 
 function playSound(sound, volume = 1, loop = false) {
   let newSound = new Audio(sound.src);
-  newSound.volume = volume;
+  if (loop) {
+    newSound.volume = volume;
+  } else {
+    newSound.volume *= soundVolume;
+  }
   newSound.loop = loop;
   newSound.oncanplay = () => {
     newSound.play();

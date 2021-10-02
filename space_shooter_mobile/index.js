@@ -17,6 +17,9 @@ const SCREEN_MENU = 0;
 const SCREEN_GAME = 1;
 const SCREEN_RECORDS = 2;
 const SCREEN_CHARACTERS = 3;
+const SCREEN_OPTIONS = 4;
+const SCREEN_GAME_OPTIONS = 5;
+const SCREEN_GRAFICS_OPTIONS = 6;
 
 const GAME_OBJECT_NONE = 0;
 const GAME_OBJECT_PLAYER = 1;
@@ -57,6 +60,10 @@ const ctx = canvas.getContext("2d");
 
 let state = null;
 let globalRecords = [];
+let playerType = PLAYER_TYPE_DEFAULT;
+let difficulty = DIFFICULTY_NORMAL;
+let music = null;
+let soundVolume = 0.6;
 
 function resetState() {
     state = {
@@ -82,9 +89,13 @@ function resetState() {
         inputInProgress: false,
         currentScreen: SCREEN_MENU,
         bossDefeatCount: 0,
+
+        skillChargeValue: 0,
+
+        particleLvl: 0.25,
+        exitButtonPressed: false,
     };
 
-    state.skillTimer = 0;
     state.enemySpawnTimer = addTimer();
     state.screenShakeTimer = addTimer();
     state.bossTimer = addTimer(TIME_UNTIL_BOSS);
@@ -94,11 +105,6 @@ resetState();
 
 const HUNT_RADIUS = state.camera.width + 200;
 const SKILL_TIMER_MAX = 600;
-
-let playerType = PLAYER_TYPE_DEFAULT;
-let difficulty = DIFFICULTY_NORMAL;
-
-let lap = 0;
 
 function addParticle(x, y, color, minDiameter, maxDiameter) {
     let randomAngle = getRandomFloat(0, Math.PI + Math.PI);
@@ -121,7 +127,7 @@ function addParticle(x, y, color, minDiameter, maxDiameter) {
 }
 
 function burstParticles(x, y, color, count, minDiameter = 4, maxDiameter = 16) {
-    for (let pIndex = 0; pIndex < count; pIndex++) {
+    for (let pIndex = 0; pIndex < Math.ceil(count * state.particleLvl); pIndex++) {
         addParticle(x, y, color, minDiameter, maxDiameter);
     }
 }
@@ -720,21 +726,21 @@ function updateGameObject(gameObject) {
                 }
             }
             drawSprite(gameObject.x, gameObject.y, imgCleaning, 0, state.cleanRadius, state.cleanRadius);
-            state.skillTimer -= SKILL_DISCHARGE_VALUE;
+            state.skillChargeValue -= SKILL_DISCHARGE_VALUE;
         } else {
             state.cleanRadius = 0;
-            state.skillTimer += SKILL_RECHARGE_VALUE;
+            state.skillChargeValue += SKILL_RECHARGE_VALUE;
         }
 
-        if (state.skillTimer >= SKILL_TIMER_MAX) {
-            state.skillTimer = SKILL_TIMER_MAX;
+        if (state.skillChargeValue >= SKILL_TIMER_MAX) {
+            state.skillChargeValue = SKILL_TIMER_MAX;
             drawSprite(state.camera.x + state.camera.width * 0.5 - 120, state.camera.y + state.camera.height * 0.5 - 400, imgPowerButton, 0);
             if (renderRoundButton(state.camera.x + state.camera.width * 0.5 - 120, state.camera.y + state.camera.height * 0.5 - 400, 100).wentUp) {
                 state.skillMode = true;
             }
         }
 
-        if (state.skillTimer <= 0) {
+        if (state.skillChargeValue <= 0) {
             state.skillMode = false;
         }
 
@@ -905,6 +911,11 @@ function updateGameObject(gameObject) {
                     gameObject.angle = neededAngle;
                 }
             }
+
+            drawSprite(state.camera.x + state.camera.width * 0.5 - 120, state.camera.y - 150, imgExitButton, 0);
+            if (renderRoundButton(state.camera.x + state.camera.width * 0.5 - 120, state.camera.y - 150, 100).isDown) {
+                state.exitButtonPressed = true;
+            }
         }
 
         state.camera.x = gameObject.x;
@@ -935,10 +946,10 @@ function updateGameObject(gameObject) {
             );
         }
 
-        const skillTimeLeftPercentage = state.skillTimer / SKILL_TIMER_MAX;
+        const skillTimeLeftPercentage = state.skillChargeValue / SKILL_TIMER_MAX;
         const skillLeftTimeWidth = skillTimeLeftPercentage * STRIPE_WIDTH;
 
-        drawRect(420 + skillLeftTimeWidth / 2 + state.camera.x - state.camera.width / 2, 10 + STRIPE_HEIGHT / 2 + state.camera.y - state.camera.height / 2, skillLeftTimeWidth, STRIPE_HEIGHT, 0, 'white');
+        drawRect(430 + skillLeftTimeWidth / 2 + state.camera.x - state.camera.width / 2, 10 + STRIPE_HEIGHT / 2 + state.camera.y - state.camera.height / 2, skillLeftTimeWidth, STRIPE_HEIGHT, 0, 'white');
 
         //draw hitpoints
 
@@ -1121,14 +1132,14 @@ function updateGameObject(gameObject) {
         if (amIDead) {
             removeGameObject(gameObject);
             if (gameObject.shootParticles) {
-                burstParticles(gameObject.x, gameObject.y, 'orange', 7);
-                burstParticles(gameObject.x, gameObject.y, 'yellow', 7);
+                burstParticles(gameObject.x, gameObject.y, 'orange', 10);
+                burstParticles(gameObject.x, gameObject.y, 'yellow', 10);
             }
         }
 
         if (gameObject.shootParticles) {
-            burstParticles(gameObject.x, gameObject.y, 'orange', 1, 6, 7);
-            burstParticles(gameObject.x, gameObject.y, 'yellow', 1, 6, 7);
+            burstParticles(gameObject.x, gameObject.y, 'orange', 1, 6, 10);
+            burstParticles(gameObject.x, gameObject.y, 'yellow', 1, 6, 10);
         }
     }
 
@@ -1211,11 +1222,11 @@ function updateGameObject(gameObject) {
 
         playSound(sndExplosion, 1);
         if (gameObject.type === GAME_OBJECT_BOSS) {
-            burstParticles(gameObject.x, gameObject.y, 'green', 25, 20, 30);
-            burstParticles(gameObject.x, gameObject.y, 'orange', 100, 20, 30);
+            burstParticles(gameObject.x, gameObject.y, 'green', 50, 15, 25);
+            burstParticles(gameObject.x, gameObject.y, 'orange', 200, 15, 25);
         } else {
-            burstParticles(gameObject.x, gameObject.y, 'orange', 15);
-            burstParticles(gameObject.x, gameObject.y, 'yellow', 15);
+            burstParticles(gameObject.x, gameObject.y, 'orange', 50);
+            burstParticles(gameObject.x, gameObject.y, 'yellow', 50);
         }
     }
 
@@ -1292,19 +1303,21 @@ function renderMenuButton(x, y, text) {
     let textWidth = measures.width;
     let textHeight = 120;
 
+    let boldness = false;
+
     for (let touchIndex = 0; touchIndex < touchEvents.length; touchIndex++) {
         let touchPos = { x: touchEvents[touchIndex].x + state.camera.x - state.camera.width * 0.5, y: touchEvents[touchIndex].y + state.camera.y - state.camera.height * 0.5 };
         if (touchPos.x >= x && touchPos.x <= x + textWidth && touchPos.y >= y - textHeight * 0.5 && touchPos.y <= y + textHeight * 0.5) {
             if (touchEvents[touchIndex].isDown) {
-                drawMenuText(x, y, text, true);
+                boldness = true;
             } else if (touchEvents[touchIndex].wentUp) {
                 buttonPressed = true;
                 break;
             }
-        } else {
-            drawMenuText(x, y, text);
         }
     }
+    drawMenuText(x, y, text, boldness);
+
     return buttonPressed;
 }
 
@@ -1318,16 +1331,7 @@ function loopMenu() {
         }
     }
 
-    const difficultyTexts = ['Нормально', 'Сложно'];
-
-    if (renderMenuButton(-state.camera.width * 0.5 + 150, -state.camera.height * 0.5 + 600, difficultyTexts[difficulty])) {
-        difficulty++;
-        if (difficulty > DIFFCULTY_HARD) {
-            difficulty = DIFFICULTY_NORMAL;
-        }
-    }
-
-    if (renderMenuButton(-state.camera.width * 0.5 + 150, -state.camera.height * 0.5 + 800, 'Рекорды')) {
+    if (renderMenuButton(-state.camera.width * 0.5 + 150, -state.camera.height * 0.5 + 600, 'Рекорды')) {
         state.currentScreen = SCREEN_RECORDS;
 
         let recordsCount = globalRecords.length;
@@ -1335,7 +1339,7 @@ function loopMenu() {
         if (recordsCount >= 2) {
             while (mistakes !== 0) {
                 mistakes = 0;
-                for (let recordIndex = 1; recordIndex < recordsCount; recordIndex++) {
+                for (let recordIndex = 1; recordIndex <= 5; recordIndex++) {
                     if (globalRecords[recordIndex].score > globalRecords[recordIndex - 1].score) {
                         let save_record = globalRecords[recordIndex];
                         globalRecords[recordIndex] = globalRecords[recordIndex - 1];
@@ -1346,6 +1350,13 @@ function loopMenu() {
                 }
             }
         }
+        while (globalRecords.length > 5) {
+            pop(globalRecords);
+        }
+    }
+
+    if (renderMenuButton(-state.camera.width * 0.5 + 150, -state.camera.height * 0.5 + 800, 'Настройки')) {
+        state.currentScreen = SCREEN_OPTIONS;
     }
 
 
@@ -1375,8 +1386,6 @@ function loopRecords() {
     }
 }
 
-let music = null;
-
 function loopCharacters() {
     //задник
     drawSprite(0, 0, imgScreen, 0, canvas.width, canvas.height);
@@ -1402,9 +1411,6 @@ function loopCharacters() {
 
     if (playerType != -1) {
         state.currentScreen = SCREEN_GAME;
-        if (lap === 0) {
-            music = playSound(sndMusic, 0.75, true);
-        }
         if (playerType === PLAYER_TYPE_FAST) {
             state.globalPlayer = addPlayerFast();
         } else if (playerType === PLAYER_TYPE_DEFAULT) {
@@ -1416,6 +1422,113 @@ function loopCharacters() {
         for (let touchIndex = 0; touchIndex < touchEvents.length; touchIndex++) {
             if (touchEvents[touchIndex].wentUp) {
                 state.currentScreen = SCREEN_MENU;
+            }
+        }
+    }
+}
+
+function loopOptions() {
+    //задник
+    drawSprite(0, 0, imgScreen, 0, canvas.width, canvas.height);
+
+    drawMenuText(0, -state.camera.height * 0.5 + 90, 'Настройки', true, 'center');
+    let buttonPressed = false;
+
+    if (renderMenuButton(-state.camera.width * 0.5 + 150, -state.camera.height * 0.5 + 400, 'Игровые')) {
+        state.currentScreen = SCREEN_GAME_OPTIONS;
+        buttonPressed = true;
+    }
+    if (renderMenuButton(-state.camera.width * 0.5 + 150, -state.camera.height * 0.5 + 600, 'Графические')) {
+        state.currentScreen = SCREEN_GRAFICS_OPTIONS;
+        buttonPressed = true;
+    }
+    if (!buttonPressed) {
+        for (let touchIndex = 0; touchIndex < touchEvents.length; touchIndex++) {
+            if (touchEvents[touchIndex].wentUp) {
+                state.currentScreen = SCREEN_MENU;
+            }
+        }
+    }
+}
+
+function loopGameOptions() {
+    //задник
+    drawSprite(0, 0, imgScreen, 0, canvas.width, canvas.height);
+
+    drawMenuText(0, -state.camera.height * 0.5 + 90, 'Игровые', true, 'center');
+
+    let buttonPressed = false;
+
+    const difficultyTexts = ['Нормально', 'Сложно'];
+    drawMenuText(100, -state.camera.height * 0.5 + 400, difficultyTexts[difficulty]);
+    if (renderMenuButton(-state.camera.width * 0.5 + 150, -state.camera.height * 0.5 + 400, 'Сложность')) {
+
+        difficulty++;
+        if (difficulty > DIFFCULTY_HARD) {
+            difficulty = DIFFICULTY_NORMAL;
+        }
+        buttonPressed = true;
+    }
+
+    if (music) {
+        drawMenuText(100, -state.camera.height * 0.5 + 600, music.volume * 100 + '%');
+    }
+    if (renderMenuButton(-state.camera.width * 0.5 + 150, -state.camera.height * 0.5 + 600, 'Музыка')) {
+        if (music) {
+            if (music.volume - 0.1 >= 0) {
+                music.volume -= 0.1;
+            } else {
+                music.volume = 1;
+            }
+            music.volume = Math.round(music.volume * 100) / 100;
+        }
+        buttonPressed = true;
+    }
+
+    drawMenuText(100, -state.camera.height * 0.5 + 800, soundVolume * 100 + '%');
+    if (renderMenuButton(-state.camera.width * 0.5 + 150, -state.camera.height * 0.5 + 800, 'Звуки')) {
+        if (soundVolume - 0.1 >= 0) {
+            soundVolume -= 0.1;
+        } else {
+            soundVolume = 1;
+        }
+        soundVolume = Math.round(soundVolume * 100) / 100;
+        buttonPressed = true;
+    }
+
+    if (!buttonPressed) {
+        for (let touchIndex = 0; touchIndex < touchEvents.length; touchIndex++) {
+            if (touchEvents[touchIndex].wentUp) {
+                state.currentScreen = SCREEN_OPTIONS;
+            }
+        }
+    }
+}
+
+function loopGraficsOptions() {
+    //задник
+    drawSprite(0, 0, imgScreen, 0, canvas.width, canvas.height);
+
+    drawMenuText(0, -state.camera.height * 0.5 + 90, 'Графические', true, 'center');
+
+    let buttonPressed = false;
+
+    drawMenuText(100, -state.camera.height * 0.5 + 400, state.particleLvl * 100 + '%');
+    if (renderMenuButton(-state.camera.width * 0.5 + 150, -state.camera.height * 0.5 + 400, 'Частицы')) {
+        state.particleLvl -= 0.25;
+        if (state.particleLvl < 0) {
+            state.particleLvl = 1;
+        }
+        buttonPressed = true;
+    }
+    if (renderMenuButton(-state.camera.width * 0.5 + 150, -state.camera.height * 0.5 + 600, 'Кофееее')) {
+        playSound(sndCoffee);
+        buttonPressed = true;
+    }
+    if (!buttonPressed) {
+        for (let touchIndex = 0; touchIndex < touchEvents.length; touchIndex++) {
+            if (touchEvents[touchIndex].wentUp) {
+                state.currentScreen = SCREEN_OPTIONS;
             }
         }
     }
@@ -1462,9 +1575,8 @@ function loopGame() {
         setTimer(state.enemySpawnTimer, state.enemySpawnInterval);
         if (difficulty === DIFFICULTY_NORMAL) {
             state.enemySpawnInterval = 1 / Math.sqrt(Math.sqrt(state.globalTime * 50 + 100)) * 700;
-        }
-        if (difficulty === DIFFCULTY_HARD) {
-            state.enemySpawnInterval = 0;
+        } else {
+            state.enemySpawnInterval = 1 / Math.sqrt(Math.sqrt(state.globalTime * 50 + 100)) * 200;
         }
     }
 
@@ -1491,9 +1603,13 @@ function loopGame() {
         for (let touchIndex = 0; touchIndex < touchEvents.length; touchIndex++) {
             if (touchEvents[touchIndex].wentDown) {
                 resetState();
-                lap++;
+                break;
             }
         }
+    }
+
+    if (state.exitButtonPressed) {
+        resetState();
     }
 
     state.globalTime += 1;
@@ -1502,12 +1618,16 @@ function loopGame() {
 
 
 function loop() {
-    let save_performance = performance.now();
+    // let save_performance = performance.now();
     ctx.save();
 
     //камера
     ctx.rotate(state.camera.angle);
     ctx.translate(-state.camera.x + state.camera.width / 2, -state.camera.y + state.camera.height / 2);
+
+    if (!music && document.fullscreenElement == document.documentElement) {
+        music = playSound(sndMusic, 0.6, true);
+    }
 
     switch (state.currentScreen) {
         case SCREEN_MENU: {
@@ -1525,11 +1645,23 @@ function loop() {
         case SCREEN_CHARACTERS: {
             loopCharacters();
         } break;
+
+        case SCREEN_OPTIONS: {
+            loopOptions();
+        } break;
+
+        case SCREEN_GAME_OPTIONS: {
+            loopGameOptions();
+        } break;
+
+        case SCREEN_GRAFICS_OPTIONS: {
+            loopGraficsOptions();
+        } break;
     }
 
     clearAllKeys();
 
-    drawText(state.camera.x + state.camera.width / 2 - 100, state.camera.y + 100, Math.floor(1000 / (performance.now() - save_performance)), 'middle', 'center', '80px Arial', 'yellow')
+    // drawText(state.camera.x + state.camera.width / 2 - 100, state.camera.y + 100, Math.floor(1000 / (performance.now() - save_performance)), 'middle', 'center', '80px Arial', 'yellow')
     ctx.restore();
 
     requestAnimationFrame(loop);
