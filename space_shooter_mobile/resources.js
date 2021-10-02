@@ -2,7 +2,7 @@ let resourcesWaitingForLoadCount = 0;
 let resourcesLoadedCount = 0;
 let canBeginGame = false;
 
-let sndMusic = loadSound('./sounds/Vadim/Moya_pesnya_6.wav');
+let sndMusic = loadSound('./sounds/Vadim/Moya_pesnya_6_converted.wav');
 let sndEngine = loadSound('./sounds/engine.mp3');
 let sndShot = loadSound('./sounds/shot.mp3');
 let sndExplosion = loadSound('./sounds/boom4.mp3');
