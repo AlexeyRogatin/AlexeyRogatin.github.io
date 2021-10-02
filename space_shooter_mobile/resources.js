@@ -107,14 +107,16 @@ function drawCircle(x, y, radius, color) {
   ctx.stroke();
 }
 
-function playSound(sound, volume = 1, loop = false) {
+function playSound(sound, volume = 1, loop = false, playbackRate = 1) {
   let newSound = new Audio(sound.src);
   if (loop) {
     newSound.volume = volume;
   } else {
-    newSound.volume *= soundVolume;
+    newSound.volume *= volume * soundVolume;
   }
   newSound.loop = loop;
+  newSound.preservesPitch = false;
+  newSound.playbackRate = playbackRate;
   newSound.oncanplay = () => {
     newSound.play();
   };

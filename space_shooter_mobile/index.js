@@ -403,9 +403,9 @@ function addBoss() {
 }
 
 function getRandomFloat(start, end) {
-    let randomFloat = Math.random();
+    let getRandomFloat = Math.random();
     let intervalLength = end - start;
-    let intervalFloat = randomFloat * intervalLength;
+    let intervalFloat = getRandomFloat * intervalLength;
     let result = intervalFloat + start;
     return result;
 }
@@ -791,7 +791,7 @@ function updateGameObject(gameObject) {
                         bullet.damage = 1.5;
 
                         reloadTime = 15;
-                        playSound(sndRocket, 0.2);
+                        playSound(sndRocket, 0.4, false, getRandomFloat(0.8, 1.2));
                     } break;
                     case GAME_OBJECT_BEANPOWERUP: {
                         bullet = addBullet(
@@ -809,7 +809,7 @@ function updateGameObject(gameObject) {
                         bullet.pierce = true;
 
                         reloadTime = 80;
-                        playSound(sndMoon, 0.5);
+                        playSound(sndMoon, 0.75);
                     } break;
                     case GAME_OBJECT_BOUNCINGPOWERUP: {
                         bullet = addBullet(
@@ -825,44 +825,46 @@ function updateGameObject(gameObject) {
                         bullet.pierce = false;
 
                         reloadTime = 12;
-                        playSound(sndGun, 0.2);
+                        playSound(sndGun, 0.4, false, getRandomFloat(0.8, 1.2));
                     } break;
                 }
 
                 setTimer(gameObject.shootTimer, reloadTime * rateMultiplier);
-            } else if (gameObject.shootTwice) {
-                let bulletVector = rotateVector(0, -20, gameObject.angle);
-                let bullet = addBullet(
-                    GAME_OBJECT_BULLET,
-                    gameObject.x + bulletVector.x, gameObject.y + bulletVector.y,
-                    gameObject.angle, gameObject.speedX,
-                    gameObject.speedY, 10, killObjectTypes, 100, 15,
-                );
-                bullet.sprite = imgPlayerBullet;
-                bullet.damage = 0.75;
-
-                let bulletVector1 = rotateVector(0, 20, gameObject.angle);
-                let bullet1 = addBullet(
-                    GAME_OBJECT_BULLET,
-                    gameObject.x + bulletVector1.x, gameObject.y + bulletVector1.y,
-                    gameObject.angle, gameObject.speedX,
-                    gameObject.speedY, 10, killObjectTypes, 100, 15,
-                );
-                bullet1.sprite = imgPlayerBullet;
-                bullet1.damage = 0.5;
-                setTimer(gameObject.shootTimer, 10 * rateMultiplier);
             } else {
-                let bullet = addBullet(
-                    GAME_OBJECT_BULLET,
-                    gameObject.x, gameObject.y,
-                    gameObject.angle, gameObject.speedX,
-                    gameObject.speedY, 10, killObjectTypes, 100, 15,
-                );
-                setTimer(gameObject.shootTimer, 10 * rateMultiplier);
-                bullet.sprite = imgPlayerBullet;
-                bullet.damage = 1;
+                if (gameObject.shootTwice) {
+                    let bulletVector = rotateVector(0, -20, gameObject.angle);
+                    let bullet = addBullet(
+                        GAME_OBJECT_BULLET,
+                        gameObject.x + bulletVector.x, gameObject.y + bulletVector.y,
+                        gameObject.angle, gameObject.speedX,
+                        gameObject.speedY, 10, killObjectTypes, 100, 15,
+                    );
+                    bullet.sprite = imgPlayerBullet;
+                    bullet.damage = 0.75;
+
+                    let bulletVector1 = rotateVector(0, 20, gameObject.angle);
+                    let bullet1 = addBullet(
+                        GAME_OBJECT_BULLET,
+                        gameObject.x + bulletVector1.x, gameObject.y + bulletVector1.y,
+                        gameObject.angle, gameObject.speedX,
+                        gameObject.speedY, 10, killObjectTypes, 100, 15,
+                    );
+                    bullet1.sprite = imgPlayerBullet;
+                    bullet1.damage = 0.5;
+                    setTimer(gameObject.shootTimer, 10 * rateMultiplier);
+                } else {
+                    let bullet = addBullet(
+                        GAME_OBJECT_BULLET,
+                        gameObject.x, gameObject.y,
+                        gameObject.angle, gameObject.speedX,
+                        gameObject.speedY, 10, killObjectTypes, 100, 15,
+                    );
+                    setTimer(gameObject.shootTimer, 10 * rateMultiplier);
+                    bullet.sprite = imgPlayerBullet;
+                    bullet.damage = 1;
+                }
+                playSound(sndGun, 0.4, false, getRandomFloat(0.8, 1.2));
             }
-            playSound(sndGun, 0.2);
         }
 
         {
@@ -976,7 +978,7 @@ function updateGameObject(gameObject) {
             state.camera.x + state.camera.width / 2 - 10,
             state.camera.y - state.camera.height / 2 + 10,
             'Score: ' + state.globalScore,
-            'top', 'right', '45px Arial', 'yellow',
+            'top', 'right', '30px Nintendo', 'yellow',
         );
 
         if (state.timers[state.screenShakeTimer] > 0) {
@@ -1220,7 +1222,7 @@ function updateGameObject(gameObject) {
 
         removeGameObject(gameObject);
 
-        playSound(sndExplosion, 1);
+        playSound(sndExplosion, 1, false, getRandomFloat(0.5, 1.25));
         if (gameObject.type === GAME_OBJECT_BOSS) {
             burstParticles(gameObject.x, gameObject.y, 'green', 50, 15, 25);
             burstParticles(gameObject.x, gameObject.y, 'orange', 200, 15, 25);
@@ -1274,7 +1276,7 @@ function clipValue(value, min, max) {
 }
 
 const MENU_OFFSET_LEFT = 0.32 * state.camera.width;
-const MENU_FONT = '120px Arial';
+const MENU_FONT = '70px Nintendo';
 
 function drawMenuText(x, y, text, bold = false, align = 'left') {
     let font = '';
@@ -1522,7 +1524,7 @@ function loopGraficsOptions() {
         buttonPressed = true;
     }
     if (renderMenuButton(-state.camera.width * 0.5 + 150, -state.camera.height * 0.5 + 600, 'Кофееее')) {
-        playSound(sndCoffee);
+        playSound(sndCoffee, 1, false, getRandomFloat(0.5, 1.5));
         buttonPressed = true;
     }
     if (!buttonPressed) {
@@ -1593,11 +1595,12 @@ function loopGame() {
 
     if (!state.globalPlayer.exists) {
         if (state.bossDefeatCount <= 0) {
-            drawText(state.camera.x, state.camera.y - 30, 'Вы были расплющены! Ваш счёт: ' + state.globalScore, 'middle', 'center', '80px Arial', 'yellow');
+            drawText(state.camera.x, state.camera.y - 30, 'Вы были расплющены! ', 'middle', 'center', '50px Nintendo', 'yellow');
+            drawText(state.camera.x, state.camera.y + 30, 'Ваш счёт: ' + state.globalScore, 'middle', 'center', '50px Nintendo', 'yellow');
         }
         else {
-            drawText(state.camera.x, state.camera.y - 30, 'Вы выиграли) Ваш счёт: ' + state.globalScore, 'middle', 'center', '80px Arial', 'yellow');
-            drawText(state.camera.x, state.camera.y + 30, 'Вы победили босса ' + state.bossDefeatCount + ' раз', 'middle', 'center', '80px Arial', 'yellow');
+            drawText(state.camera.x, state.camera.y - 30, 'Вы выиграли) Ваш счёт: ' + state.globalScore, 'middle', 'center', '50px Nintendo', 'yellow');
+            drawText(state.camera.x, state.camera.y + 30, 'Вы победили босса ' + state.bossDefeatCount + ' раз', 'middle', 'center', '50px Nintendo', 'yellow');
         }
 
         for (let touchIndex = 0; touchIndex < touchEvents.length; touchIndex++) {
@@ -1626,7 +1629,7 @@ function loop() {
     ctx.translate(-state.camera.x + state.camera.width / 2, -state.camera.y + state.camera.height / 2);
 
     if (!music && document.fullscreenElement == document.documentElement) {
-        music = playSound(sndMusic, 0.6, true);
+        music = playSound(sndMusic, 0.5, true);
     }
 
     switch (state.currentScreen) {
@@ -1661,7 +1664,7 @@ function loop() {
 
     clearAllKeys();
 
-    // drawText(state.camera.x + state.camera.width / 2 - 100, state.camera.y + 100, Math.floor(1000 / (performance.now() - save_performance)), 'middle', 'center', '80px Arial', 'yellow')
+    // drawText(state.camera.x + state.camera.width / 2 - 100, state.camera.y + 100, Math.floor(1000 / (performance.now() - save_performance)), 'middle', 'center', '80px Nintendo', 'yellow')
     ctx.restore();
 
     requestAnimationFrame(loop);
