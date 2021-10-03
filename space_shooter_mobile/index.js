@@ -127,7 +127,13 @@ function addParticle(x, y, color, minDiameter, maxDiameter) {
 }
 
 function burstParticles(x, y, color, count, minDiameter = 4, maxDiameter = 16) {
-    for (let pIndex = 0; pIndex < Math.ceil(count * state.particleLvl); pIndex++) {
+    let particleCount = count * state.particleLvl;
+    if (getRandomFloat(0, 1) < particleCount - Math.trunc(particleCount)) {
+        particleCount = Math.ceil(particleCount);
+    } else {
+        particleCount = Math.floor(particleCount);
+    }
+    for (let pIndex = 0; pIndex < particleCount; pIndex++) {
         addParticle(x, y, color, minDiameter, maxDiameter);
     }
 }
@@ -1341,7 +1347,7 @@ function loopMenu() {
         if (recordsCount >= 2) {
             while (mistakes !== 0) {
                 mistakes = 0;
-                for (let recordIndex = 1; recordIndex <= 5; recordIndex++) {
+                for (let recordIndex = 1; recordIndex < Math.min(recordsCount, 5); recordIndex++) {
                     if (globalRecords[recordIndex].score > globalRecords[recordIndex - 1].score) {
                         let save_record = globalRecords[recordIndex];
                         globalRecords[recordIndex] = globalRecords[recordIndex - 1];
@@ -1353,7 +1359,7 @@ function loopMenu() {
             }
         }
         while (globalRecords.length > 5) {
-            pop(globalRecords);
+            globalRecords.pop();
         }
     }
 
