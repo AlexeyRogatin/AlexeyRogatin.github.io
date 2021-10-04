@@ -481,8 +481,6 @@ function rotateVector(x, y, angle) {
 }
 
 function checkCollision(gameObject, other) {
-    let other = state.gameObjects[gameObjectIndex];
-
     const radiusSum = gameObject.collisionRadius + other.collisionRadius;
     const a = other.x - gameObject.x;
     const b = other.y - gameObject.y;
@@ -493,20 +491,20 @@ function checkCollision(gameObject, other) {
     }
 }
 
-function checkCollisionWithObjectType(gameObject, otherTypes, otherObject = null) {
-    if (!otherObject) {
+function checkCollisionWithObjectType(gameObject, otherObjectTypes, targetObject = null) {
+    if (!targetObject) {
         for (let gameObjectIndex = 0; gameObjectIndex < state.gameObjects.length; gameObjectIndex++) {
-            let other = state.gameObjects[gameObjectIndex];
-            if (other.exists) {
+            let otherObject = state.gameObjects[gameObjectIndex];
+            if (otherObject.exists) {
                 let typeFound = false;
-                for (let typeIndex = 0; typeIndex < otherTypes.length; typeIndex++) {
-                    if (otherTypes[typeIndex] === other.type) {
+                for (let typeIndex = 0; typeIndex < otherObjectTypes.length; typeIndex++) {
+                    if (otherObjectTypes[typeIndex] === otherObject.type) {
                         typeFound = true;
                         break;
                     }
                 }
                 if (typeFound) {
-                    let collision = checkCollision(gameObject, other);
+                    let collision = checkCollision(gameObject, otherObject);
                     if (collision) {
                         return collision;
                     }
@@ -514,7 +512,7 @@ function checkCollisionWithObjectType(gameObject, otherTypes, otherObject = null
             }
         }
     } else {
-        let collision = checkCollision(otherObject, other);
+        let collision = checkCollision(gameObject, targetObject);
         if (collision) {
             return collision;
         }
