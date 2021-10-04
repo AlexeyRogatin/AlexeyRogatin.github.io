@@ -840,72 +840,72 @@ function updateGameObject(gameObject) {
         state.camera.x = gameObject.x;
         state.camera.y = gameObject.y;
 
-        const STRIPE_WIDTH = 100;
-        const STRIPE_HEIGHT = 30;
-        const powerUpTimeLeftPercentage = getTimer(gameObject.powerUpTimer) / 400;
-        const leftTimeWidth = STRIPE_WIDTH * powerUpTimeLeftPercentage;
+        // const STRIPE_WIDTH = 100;
+        // const STRIPE_HEIGHT = 30;
+        // const powerUpTimeLeftPercentage = getTimer(gameObject.powerUpTimer) / 400;
+        // const leftTimeWidth = STRIPE_WIDTH * powerUpTimeLeftPercentage;
 
-        if (getTimer(gameObject.powerUpTimer) > 0) {
-            let color = null;
-            switch (gameObject.powerUpType) {
-                case GAME_OBJECT_ROCKETPOWERUP: {
-                    color = 'yellow';
-                } break;
-                case GAME_OBJECT_BEANPOWERUP: {
-                    color = 'green';
-                } break;
-                case GAME_OBJECT_BOUNCINGPOWERUP: {
-                    color = 'red';
-                } break;
-            }
-            drawRect(
-                200 + leftTimeWidth / 2 + state.camera.x - state.camera.width / 2,
-                10 + STRIPE_HEIGHT / 2 + state.camera.y - state.camera.height / 2,
-                leftTimeWidth, STRIPE_HEIGHT, 0, color
-            );
-        }
+        // if (getTimer(gameObject.powerUpTimer) > 0) {
+        //     let color = null;
+        //     switch (gameObject.powerUpType) {
+        //         case GAME_OBJECT_ROCKETPOWERUP: {
+        //             color = 'yellow';
+        //         } break;
+        //         case GAME_OBJECT_BEANPOWERUP: {
+        //             color = 'green';
+        //         } break;
+        //         case GAME_OBJECT_BOUNCINGPOWERUP: {
+        //             color = 'red';
+        //         } break;
+        //     }
+        //     drawRect(
+        //         200 + leftTimeWidth / 2 + state.camera.x - state.camera.width / 2,
+        //         10 + STRIPE_HEIGHT / 2 + state.camera.y - state.camera.height / 2,
+        //         leftTimeWidth, STRIPE_HEIGHT, 0, color
+        //     );
+        // }
 
-        const skillTimeLeftPercentage = getTimer(state.skillTimer) / SKILL_TIMER_MAX;
-        const skillLeftTimeWidth = skillTimeLeftPercentage * STRIPE_WIDTH;
+        // const skillTimeLeftPercentage = getTimer(state.skillTimer) / SKILL_TIMER_MAX;
+        // const skillLeftTimeWidth = skillTimeLeftPercentage * STRIPE_WIDTH;
 
-        drawRect(400 + skillLeftTimeWidth / 2 + state.camera.x - state.camera.width / 2, 10 + STRIPE_HEIGHT / 2 + state.camera.y - state.camera.height / 2, skillLeftTimeWidth, STRIPE_HEIGHT, 0, 'white');
+        // drawRect(400 + skillLeftTimeWidth / 2 + state.camera.x - state.camera.width / 2, 10 + STRIPE_HEIGHT / 2 + state.camera.y - state.camera.height / 2, skillLeftTimeWidth, STRIPE_HEIGHT, 0, 'white');
 
-        if (getTimer(state.skillTimer) >= SKILL_TIMER_MAX) {
-            drawText(400 + skillLeftTimeWidth / 2 + state.camera.x - state.camera.width / 2 + 300, state.camera.y - state.camera.height / 2 + 10, 'Жми "E"!!!', 'top', 'right', '30px Arial', 'yellow');
-        }
+        // if (getTimer(state.skillTimer) >= SKILL_TIMER_MAX) {
+        //     drawText(400 + skillLeftTimeWidth / 2 + state.camera.x - state.camera.width / 2 + 300, state.camera.y - state.camera.height / 2 + 10, 'Жми "E"!!!', 'top', 'right', '30px Arial', 'yellow');
+        // }
 
-        //draw hitpoints
+        // //draw hitpoints
 
-        const hitpointsLeftPercentage = gameObject.hitpoints / gameObject.maxHitpoints;
-        const leftWidth = STRIPE_WIDTH * hitpointsLeftPercentage;
+        // const hitpointsLeftPercentage = gameObject.hitpoints / gameObject.maxHitpoints;
+        // const leftWidth = STRIPE_WIDTH * hitpointsLeftPercentage;
 
-        ctx.save();
-        ctx.rotate(-state.camera.angle);
+        // ctx.save();
+        // ctx.rotate(-state.camera.angle);
 
-        drawRect(
-            10 + STRIPE_WIDTH / 2 + state.camera.x - state.camera.width / 2,
-            10 + STRIPE_HEIGHT / 2 + state.camera.y - state.camera.height / 2,
-            STRIPE_WIDTH, STRIPE_HEIGHT, 0, 'red',
-        );
-        drawRect(
-            10 + leftWidth / 2 + state.camera.x - state.camera.width / 2,
-            10 + STRIPE_HEIGHT / 2 + state.camera.y - state.camera.height / 2,
-            leftWidth, STRIPE_HEIGHT, 0, 'green',
-        );
-        ctx.restore();
+        // drawRect(
+        //     10 + STRIPE_WIDTH / 2 + state.camera.x - state.camera.width / 2,
+        //     10 + STRIPE_HEIGHT / 2 + state.camera.y - state.camera.height / 2,
+        //     STRIPE_WIDTH, STRIPE_HEIGHT, 0, 'red',
+        // );
+        // drawRect(
+        //     10 + leftWidth / 2 + state.camera.x - state.camera.width / 2,
+        //     10 + STRIPE_HEIGHT / 2 + state.camera.y - state.camera.height / 2,
+        //     leftWidth, STRIPE_HEIGHT, 0, 'green',
+        // );
+        // ctx.restore();
 
-        //draw score
-        drawText(
-            state.camera.x + state.camera.width / 2 - 10,
-            state.camera.y - state.camera.height / 2 + 10,
-            'Score: ' + state.globalScore,
-            'top', 'right', '30px Arial', 'yellow',
-        );
+        // //draw score
+        // drawText(
+        //     state.camera.x + state.camera.width / 2 - 10,
+        //     state.camera.y - state.camera.height / 2 + 10,
+        //     'Score: ' + state.globalScore,
+        //     'top', 'right', '30px Arial', 'yellow',
+        // );
 
-        if (state.timers[state.screenShakeTimer] > 0) {
-            state.camera.x += getRandomFloat(-3, 3);
-            state.camera.y += getRandomFloat(-3, 3);
-        }
+        // if (state.timers[state.screenShakeTimer] > 0) {
+        //     state.camera.x += getRandomFloat(-3, 3);
+        //     state.camera.y += getRandomFloat(-3, 3);
+        // }
     };
 
     if (gameObject.type === GAME_OBJECT_ENEMY) {
@@ -1449,21 +1449,21 @@ function loopGame() {
 
     drawParticles();
 
-    if (getTimer(state.tutorialTimer) > 0 && state.lap === 0) {
-        drawText(state.camera.x, state.camera.y - 160, '        W                         ', 'middle', 'center', '60px Arial', 'yellow');
-        drawText(state.camera.x, state.camera.y - 100, 'Двигаться - A    D     Стрелять - Пробел', 'middle', 'center', '60px Arial', 'yellow');
-    }
+    // if (getTimer(state.tutorialTimer) > 0 && state.lap === 0) {
+    //     drawText(state.camera.x, state.camera.y - 160, '        W                         ', 'middle', 'center', '60px Arial', 'yellow');
+    //     drawText(state.camera.x, state.camera.y - 100, 'Двигаться - A    D     Стрелять - Пробел', 'middle', 'center', '60px Arial', 'yellow');
+    // }
 
-    if (!state.globalPlayer.exists) {
-        if (state.bossDefeatCount <= 0) {
-            drawText(state.camera.x, state.camera.y - 30, 'Вы были расплющены! Ваш счёт: ' + state.globalScore, 'middle', 'center', '60px Arial', 'yellow');
-            drawText(state.camera.x, state.camera.y + 30, 'Нажмите "R" для меню', 'middle', 'center', '60px Arial', 'yellow');
-        }
-        else {
-            drawText(state.camera.x, state.camera.y - 30, 'Вы выиграли) Ваш счёт: ' + state.globalScore, 'middle', 'center', '60px Arial', 'yellow');
-            drawText(state.camera.x, state.camera.y + 30, 'Вы победили босса ' + state.bossDefeatCount + ' раз', 'middle', 'center', '60px Arial', 'yellow');
-        }
-    }
+    // if (!state.globalPlayer.exists) {
+    //     if (state.bossDefeatCount <= 0) {
+    //         drawText(state.camera.x, state.camera.y - 30, 'Вы были расплющены! Ваш счёт: ' + state.globalScore, 'middle', 'center', '60px Arial', 'yellow');
+    //         drawText(state.camera.x, state.camera.y + 30, 'Нажмите "R" для меню', 'middle', 'center', '60px Arial', 'yellow');
+    //     }
+    //     else {
+    //         drawText(state.camera.x, state.camera.y - 30, 'Вы выиграли) Ваш счёт: ' + state.globalScore, 'middle', 'center', '60px Arial', 'yellow');
+    //         drawText(state.camera.x, state.camera.y + 30, 'Вы победили босса ' + state.bossDefeatCount + ' раз', 'middle', 'center', '60px Arial', 'yellow');
+    //     }
+    // }
 
 
     ctx.restore();

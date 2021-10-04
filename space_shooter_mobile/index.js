@@ -480,27 +480,43 @@ function rotateVector(x, y, angle) {
     };
 }
 
-function checkCollision(gameObject, otherTypes) {
-    for (let gameObjectIndex = 0; gameObjectIndex < state.gameObjects.length; gameObjectIndex++) {
-        let other = state.gameObjects[gameObjectIndex];
-        if (other.exists) {
-            let typeFound = false;
-            for (let typeIndex = 0; typeIndex < otherTypes.length; typeIndex++) {
-                if (otherTypes[typeIndex] === other.type) {
-                    typeFound = true;
-                    break;
-                }
-            }
-            if (typeFound) {
-                const radiusSum = gameObject.collisionRadius + other.collisionRadius;
-                const a = other.x - gameObject.x;
-                const b = other.y - gameObject.y;
-                const dist = Math.sqrt(a * a + b * b);
+function checkCollision(gameObject, other) {
+    let other = state.gameObjects[gameObjectIndex];
 
-                if (dist < radiusSum) {
-                    return other;
+    const radiusSum = gameObject.collisionRadius + other.collisionRadius;
+    const a = other.x - gameObject.x;
+    const b = other.y - gameObject.y;
+    const dist = Math.sqrt(a * a + b * b);
+
+    if (dist < radiusSum) {
+        return other;
+    }
+}
+
+function checkCollisionWithObjectType(gameObject, otherTypes, otherObject = null) {
+    if (!otherObject) {
+        for (let gameObjectIndex = 0; gameObjectIndex < state.gameObjects.length; gameObjectIndex++) {
+            let other = state.gameObjects[gameObjectIndex];
+            if (other.exists) {
+                let typeFound = false;
+                for (let typeIndex = 0; typeIndex < otherTypes.length; typeIndex++) {
+                    if (otherTypes[typeIndex] === other.type) {
+                        typeFound = true;
+                        break;
+                    }
+                }
+                if (typeFound) {
+                    let collision = checkCollision(gameObject, other);
+                    if (collision) {
+                        return collision;
+                    }
                 }
             }
+        }
+    } else {
+        let collision = checkCollision(otherObject, other);
+        if (collision) {
+            return collision;
         }
     }
 
@@ -750,7 +766,7 @@ function updateGameObject(gameObject) {
             state.skillMode = false;
         }
 
-        const hitPowerUp = checkCollision(gameObject, [
+        const hitPowerUp = checkCollisionWithObjectType(gameObject, [
             GAME_OBJECT_HEAL,
             GAME_OBJECT_BEANPOWERUP,
             GAME_OBJECT_BOUNCINGPOWERUP,
@@ -758,7 +774,7 @@ function updateGameObject(gameObject) {
         ]);
 
         if (hitPowerUp) {
-            if (hitPowerUp.type == GAME_OBJECT_HEAL) {
+            if (hitPowerUp.type === GAME_OBJECT_HEAL) {
                 if (gameObject.hitpoints !== gameObject.maxHitpoints) {
                     gameObject.hitpoints++;
                 }
@@ -912,7 +928,7 @@ function updateGameObject(gameObject) {
 
             controlShip(gameObject, rotateRight, rotateLeft, moveForward);
 
-            if (touchPosX != 0 || touchPosY != 0) {
+            if (touchPosX !== 0 || touchPosY !== 0) {
                 let neededAngle = angleBetweenPoints(0, 0, touchPosX, touchPosY);
                 gameObject.angle = (gameObject.angle / (Math.PI * 2) - Math.trunc(gameObject.angle / (Math.PI * 2))) * Math.PI * 2;
                 if (Math.abs(gameObject.angle - neededAngle) <= gameObject.rotationSpeed * 2) {
@@ -1116,7 +1132,11 @@ function updateGameObject(gameObject) {
         if (distanceBetweenPoints(gameObject.x, gameObject.y, state.globalPlayer.x, state.globalPlayer.y) < state.cleanRadius && gameObject.type === GAME_OBJECT_ENEMY_BULLET || getTimer(gameObject.lifetime) <= 0) {
             amIDead = true;
         } else {
-            hitObject = checkCollision(gameObject, gameObject.killObjectTypes);
+            if (gameObject.type === GAME_OBJECT_ENEMY_BULLET) {
+                hitObject = checkCollisionWithObjectType(gameObject, [], state.globalPlayer);
+            } else {
+                hitObject = checkCollisionWithObjectType(gameObject, gameObject.killObjectTypes);
+            }
         }
         if (hitObject !== null) {
             let isVulnerable = getTimer(hitObject.unhitableTimer) <= 0;
@@ -1417,7 +1437,7 @@ function loopCharacters() {
     }
 
 
-    if (playerType != -1) {
+    if (playerType !== -1) {
         state.currentScreen = SCREEN_GAME;
         if (playerType === PLAYER_TYPE_FAST) {
             state.globalPlayer = addPlayerFast();
@@ -1634,7 +1654,7 @@ function loop() {
     ctx.rotate(state.camera.angle);
     ctx.translate(-state.camera.x + state.camera.width / 2, -state.camera.y + state.camera.height / 2);
 
-    if (!music && document.fullscreenElement == document.documentElement) {
+    if (!music && document.fullscreenElement === document.documentElement) {
         music = playSound(sndMusic, 0.5, true);
     }
 
