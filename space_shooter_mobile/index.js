@@ -1365,7 +1365,7 @@ function loopMenu() {
         if (recordsCount >= 2) {
             while (mistakes !== 0) {
                 mistakes = 0;
-                for (let recordIndex = 1; recordIndex < Math.min(recordsCount, 5); recordIndex++) {
+                for (let recordIndex = 1; recordIndex < recordsCount; recordIndex++) {
                     if (globalRecords[recordIndex].score > globalRecords[recordIndex - 1].score) {
                         let save_record = globalRecords[recordIndex];
                         globalRecords[recordIndex] = globalRecords[recordIndex - 1];
