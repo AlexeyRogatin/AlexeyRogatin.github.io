@@ -72,7 +72,6 @@ function resetState() {
             y: 0,
             width: canvas.width,
             height: canvas.height,
-            angle: 0,
         },
         particles: [],
         gameObjects: [],
@@ -978,9 +977,6 @@ function updateGameObject(gameObject) {
         const hitpointsLeftPercentage = gameObject.hitpoints / gameObject.maxHitpoints;
         const leftWidth = STRIPE_WIDTH * hitpointsLeftPercentage;
 
-        ctx.save();
-        ctx.rotate(-state.camera.angle);
-
         drawRect(
             10 + STRIPE_WIDTH / 2 + state.camera.x - state.camera.width / 2,
             10 + STRIPE_HEIGHT / 2 + state.camera.y - state.camera.height / 2,
@@ -991,7 +987,6 @@ function updateGameObject(gameObject) {
             10 + STRIPE_HEIGHT / 2 + state.camera.y - state.camera.height / 2,
             leftWidth, STRIPE_HEIGHT, 0, 'green',
         );
-        ctx.restore();
 
         //draw score
         drawText(
@@ -1627,7 +1622,7 @@ function loopGame() {
         else {
             drawText(state.camera.x, state.camera.y - 30,
                 'Вы выиграли) Ваш счёт: ' + state.globalScore, 50, 'Nintendo', false,
-                'middle', 'center', '50px Nintendo', 'yellow');
+                'middle', 'center', 'yellow');
             drawText(state.camera.x, state.camera.y + 30,
                 'Вы победили босса ' + state.bossDefeatCount + ' раз', 50, 'Nintendo', false,
                 'middle', 'center', 'yellow');
@@ -1651,12 +1646,10 @@ function loopGame() {
 
 
 function loop() {
-    // let save_performance = performance.now();
-    ctx.save();
-
+    let topLeftCameraX = -state.camera.x + state.camera.width / 2;
+    let topLeftCameraY = -state.camera.y + state.camera.height / 2;
     //камера
-    ctx.rotate(state.camera.angle);
-    ctx.translate(-state.camera.x + state.camera.width / 2, -state.camera.y + state.camera.height / 2);
+    ctx.translate(topLeftCameraX, topLeftCameraY);
 
     if (!music && document.fullscreenElement === document.documentElement) {
         music = playSound(sndMusic, 0.5, true);
@@ -1694,7 +1687,7 @@ function loop() {
 
     clearAllKeys();
 
-    ctx.restore();
+    ctx.translate(-topLeftCameraX, -topLeftCameraY);
 
     requestAnimationFrame(loop);
 }
@@ -1703,4 +1696,5 @@ function beginGame() {
     resetState();
     requestAnimationFrame(loop);
 }
+
 requestAnimationFrame(loop);

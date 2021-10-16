@@ -69,40 +69,38 @@ function loadSound(src) {
 
 
 function drawRect(x, y, width, height, angle, color) {
-  ctx.save();	//Сохраняется, чтобы потом можно было вернуть экран
-  ctx.translate(x, y);	//Сохраняет предыдущие координаты, чтобы переместить экран обратно
-  ctx.fillStyle = color;	//Выбирается окраска
-
-  ctx.rotate(-angle);	//Экран поворачивается на угол
-  ctx.fillRect(-width / 2, -height / 2, width, height);	//Рисуется четырёхугольник
-  ctx.restore();	//Экран возвращается
+  ctx.translate(x, y);
+  ctx.fillStyle = color;
+  ctx.rotate(-angle);
+  ctx.fillRect(-width / 2, -height / 2, width, height);
+  ctx.rotate(angle);
+  ctx.translate(-x, -y);
 }
 
 function drawSprite(x, y, sprite, angle, width, height) {
-  ctx.save();
-  ctx.translate(x, y);
-
-  ctx.rotate(-angle);
   ctx.imageSmoothingEnabled = false;
+
+  ctx.translate(x, y);
+  ctx.rotate(-angle);
   let compWidth = width || sprite.width * SPRITE_SCALE;
   let compHeight = height || sprite.height * SPRITE_SCALE;
   ctx.drawImage(sprite, -compWidth / 2, -compHeight / 2, compWidth, compHeight);
-  ctx.restore();
+  ctx.rotate(angle);
+  ctx.translate(-x, -y);
 }
 
 function drawText(x, y, text, kegel, font, bold, textBaseline, textAlign, color) {
-  ctx.save();
   ctx.fillStyle = color;
   let fullFont = '';
   if (bold) {
     fullFont += 'bold ';
   }
   fullFont += kegel + 'px ' + font;
+
   ctx.font = fullFont;
   ctx.textBaseline = textBaseline;
   ctx.textAlign = textAlign;
   ctx.fillText(text, x, y);
-  ctx.restore();
 }
 
 function drawCircle(x, y, radius, color) {
