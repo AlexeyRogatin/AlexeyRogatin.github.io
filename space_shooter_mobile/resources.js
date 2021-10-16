@@ -90,10 +90,15 @@ function drawSprite(x, y, sprite, angle, width, height) {
   ctx.restore();
 }
 
-function drawText(x, y, text, textBaseline, textAlign, font, fillStyle) {
+function drawText(x, y, text, kegel, font, bold, textBaseline, textAlign, color) {
   ctx.save();
-  ctx.fillStyle = fillStyle;
-  ctx.font = font;
+  ctx.fillStyle = color;
+  let fullFont = '';
+  if (bold) {
+    fullFont += 'bold ';
+  }
+  fullFont += kegel + 'px ' + font;
+  ctx.font = fullFont;
   ctx.textBaseline = textBaseline;
   ctx.textAlign = textAlign;
   ctx.fillText(text, x, y);

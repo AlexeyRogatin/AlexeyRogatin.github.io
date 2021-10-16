@@ -997,8 +997,8 @@ function updateGameObject(gameObject) {
         drawText(
             state.camera.x + state.camera.width / 2 - 10,
             state.camera.y - state.camera.height / 2 + 10,
-            'Score: ' + state.globalScore,
-            'top', 'right', '30px Nintendo', 'yellow',
+            'Score: ' + state.globalScore, 30, 'Nintendo', false,
+            'top', 'right', 'yellow',
         );
 
         if (state.timers[state.screenShakeTimer] > 0) {
@@ -1125,6 +1125,7 @@ function updateGameObject(gameObject) {
             }
         }
 
+        //столкновение
         let amIDead = false;
         let hitObject = null;
         if (distanceBetweenPoints(gameObject.x, gameObject.y, state.globalPlayer.x, state.globalPlayer.y) < state.cleanRadius && gameObject.type === GAME_OBJECT_ENEMY_BULLET || getTimer(gameObject.lifetime) <= 0) {
@@ -1300,23 +1301,20 @@ function clipValue(value, min, max) {
 }
 
 const MENU_OFFSET_LEFT = 0.32 * state.camera.width;
-const MENU_FONT = '70px Nintendo';
+const MENU_FONT = 'Nintendo';
+const MENU_TEXT_SIZE = 70;
 
 function drawMenuText(x, y, text, bold = false, align = 'left') {
-    let font = '';
-    if (bold) {
-        font += 'bold ';
-    }
-    font += MENU_FONT;
-    drawText(state.camera.x + x, state.camera.y + y, text, 'middle', align, font, 'yellow');
+    drawText(state.camera.x + x, state.camera.y + y,
+        text, MENU_TEXT_SIZE, MENU_FONT, bold, 'middle', align, 'yellow');
 }
 
-function measureText(text, font, boldness) {
+function measureText(text, kegel, font, boldness) {
     let font_string = '';
     if (boldness) {
         font_string += 'bold ';
     }
-    font_string += font;
+    font_string += kegel + 'px ' + font;
     ctx.font = font_string;
     let result = ctx.measureText(text);
     return result;
@@ -1324,7 +1322,7 @@ function measureText(text, font, boldness) {
 
 function renderMenuButton(x, y, text) {
     let buttonPressed = false;
-    let measures = measureText(text, MENU_FONT, false);
+    let measures = measureText(text, MENU_TEXT_SIZE, MENU_FONT, false);
 
     let textWidth = measures.width;
     let textHeight = 120;
@@ -1619,12 +1617,20 @@ function loopGame() {
 
     if (!state.globalPlayer.exists) {
         if (state.bossDefeatCount <= 0) {
-            drawText(state.camera.x, state.camera.y - 30, 'Вы были расплющены! ', 'middle', 'center', '50px Nintendo', 'yellow');
-            drawText(state.camera.x, state.camera.y + 30, 'Ваш счёт: ' + state.globalScore, 'middle', 'center', '50px Nintendo', 'yellow');
+            drawText(state.camera.x, state.camera.y - 30,
+                'Вы были расплющены! ', 50, 'Nintendo', false,
+                'middle', 'center', 'yellow');
+            drawText(state.camera.x, state.camera.y + 30,
+                'Ваш счёт: ' + state.globalScore, 50, 'Nintendo', false,
+                'middle', 'center', 'yellow');
         }
         else {
-            drawText(state.camera.x, state.camera.y - 30, 'Вы выиграли) Ваш счёт: ' + state.globalScore, 'middle', 'center', '50px Nintendo', 'yellow');
-            drawText(state.camera.x, state.camera.y + 30, 'Вы победили босса ' + state.bossDefeatCount + ' раз', 'middle', 'center', '50px Nintendo', 'yellow');
+            drawText(state.camera.x, state.camera.y - 30,
+                'Вы выиграли) Ваш счёт: ' + state.globalScore, 50, 'Nintendo', false,
+                'middle', 'center', '50px Nintendo', 'yellow');
+            drawText(state.camera.x, state.camera.y + 30,
+                'Вы победили босса ' + state.bossDefeatCount + ' раз', 50, 'Nintendo', false,
+                'middle', 'center', 'yellow');
         }
 
         for (let touchIndex = 0; touchIndex < touchEvents.length; touchIndex++) {
@@ -1688,7 +1694,6 @@ function loop() {
 
     clearAllKeys();
 
-    // drawText(state.camera.x + state.camera.width / 2 - 100, state.camera.y + 100, Math.floor(1000 / (performance.now() - save_performance)), 'middle', 'center', '80px Nintendo', 'yellow')
     ctx.restore();
 
     requestAnimationFrame(loop);
