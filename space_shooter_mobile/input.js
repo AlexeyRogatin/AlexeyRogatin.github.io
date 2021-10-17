@@ -65,11 +65,11 @@ window.ontouchend = function ontouchend(event) {
         document.documentElement.requestFullscreen().then(() => {
             window.screen.orientation.lock("landscape");
         });
-    }
-
-    for (let index = 0; index < event.changedTouches.length; index++) {
-        let id = event.changedTouches[index].identifier;
-        handleKeyUp(touchEvents[id]);
+    } else {
+        for (let index = 0; index < event.changedTouches.length; index++) {
+            let id = event.changedTouches[index].identifier;
+            handleKeyUp(touchEvents[id]);
+        }
     }
 };
 

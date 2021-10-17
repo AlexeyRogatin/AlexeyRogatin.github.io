@@ -46,7 +46,7 @@ const TIME_UNTIL_BOSS = 3000;
 const SCREEN_RATIO = 16 / 9;
 const canvas = document.getElementById("canvas");
 
-let resolution = 0.125;
+let resolution = 720 / 4320
 
 function handleResize() {
     const rect = canvas.getBoundingClientRect();
@@ -66,6 +66,7 @@ let playerType = PLAYER_TYPE_DEFAULT;
 let difficulty = DIFFICULTY_NORMAL;
 let music = null;
 let soundVolume = 0.6;
+let particleLvl = 0.25;
 
 function resetState() {
     state = {
@@ -93,7 +94,6 @@ function resetState() {
 
         skillChargeValue: 0,
 
-        particleLvl: 0.25,
         exitButtonPressed: false,
     };
 
@@ -128,7 +128,7 @@ function addParticle(x, y, color, minDiameter, maxDiameter) {
 }
 
 function burstParticles(x, y, color, count, minDiameter = 4, maxDiameter = 16) {
-    let particleCount = count * state.particleLvl;
+    let particleCount = count * particleLvl;
     if (getRandomFloat(0, 1) < particleCount - Math.trunc(particleCount)) {
         particleCount = Math.ceil(particleCount);
     } else {
@@ -941,9 +941,6 @@ function updateGameObject(gameObject) {
             }
         }
 
-        state.camera.x = gameObject.x;
-        state.camera.y = gameObject.y;
-
         const STRIPE_WIDTH = 140;
         const STRIPE_HEIGHT = 50;
         const powerUpTimeLeftPercentage = getTimer(gameObject.powerUpTimer) / 400;
@@ -999,8 +996,9 @@ function updateGameObject(gameObject) {
         );
 
         if (state.timers[state.screenShakeTimer] > 0) {
-            state.camera.x += getRandomFloat(-3, 3);
-            state.camera.y += getRandomFloat(-3, 3);
+            let canvasScale = canvas.width / state.camera.width
+            state.camera.x += getRandomFloat(-3, 3) * canvasScale;
+            state.camera.y += getRandomFloat(-3, 3) * canvasScale;
         }
     };
 
@@ -1342,6 +1340,28 @@ function renderMenuButton(x, y, text) {
     return buttonPressed;
 }
 
+function renderSlider(x, y, value, text) {
+    let result = { value: value, touchUp: false };
+    let width = measureText(text, MENU_TEXT_SIZE, MENU_FONT, false).width;
+    let height = MENU_TEXT_SIZE;
+
+    for (let touchIndex = 0; touchIndex < touchEvents.length; touchIndex++) {
+        let touch = touchEvents[touchIndex];
+        if (touch.isDown || touch.wentUp) {
+            if (touch.firstX - state.camera.width * 0.5 >= x && touch.firstX - state.camera.width * 0.5 <= x + width &&
+                touch.firstY - state.camera.height * 0.5 >= y - height * 0.5 && touch.firstY - state.camera.height * 0.5 <= y + height * 0.5) {
+                result.value = clipValue(((touch.x - state.camera.width * 0.5) - x) / width, 0, 1);
+                result.touchUp = touch.wentUp;
+            }
+        }
+    }
+
+    drawRect(x + result.value * width * 0.5, y - 6, width * result.value, height, 0, 'green');
+    drawMenuText(x, y, text, result.value != value);
+
+    return result;
+}
+
 function loopMenu() {
     //задник
     drawSprite(0, 0, imgScreen, 0, state.camera.width, state.camera.height);
@@ -1491,31 +1511,21 @@ function loopGameOptions() {
         buttonPressed = true;
     }
 
+    let musicSlider = renderSlider(-state.camera.width * 0.5 + 150, -state.camera.height * 0.5 + 600, music.volume, 'Музыка');
+    if (musicSlider.touchUp) {
+        buttonPressed = true;
+    }
     if (music) {
-        drawMenuText(100, -state.camera.height * 0.5 + 600, music.volume * 100 + '%');
+        music.volume = musicSlider.value;
     }
-    if (renderMenuButton(-state.camera.width * 0.5 + 150, -state.camera.height * 0.5 + 600, 'Музыка')) {
-        if (music) {
-            if (music.volume - 0.1 >= 0) {
-                music.volume -= 0.1;
-            } else {
-                music.volume = 1;
-            }
-            music.volume = Math.round(music.volume * 100) / 100;
-        }
-        buttonPressed = true;
-    }
+    drawMenuText(100, -state.camera.height * 0.5 + 600, Math.round(musicSlider.value * 100) + '%');
 
-    drawMenuText(100, -state.camera.height * 0.5 + 800, soundVolume * 100 + '%');
-    if (renderMenuButton(-state.camera.width * 0.5 + 150, -state.camera.height * 0.5 + 800, 'Звуки')) {
-        if (soundVolume - 0.1 >= 0) {
-            soundVolume -= 0.1;
-        } else {
-            soundVolume = 1;
-        }
-        soundVolume = Math.round(soundVolume * 100) / 100;
+    let soundSlider = renderSlider(-state.camera.width * 0.5 + 150, -state.camera.height * 0.5 + 800, soundVolume, 'Звуки');
+    if (soundSlider.touchUp) {
         buttonPressed = true;
     }
+    soundVolume = soundSlider.value;
+    drawMenuText(100, -state.camera.height * 0.5 + 800, Math.round(soundSlider.value * 100) + '%');
 
     if (!buttonPressed) {
         for (let touchIndex = 0; touchIndex < touchEvents.length; touchIndex++) {
@@ -1534,23 +1544,21 @@ function loopGraficsOptions() {
 
     let buttonPressed = false;
 
-    drawMenuText(100, -state.camera.height * 0.5 + 400, state.particleLvl * 100 + '%');
-    if (renderMenuButton(-state.camera.width * 0.5 + 150, -state.camera.height * 0.5 + 400, 'Частицы')) {
-        state.particleLvl -= 0.25;
-        if (state.particleLvl < 0) {
-            state.particleLvl = 1;
-        }
+    let particleSlider = renderSlider(-state.camera.width * 0.5 + 150, -state.camera.height * 0.5 + 400, particleLvl, 'Частицы');
+    if (particleSlider.touchUp) {
         buttonPressed = true;
+        particleLvl = particleSlider.value;
     }
-    drawMenuText(100, -state.camera.height * 0.5 + 600, resolution * 4320 + 'p');
-    if (renderMenuButton(-state.camera.width * 0.5 + 150, -state.camera.height * 0.5 + 600, 'Кофееее')) {
-        resolution /= 2;
-        if (resolution < 0.0625) {
-            resolution = 1;
-        }
+    drawMenuText(100, -state.camera.height * 0.5 + 400, Math.round(particleSlider.value * 100) + '%');
+
+    let resolutionSlider = renderSlider(-state.camera.width * 0.5 + 150, -state.camera.height * 0.5 + 600, resolution, 'Разрешение');
+    if (resolutionSlider.touchUp) {
+        buttonPressed = true;
+        resolution = resolutionSlider.value;
         document.exitFullscreen();
-        buttonPressed = true;
     }
+    drawMenuText(100, -state.camera.height * 0.5 + 600, Math.round(resolutionSlider.value * 4320) + 'p');
+
     if (renderMenuButton(-state.camera.width * 0.5 + 150, -state.camera.height * 0.5 + 800, 'Кофееее')) {
         playSound(sndCoffee, 1, false, getRandomFloat(0.5, 1.5));
         buttonPressed = true;
@@ -1610,14 +1618,15 @@ function loopGame() {
         }
     }
 
-
-
     for (let gameObjectIndex = 0; gameObjectIndex < state.gameObjects.length; gameObjectIndex++) {
         let gameObject = state.gameObjects[gameObjectIndex];
         if (gameObject.exists) {
             updateGameObject(gameObject);
         }
     }
+
+    state.camera.x = state.globalPlayer.x;
+    state.camera.y = state.globalPlayer.y;
 
     drawParticles();
 
