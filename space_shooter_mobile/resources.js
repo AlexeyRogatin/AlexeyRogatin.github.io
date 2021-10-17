@@ -67,8 +67,16 @@ function loadSound(src) {
   return sound;
 }
 
+let canvasScale = 0;
 
 function drawRect(x, y, width, height, angle, color) {
+  width *= canvasScale;
+  height *= canvasScale;
+  let cameraPosX = state.camera.x - state.camera.width / 2;
+  let cameraPosY = state.camera.y - state.camera.height / 2;
+  x = cameraPosX + (x - (cameraPosX)) * canvasScale;
+  y = cameraPosY + (y - (cameraPosY)) * canvasScale;
+
   ctx.translate(x, y);
   ctx.fillStyle = color;
   ctx.rotate(-angle);
@@ -78,18 +86,30 @@ function drawRect(x, y, width, height, angle, color) {
 }
 
 function drawSprite(x, y, sprite, angle, width, height) {
-  ctx.imageSmoothingEnabled = false;
-
-  ctx.translate(x, y);
-  ctx.rotate(-angle);
   let compWidth = width || sprite.width * SPRITE_SCALE;
   let compHeight = height || sprite.height * SPRITE_SCALE;
+  compWidth *= canvasScale;
+  compHeight *= canvasScale;
+  let cameraPosX = state.camera.x - state.camera.width / 2;
+  let cameraPosY = state.camera.y - state.camera.height / 2;
+  x = cameraPosX + (x - (cameraPosX)) * canvasScale;
+  y = cameraPosY + (y - (cameraPosY)) * canvasScale;
+
+  ctx.imageSmoothingEnabled = false;
+  ctx.translate(x, y);
+  ctx.rotate(-angle);
   ctx.drawImage(sprite, -compWidth / 2, -compHeight / 2, compWidth, compHeight);
   ctx.rotate(angle);
   ctx.translate(-x, -y);
 }
 
 function drawText(x, y, text, kegel, font, bold, textBaseline, textAlign, color) {
+  kegel *= canvasScale;
+  let cameraPosX = state.camera.x - state.camera.width / 2;
+  let cameraPosY = state.camera.y - state.camera.height / 2;
+  x = cameraPosX + (x - (cameraPosX)) * canvasScale;
+  y = cameraPosY + (y - (cameraPosY)) * canvasScale;
+
   ctx.fillStyle = color;
   let fullFont = '';
   if (bold) {
@@ -104,6 +124,12 @@ function drawText(x, y, text, kegel, font, bold, textBaseline, textAlign, color)
 }
 
 function drawCircle(x, y, radius, color) {
+  radius *= canvasScale;
+  let cameraPosX = state.camera.x - state.camera.width / 2;
+  let cameraPosY = state.camera.y - state.camera.height / 2;
+  x = cameraPosX + (x - (cameraPosX)) * canvasScale;
+  y = cameraPosY + (y - (cameraPosY)) * canvasScale;
+
   ctx.strokeStyle = color;
   ctx.beginPath();
   ctx.arc(Math.round(x), y, radius, 0, Math.PI * 2);

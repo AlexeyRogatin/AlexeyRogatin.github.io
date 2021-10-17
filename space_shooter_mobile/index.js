@@ -46,10 +46,12 @@ const TIME_UNTIL_BOSS = 3000;
 const SCREEN_RATIO = 16 / 9;
 const canvas = document.getElementById("canvas");
 
+let resolution = 0.125;
+
 function handleResize() {
     const rect = canvas.getBoundingClientRect();
-    canvas.width = 1600;
-    canvas.height = 900;
+    canvas.width = 4320 * resolution;
+    canvas.height = canvas.width / SCREEN_RATIO;
     canvas.style.width = (rect.height * SCREEN_RATIO) + 'px';
 }
 
@@ -70,8 +72,8 @@ function resetState() {
         camera: {
             x: 0,
             y: 0,
-            width: canvas.width,
-            height: canvas.height,
+            width: 1600,
+            height: 900,
         },
         particles: [],
         gameObjects: [],
@@ -1342,7 +1344,7 @@ function renderMenuButton(x, y, text) {
 
 function loopMenu() {
     //задник
-    drawSprite(0, 0, imgScreen, 0, canvas.width, canvas.height);
+    drawSprite(0, 0, imgScreen, 0, state.camera.width, state.camera.height);
 
     if (renderMenuButton(-state.camera.width * 0.5 + 150, -state.camera.height * 0.5 + 400, 'Играть')) {
         if (canBeginGame) {
@@ -1388,7 +1390,7 @@ function loopMenu() {
 
 function loopRecords() {
     //задник
-    drawSprite(0, 0, imgScreen, 0, canvas.width, canvas.height);
+    drawSprite(0, 0, imgScreen, 0, state.camera.width, state.camera.height);
 
     drawMenuText(0, -state.camera.height * 0.5 + 90, 'Рекорды', true, 'center');
 
@@ -1407,7 +1409,7 @@ function loopRecords() {
 
 function loopCharacters() {
     //задник
-    drawSprite(0, 0, imgScreen, 0, canvas.width, canvas.height);
+    drawSprite(0, 0, imgScreen, 0, state.camera.width, state.camera.height);
 
     drawMenuText(0, -state.camera.height * 0.5 + 90, 'Выберите корабль', true, 'center');
     //спрайты персонажей
@@ -1448,7 +1450,7 @@ function loopCharacters() {
 
 function loopOptions() {
     //задник
-    drawSprite(0, 0, imgScreen, 0, canvas.width, canvas.height);
+    drawSprite(0, 0, imgScreen, 0, state.camera.width, state.camera.height);
 
     drawMenuText(0, -state.camera.height * 0.5 + 90, 'Настройки', true, 'center');
     let buttonPressed = false;
@@ -1472,7 +1474,7 @@ function loopOptions() {
 
 function loopGameOptions() {
     //задник
-    drawSprite(0, 0, imgScreen, 0, canvas.width, canvas.height);
+    drawSprite(0, 0, imgScreen, 0, state.camera.width, state.camera.height);
 
     drawMenuText(0, -state.camera.height * 0.5 + 90, 'Игровые', true, 'center');
 
@@ -1526,7 +1528,7 @@ function loopGameOptions() {
 
 function loopGraficsOptions() {
     //задник
-    drawSprite(0, 0, imgScreen, 0, canvas.width, canvas.height);
+    drawSprite(0, 0, imgScreen, 0, state.camera.width, state.camera.height);
 
     drawMenuText(0, -state.camera.height * 0.5 + 90, 'Графические', true, 'center');
 
@@ -1540,7 +1542,16 @@ function loopGraficsOptions() {
         }
         buttonPressed = true;
     }
+    drawMenuText(100, -state.camera.height * 0.5 + 600, resolution * 4320 + 'p');
     if (renderMenuButton(-state.camera.width * 0.5 + 150, -state.camera.height * 0.5 + 600, 'Кофееее')) {
+        resolution /= 2;
+        if (resolution < 0.0625) {
+            resolution = 1;
+        }
+        document.exitFullscreen();
+        buttonPressed = true;
+    }
+    if (renderMenuButton(-state.camera.width * 0.5 + 150, -state.camera.height * 0.5 + 800, 'Кофееее')) {
         playSound(sndCoffee, 1, false, getRandomFloat(0.5, 1.5));
         buttonPressed = true;
     }
@@ -1646,6 +1657,8 @@ function loopGame() {
 
 
 function loop() {
+    canvasScale = canvas.width / state.camera.width;
+
     let topLeftCameraX = -state.camera.x + state.camera.width / 2;
     let topLeftCameraY = -state.camera.y + state.camera.height / 2;
     //камера

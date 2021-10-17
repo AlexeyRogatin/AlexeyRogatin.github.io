@@ -29,8 +29,8 @@ function handleKeyUp(key) {
 
 window.ontouchstart = function ontouchstart(event) {
     const rect = canvas.getBoundingClientRect();
-    let canvasToScreenWidth = canvas.width / canvas.clientWidth;
-    let canvasToScreenHeight = canvas.height / canvas.clientHeight;
+    let canvasToScreenWidth = state.camera.width / canvas.clientWidth;
+    let canvasToScreenHeight = state.camera.height / canvas.clientHeight;
 
     for (let index = 0; index < event.changedTouches.length; index++) {
         let id = event.changedTouches[index].identifier;
@@ -49,8 +49,8 @@ window.ontouchstart = function ontouchstart(event) {
 
 window.ontouchmove = function ontouchmove(event) {
     const rect = canvas.getBoundingClientRect();
-    let canvasToScreenWidth = canvas.width / canvas.clientWidth;
-    let canvasToScreenHeight = canvas.height / canvas.clientHeight;
+    let canvasToScreenWidth = state.camera.width / canvas.clientWidth;
+    let canvasToScreenHeight = state.camera.height / canvas.clientHeight;
 
     for (let index = 0; index < event.changedTouches.length; index++) {
         let id = event.changedTouches[index].identifier;
