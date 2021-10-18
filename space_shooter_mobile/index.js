@@ -994,12 +994,6 @@ function updateGameObject(gameObject) {
             'Score: ' + state.globalScore, 30, 'Nintendo', false,
             'top', 'right', 'yellow',
         );
-
-        if (state.timers[state.screenShakeTimer] > 0) {
-            let canvasScale = canvas.width / state.camera.width
-            state.camera.x += getRandomFloat(-3, 3) * canvasScale;
-            state.camera.y += getRandomFloat(-3, 3) * canvasScale;
-        }
     };
 
     if (gameObject.type === GAME_OBJECT_ENEMY) {
@@ -1618,6 +1612,12 @@ function loopGame() {
         }
     }
 
+    if (state.timers[state.screenShakeTimer] > 0) {
+        let canvasScale = canvas.width / state.camera.width
+        state.camera.x += getRandomFloat(-10, 10) * canvasScale;
+        state.camera.y += getRandomFloat(-10, 10) * canvasScale;
+    }
+
     for (let gameObjectIndex = 0; gameObjectIndex < state.gameObjects.length; gameObjectIndex++) {
         let gameObject = state.gameObjects[gameObjectIndex];
         if (gameObject.exists) {
@@ -1627,6 +1627,12 @@ function loopGame() {
 
     state.camera.x = state.globalPlayer.x;
     state.camera.y = state.globalPlayer.y;
+
+    if (state.timers[state.screenShakeTimer] > 0) {
+        let canvasScale = canvas.width / state.camera.width
+        state.camera.x += getRandomFloat(-5, 5) * canvasScale;
+        state.camera.y += getRandomFloat(-5, 5) * canvasScale;
+    }
 
     drawParticles();
 
