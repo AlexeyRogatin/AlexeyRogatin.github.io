@@ -46,7 +46,7 @@ const LEAR_RUBY = 3;
 const VALUE_JACK = 11;
 const VALUE_DAMSEL = 12;
 const VALUE_KING = 13;
-const VALUE_ACE = 14;
+const VALUE_ACE = 5;
 
 function randomFloat(min, max) {
     let random = Math.random() * (max - min) + min;
@@ -89,7 +89,7 @@ function moveCardsBetweenDecks(count, deck1, deck2) {
 
 function formStartDeck() {
     for (let lear = 0; lear < 4; lear++) {
-        for (let value = 6; value < 15; value++) {
+        for (let value = 5; value < 14; value++) {
             addCard(lear, value);
         }
     }
@@ -159,6 +159,19 @@ function findClosestCard(mouseX, mouseY) {
         }
     }
 
+    if (result.type === -1) {
+        for (let aceIndex = 0; aceIndex < decks[ACED].length; aceIndex++) {
+            let aceDeck = decks[ACED][aceIndex];
+            for (let cardIndex = aceDeck.length - 1; cardIndex >= 0; cardIndex--) {
+                card = aceDeck[cardIndex];
+                if (card && card.value !== VALUE_ACE && checkButton(mouseX, mouseY, card.x, card.y, CARD_WIDTH, CARD_HEIGHT)) {
+                    result = { card: decks[ACED][aceIndex][cardIndex], type: ACED, subtype: aceIndex };
+                    break;
+                }
+            }
+        }
+    }
+
     return result;
 }
 
@@ -180,7 +193,7 @@ function drawCard(card) {
             case 13: {
                 valueChar = 'K';
             } break;
-            case 14: {
+            case 5: {
                 valueChar = 'A';
             } break;
             default: {
@@ -205,6 +218,13 @@ function drawCardDecks() {
         let column = decks[COLOMNED][columnIndex];
         for (let inColumnIndex = 0; inColumnIndex < column.length; inColumnIndex++) {
             let card = column[inColumnIndex];
+            drawCard(card);
+        }
+    }
+    for (let aceIndex = 0; aceIndex < decks[ACED].length; aceIndex++) {
+        let ace = decks[ACED][aceIndex];
+        for (let inAceIndex = 0; inAceIndex < ace.length; inAceIndex++) {
+            let card = ace[inAceIndex];
             drawCard(card);
         }
     }
@@ -233,8 +253,16 @@ function defineCardPos() {
         let column = decks[COLOMNED][columnIndex];
         for (let inColumnIndex = 0; inColumnIndex < column.length; inColumnIndex++) {
             let card = column[inColumnIndex];
-            card.x = -canvas.width * 0.5 + 400 + 200 * columnIndex;
+            card.x = -canvas.width * 0.5 + 600 + 200 * columnIndex;
             card.y = -canvas.height * 0.5 + 300 + 40 * inColumnIndex;
+        }
+    }
+    for (let aceIndex = 0; aceIndex < decks[ACED].length; aceIndex++) {
+        let aceDeck = decks[ACED][aceIndex];
+        for (let inAceIndex = 0; inAceIndex < aceDeck.length; inAceIndex++) {
+            let card = aceDeck[inAceIndex];
+            card.x = -canvas.width * 0.5 + 600 + 200 * aceIndex;
+            card.y = -canvas.height * 0.5 + 100;
         }
     }
 }
@@ -242,7 +270,7 @@ function defineCardPos() {
 formStartDeck();
 
 function loopGame() {
-    if (!decks[DECKED_CLOSED].length && !decks[DECKED_OPENED].length) {
+    if (decks[ACED][0].length === 9 && decks[ACED][1].length === 9 && decks[ACED][2].length === 9 && decks[ACED][3].length === 9) {
         gameState = GAME_STATE_WIN;
     }
 
@@ -284,7 +312,7 @@ function loopGame() {
                 if (mouse.wentUp) {
                     for (let columnIndex = 0; columnIndex < decks[COLOMNED].length; columnIndex++) {
                         let column = decks[COLOMNED][columnIndex];
-                        let columnX = -canvas.width * 0.5 + 400 + 200 * columnIndex;
+                        let columnX = -canvas.width * 0.5 + 600 + 200 * columnIndex;
                         let columnY = -canvas.height * 0.5 + 300 + 20 * column.length;
                         if (checkButton(mouse.x, mouse.y, columnX, columnY, CARD_WIDTH, CARD_HEIGHT + 40 * column.length)) {
                             let lastCard = column[column.length - 1];
@@ -302,6 +330,30 @@ function loopGame() {
                                     moveCardsBetweenDecks(1, decks[cardInfo.type], decks[COLOMNED][columnIndex]);
                                 } else {
                                     moveCardsBetweenDecks(moovedCardsCount, decks[cardInfo.type][cardInfo.subtype], column);
+                                }
+                            }
+                        }
+                    }
+                    for (let aceIndex = 0; aceIndex < decks[ACED].length; aceIndex++) {
+                        let aceDeck = decks[ACED][aceIndex];
+                        let deckX = -canvas.width * 0.5 + 600 + 200 * aceIndex;
+                        let deckY = -canvas.height * 0.5 + 100;
+                        if (moovedCardsCount === 1 && checkButton(mouse.x, mouse.y, deckX, deckY, CARD_WIDTH, CARD_HEIGHT)) {
+                            let lastCard = aceDeck[aceDeck.length - 1];
+                            if ((!aceDeck.length && card.value === VALUE_ACE) ||
+                                (aceDeck.length && lastCard.value + 1 === card.value && card.lear === lastCard.lear)) {
+                                if (cardInfo.subtype === -1) {
+                                    if (cardInfo.type === DECKED_OPENED) {
+                                        for (let index = decks[DECKED_OPENED].length - 3; index < decks[DECKED_OPENED].length - 1; index++) {
+                                            if (decks[DECKED_OPENED][index] === card) {
+                                                decks[DECKED_OPENED][index] = decks[DECKED_OPENED][index + 1];
+                                                decks[DECKED_OPENED][index + 1] = card;
+                                            }
+                                        }
+                                    }
+                                    moveCardsBetweenDecks(1, decks[cardInfo.type], decks[ACED][aceIndex]);
+                                } else {
+                                    moveCardsBetweenDecks(moovedCardsCount, decks[cardInfo.type][cardInfo.subtype], aceDeck);
                                 }
                             }
                         }
