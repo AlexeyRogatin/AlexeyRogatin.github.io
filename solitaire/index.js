@@ -68,8 +68,11 @@ function defineValue(index) {
 
 function addCard(lear, value) {
     decks[DECKED_CLOSED].push({
-        x: Infinity,
-        y: Infinity,
+        x: -canvas.width,
+        y: -canvas.height,
+        visualX: 0,
+        visualY: 0,
+        isMooved: false,
         lear: lear,
         value: value,
         closed: true,
@@ -122,8 +125,11 @@ function checkButton(mouseX, mouseY, x, y, width, height) {
 function findClosestCard(mouseX, mouseY) {
     let result = {
         card: {
-            x: Infinity,
-            y: Infinity,
+            x: -canvas.width,
+            y: -canvas.height,
+            visualX: 0,
+            visualY: 0,
+            isMooved: false,
             lear: -1,
             value: -1,
             closed: true,
@@ -175,9 +181,13 @@ function findClosestCard(mouseX, mouseY) {
     return result;
 }
 
+const transitionDelay = 0.1;
+
 function drawCard(card) {
+    card.visualX += transitionDelay * (card.x - card.visualX);
+    card.visualY += transitionDelay * (card.y - card.visualY);
     if (!card.closed) {
-        drawSprite(card.x, card.y, imgCard, 0);
+        drawSprite(card.visualX, card.visualY, imgCard, 0);
         let color = 'black';
         if (Math.trunc(card.lear / 2) === 1) {
             color = 'red';
@@ -200,37 +210,59 @@ function drawCard(card) {
                 valueChar = card.value;
             }
         }
-        drawText(card.x - CARD_WIDTH * 0.32, card.y - CARD_HEIGHT * 0.34, valueChar, 'middle', 'center', 'bold 30px Arial', color, 0);
-        drawSprite(card.x + CARD_WIDTH * 0.32, card.y - CARD_HEIGHT * 0.36, imgLear[card.lear], 0);
-        drawText(card.x + CARD_WIDTH * 0.32, card.y + CARD_HEIGHT * 0.32, valueChar, 'middle', 'center', 'bold 30px Arial', color, Math.PI);
-        drawSprite(card.x - CARD_WIDTH * 0.32, card.y + CARD_HEIGHT * 0.32, imgLear[card.lear], Math.PI);
+        drawText(card.visualX - CARD_WIDTH * 0.32, card.visualY - CARD_HEIGHT * 0.34, valueChar, 'middle', 'center', 'bold 30px Arial', color, 0);
+        drawSprite(card.visualX + CARD_WIDTH * 0.32, card.visualY - CARD_HEIGHT * 0.36, imgLear[card.lear], 0);
+        drawText(card.visualX + CARD_WIDTH * 0.32, card.visualY + CARD_HEIGHT * 0.32, valueChar, 'middle', 'center', 'bold 30px Arial', color, Math.PI);
+        drawSprite(card.visualX - CARD_WIDTH * 0.32, card.visualY + CARD_HEIGHT * 0.32, imgLear[card.lear], Math.PI);
     } else {
-        drawSprite(card.x, card.y, imgTurnedCard, 0);
+        drawSprite(card.visualX, card.visualY, imgTurnedCard, 0);
     }
 }
 
 function drawCardDecks() {
+    let moovedCards = [];
+
     for (let closedDeckIndex = 0; closedDeckIndex < decks[DECKED_CLOSED].length; closedDeckIndex++) {
         let card = decks[DECKED_CLOSED][closedDeckIndex];
-        drawCard(card);
+        if (!card.isMooved) {
+            drawCard(card);
+        } else {
+            moovedCards.push(card);
+        }
     }
     for (let columnIndex = 0; columnIndex < decks[COLOMNED].length; columnIndex++) {
         let column = decks[COLOMNED][columnIndex];
         for (let inColumnIndex = 0; inColumnIndex < column.length; inColumnIndex++) {
             let card = column[inColumnIndex];
-            drawCard(card);
+            if (!card.isMooved) {
+                drawCard(card);
+            } else {
+                moovedCards.push(card);
+            }
         }
     }
     for (let aceIndex = 0; aceIndex < decks[ACED].length; aceIndex++) {
         let ace = decks[ACED][aceIndex];
         for (let inAceIndex = 0; inAceIndex < ace.length; inAceIndex++) {
             let card = ace[inAceIndex];
-            drawCard(card);
+            if (!card.isMooved) {
+                drawCard(card);
+            } else {
+                moovedCards.push(card);
+            }
         }
     }
     for (let openedDeckIndex = 0; openedDeckIndex < decks[DECKED_OPENED].length; openedDeckIndex++) {
         let card = decks[DECKED_OPENED][openedDeckIndex];
-        drawCard(card);
+        if (!card.isMooved) {
+            drawCard(card);
+        } else {
+            moovedCards.push(card);
+        }
+    }
+
+    for (let moovedCardsIndex = 0; moovedCardsIndex < moovedCards.length; moovedCardsIndex++) {
+        drawCard(moovedCards[moovedCardsIndex]);
     }
 }
 
@@ -276,6 +308,18 @@ function loopGame() {
 
     drawSprite(-canvas.width * 0.5 + 200, - canvas.height * 0.5 + 100, imgReloadDeck, 0);
 
+    for (let columnIndex = 0; columnIndex < decks[COLOMNED].length; columnIndex++) {
+        let columnX = -canvas.width * 0.5 + 600 + 200 * columnIndex;
+        let columnY = -canvas.height * 0.5 + 300;
+        drawSprite(columnX, columnY, imgCardDeck, 0);
+    }
+
+    for (let deckIndex = 0; deckIndex < decks[ACED].length; deckIndex++) {
+        let deckX = -canvas.width * 0.5 + 600 + 200 * deckIndex;
+        let deckY = -canvas.height * 0.5 + 100;
+        drawSprite(deckX, deckY, imgCardDeck, 0);
+    }
+
     if (mouse.wentDown && checkButton(mouse.x, mouse.y, -canvas.width * 0.5 + 200, - canvas.height * 0.5 + 100, 60, 60)) {
         while (decks[DECKED_OPENED].length) {
             let lastOpenedCard = decks[DECKED_OPENED][decks[DECKED_OPENED].length - 1];
@@ -297,6 +341,7 @@ function loopGame() {
             } else if (!card.closed) {
                 card.x = mouse.x;
                 card.y = mouse.y;
+                card.isMooved = true;
                 let moovedCardsCount = 1;
                 if (cardInfo.subtype !== -1) {
                     let column = decks[cardInfo.type][cardInfo.subtype];
@@ -305,6 +350,7 @@ function loopGame() {
                     }
                     for (let count = 1; count <= moovedCardsCount; count++) {
                         let additionalCard = column[column.length - moovedCardsCount - 1 + count];
+                        additionalCard.isMooved = true;
                         additionalCard.x = mouse.x;
                         additionalCard.y = mouse.y + 40 * count;
                     }
@@ -314,6 +360,7 @@ function loopGame() {
                         let column = decks[COLOMNED][columnIndex];
                         let columnX = -canvas.width * 0.5 + 600 + 200 * columnIndex;
                         let columnY = -canvas.height * 0.5 + 300 + 20 * column.length;
+
                         if (checkButton(mouse.x, mouse.y, columnX, columnY, CARD_WIDTH, CARD_HEIGHT + 40 * column.length)) {
                             let lastCard = column[column.length - 1];
                             if (!column.length || (!lastCard.closed &&

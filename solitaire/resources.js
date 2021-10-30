@@ -65,4 +65,5 @@ let imgLear = [
     loadImage("sprites/heart.bmp"),
     loadImage("sprites/ruby.bmp"),
 ]
-let imgReloadDeck = loadImage("sprites/reloadDeck.bmp")
+let imgReloadDeck = loadImage("sprites/reloadDeck.bmp");
+let imgCardDeck = loadImage("sprites/cardDeck.bmp");
