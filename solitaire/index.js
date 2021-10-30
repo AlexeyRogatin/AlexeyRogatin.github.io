@@ -356,6 +356,7 @@ function loopGame() {
                     }
                 }
                 if (mouse.wentUp) {
+                    card.isMooved = false
                     for (let columnIndex = 0; columnIndex < decks[COLOMNED].length; columnIndex++) {
                         let column = decks[COLOMNED][columnIndex];
                         let columnX = -canvas.width * 0.5 + 600 + 200 * columnIndex;
