@@ -181,7 +181,7 @@ function findClosestCard(mouseX, mouseY) {
     return result;
 }
 
-const transitionDelay = 0.1;
+const transitionDelay = 0.2;
 
 function drawCard(card) {
     card.visualX += transitionDelay * (card.x - card.visualX);
@@ -271,6 +271,7 @@ function defineCardPos() {
         let card = decks[DECKED_CLOSED][index];
         card.x = -canvas.width * 0.5 + 100;
         card.y = -canvas.height * 0.5 + 100;
+        card.isMooved = false;
     }
     for (let index = decks[DECKED_OPENED].length - 1; index >= 0; index--) {
         let card = decks[DECKED_OPENED][index];
@@ -280,6 +281,7 @@ function defineCardPos() {
         }
         card.x = -canvas.width * 0.5 + 300 + cardOffset * 35;
         card.y = -canvas.height * 0.5 + 100;
+        card.isMooved = false;
     }
     for (let columnIndex = 0; columnIndex < decks[COLOMNED].length; columnIndex++) {
         let column = decks[COLOMNED][columnIndex];
@@ -287,6 +289,7 @@ function defineCardPos() {
             let card = column[inColumnIndex];
             card.x = -canvas.width * 0.5 + 600 + 200 * columnIndex;
             card.y = -canvas.height * 0.5 + 300 + 40 * inColumnIndex;
+            card.isMooved = false;
         }
     }
     for (let aceIndex = 0; aceIndex < decks[ACED].length; aceIndex++) {
@@ -295,6 +298,7 @@ function defineCardPos() {
             let card = aceDeck[inAceIndex];
             card.x = -canvas.width * 0.5 + 600 + 200 * aceIndex;
             card.y = -canvas.height * 0.5 + 100;
+            card.isMooved = false;
         }
     }
 }
@@ -327,10 +331,11 @@ function loopGame() {
             moveCardsBetweenDecks(1, decks[DECKED_OPENED], decks[DECKED_CLOSED]);
         }
     }
+    let cardInfo = findClosestCard(mouse.x, mouse.y);
+    console.log(cardInfo);
 
     if (mouse.isDown || mouse.wentUp) {
-
-        let cardInfo = findClosestCard(mouse.startX, mouse.startY);
+        cardInfo = findClosestCard(mouse.startX, mouse.startY);
 
         if (cardInfo.type !== -1) {
             let card = cardInfo.card;
@@ -356,7 +361,6 @@ function loopGame() {
                     }
                 }
                 if (mouse.wentUp) {
-                    card.isMooved = false
                     for (let columnIndex = 0; columnIndex < decks[COLOMNED].length; columnIndex++) {
                         let column = decks[COLOMNED][columnIndex];
                         let columnX = -canvas.width * 0.5 + 600 + 200 * columnIndex;
