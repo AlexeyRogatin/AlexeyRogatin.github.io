@@ -30,7 +30,7 @@ let camera = {
 let decks = [
     [],
     [],
-    [[], [], [], [], []],
+    [[], [], [], [], [], []],
     [[], [], [], []]
 ];
 const DECKED_CLOSED = 0;
@@ -105,8 +105,8 @@ function formStartDeck() {
         decks[DECKED_CLOSED][secondIndex] = saveCardIndex;
     }
 
-    for (let index = 0; index < 5; index++) {
-        moveCardsBetweenDecks(5 - index, decks[DECKED_CLOSED], decks[COLOMNED][index]);
+    for (let index = 0; index < 6; index++) {
+        moveCardsBetweenDecks(6 - index, decks[DECKED_CLOSED], decks[COLOMNED][index]);
     }
 }
 
