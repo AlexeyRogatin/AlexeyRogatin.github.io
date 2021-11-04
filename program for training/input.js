@@ -35,15 +35,15 @@ window.onkeydown = function onkeydown(event) {
             } break;
             default: {
                 if (valueStr * 100 % 10 === 0 && (event.keyCode >= 48 && event.keyCode <= 57 || (event.key === '.' && valueStr.split('.').length === 1))) {
-                    if (valueStr.length === 0 && event.key === '.') {
-                        valueStr += '0';
-                    }
                     valueStr += event.key;
                 }
             }
         }
         if (valueStr[0] === '0' && valueStr[1] !== '.' && valueStr.length > 1) {
             valueStr = valueStr.slice(1, valueStr.length);
+        }
+        if (valueStr.length === 0) {
+            valueStr += '0';
         }
         data[writingIndex].targetPercent = valueStr;
     }

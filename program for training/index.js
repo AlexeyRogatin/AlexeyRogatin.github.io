@@ -246,10 +246,7 @@ function loop() {
                 mouse.wentDown = false;
             }
             if (writingIndex === arcIndex) {
-                title = String(Math.round(dataEntry.percent * 100) / 100);
-                if (title.split('.').length === 1 && dataEntry.targetPercent[dataEntry.targetPercent.length - 1] === '.') {
-                    title += '.';
-                }
+                title = dataEntry.targetPercent;
             }
         }
         dataEntry.offset = OFFSET_VALUE + (dataEntry.offset - OFFSET_VALUE) * 0.75;
