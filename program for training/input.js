@@ -24,6 +24,28 @@ window.onmouseup = function onmouseup(event) {
     mouse.isDown = false;
 }
 
+window.onkeydown = function onkeydown(event) {
+    if (writingIndex !== -1) {
+        let valueStr = data[writingIndex].percent;
+        switch (event.key) {
+            case 'Backspace': {
+                if (valueStr.length) {
+                    valueStr = valueStr.slice(0, -1);
+                }
+            } break;
+            default: {
+                if (valueStr * 100 % 10 === 0 && (event.keyCode >= 48 && event.keyCode <= 57 || (event.key === '.' && valueStr.split('.').length === 1))) {
+                    valueStr += event.key;
+                }
+            }
+        }
+        if (valueStr[0] === '0' && valueStr[1] !== '.' && valueStr.length > 1) {
+            valueStr = valueStr.slice(1, valueStr.length);
+        }
+        data[writingIndex].percent = valueStr;
+    }
+}
+
 function clearMouse() {
     mouse.wentDown = false;
     mouse.wentUp = false;

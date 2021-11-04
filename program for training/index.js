@@ -132,49 +132,49 @@ const OFFSET_VALUE = 5;
 
 let data = [
     {
-        percent: 0.22,
+        percent: '0.22',
         color: 'black',
         offset: OFFSET_VALUE,
         title: "Сон",
         text: "Ты что совсем!!!!!!! Больше спать надо!",
     },
     {
-        percent: 0.78,
+        percent: '0.78',
         color: 'green',
         offset: OFFSET_VALUE,
         title: "Сон",
         text: "Ты что совсем!!!!!!! Больше спать надо!",
     },
     {
-        percent: 0.5,
+        percent: '0.5',
         color: 'red',
         offset: OFFSET_VALUE,
         title: "Сон",
         text: "Ты что совсем!!!!!!! Больше спать надо!",
     },
     {
-        percent: 1,
+        percent: '1',
         color: 'blue',
         offset: OFFSET_VALUE,
         title: "Сон",
         text: "Ты что совсем!!!!!!! Больше спать надо!",
     },
     {
-        percent: 0.55,
+        percent: '0.55',
         color: 'yellow',
         offset: OFFSET_VALUE,
         title: "Сон",
         text: "Ты что совсем!!!!!!! Больше спать надо!",
     },
     {
-        percent: 0.55,
+        percent: '0.55',
         color: 'orange',
         offset: OFFSET_VALUE,
         title: "Сон",
         text: "Ты что совсем!!!!!!! Больше спать надо! AAAAAAAAAAAAAA",
     },
     {
-        percent: 0.55,
+        percent: '0.55',
         color: 'magenta',
         offset: OFFSET_VALUE,
         title: "Сон",
@@ -184,6 +184,9 @@ let data = [
 
 const FULL_RADIUS = 300;
 const CAMERA_TRANSITION_VALUE = 0.1;
+const TEXT_HEIGHT = 50;
+
+let writingIndex = -1;
 
 function loop() {
     ctx.translate(-camera.x + canvas.width * 0.5, -camera.y + canvas.height * 0.5);
@@ -193,6 +196,13 @@ function loop() {
     mouse.worldY = camera.y + (mouse.worldY - camera.y) * camera.scale;
 
     drawRect(camera.x, camera.y, canvas.width * camera.scale, canvas.height * camera.scale, 0, 'white');
+
+    let buttonPressed = false;
+
+    if (writingIndex !== -1 && mouse.wentDown) {
+        writingIndex = -1;
+        buttonPressed = true;
+    }
 
     let startAngle = 0;
     let angleDelta = Math.PI * 2 / data.length;
@@ -204,35 +214,50 @@ function loop() {
         let finishAngle = startAngle + angleDelta;
         let midAngle = (startAngle + finishAngle) / 2;
 
+        let offset = rotateVector(dataEntry.offset, 0, midAngle);
+
         let entryCameraPos = rotateVector(FULL_RADIUS * dataEntry.percent + 50, 0, midAngle);
-        if (vectorLength(mouse.worldX, mouse.worldY) <= FULL_RADIUS && startAngle < mouseAngle && finishAngle > mouseAngle && camera.targetScale === 1) {
+        let entryPos = { x: entryCameraPos.x + offset.x, y: entryCameraPos.y + offset.y };
+
+        if (camera.targetScale === 1 && mouse.wentDown && !buttonPressed) {
+            let textParam = ctx.measureText(dataEntry.title);
+            if (mouse.worldX >= entryPos.x - textParam.width * 0.5 && mouse.worldX <= entryPos.x + textParam.width * 0.5 &&
+                mouse.worldY >= entryPos.y - TEXT_HEIGHT * 0.5 && mouse.worldY <= entryPos.y + TEXT_HEIGHT * 0.5) {
+                writingIndex = arcIndex;
+            }
+        }
+
+        let transition = 1 - (camera.scale - 0.1) * 10 / 9;
+        let title = dataEntry.title;
+
+        if (writingIndex === arcIndex || vectorLength(mouse.worldX, mouse.worldY) <= FULL_RADIUS * 1.2 && startAngle < mouseAngle && finishAngle > mouseAngle && camera.targetScale === 1) {
             dataEntry.offset += 10;
-            if (mouse.wentDown) {
+            if (mouse.wentDown && writingIndex === -1 && !buttonPressed) {
                 camera.targetX = entryCameraPos.x;
                 camera.targetY = entryCameraPos.y;
                 camera.targetScale = 0.1;
                 mouse.wentDown = false;
             }
+            if (writingIndex === arcIndex) {
+                title = dataEntry.percent;
+            }
         }
         dataEntry.offset = OFFSET_VALUE + (dataEntry.offset - OFFSET_VALUE) * 0.75;
 
-        let offset = rotateVector(dataEntry.offset, 0, midAngle);
 
         drawArc(offset.x, offset.y, FULL_RADIUS * dataEntry.percent, startAngle, finishAngle, dataEntry.color);
 
         let finishPos = rotateVector(FULL_RADIUS * 1.2, 0, finishAngle);
         drawLine(0, 0, finishPos.x, finishPos.y, OFFSET_VALUE);
 
-        let entryPos = { x: entryCameraPos.x + offset.x, y: entryCameraPos.y + offset.y };
-        let transition = 1 - (camera.scale - 0.1) * 10 / 9;
-        drawText(entryPos.x, entryPos.y - transition * 20, dataEntry.title, 'middle', 'center', '50px Brush Script MT', 'black', 1);
+        drawText(entryPos.x, entryPos.y - transition * 20, title, 'middle', 'center', TEXT_HEIGHT + 'px Brush Script MT', 'black', 1);
 
         let textTransparency = 1 - (camera.scale - 0.1) / 0.05;
         if (textTransparency < 0) {
             textTransparency = 0;
         }
-        drawText(entryPos.x, entryPos.y - 10, Math.round(dataEntry.percent * 100) + '%', 'middle', 'center', '50px Brush Script MT', 'black', textTransparency);
-        drawText(entryPos.x, entryPos.y, dataEntry.text, 'middle', 'center', '50px Brush Script MT', 'black', textTransparency, canvas.width * 0.5, 10);
+        drawText(entryPos.x, entryPos.y - 10, Math.round(dataEntry.percent * 100) + '%', 'middle', 'center', TEXT_HEIGHT + 'px Brush Script MT', 'black', textTransparency);
+        drawText(entryPos.x, entryPos.y, dataEntry.text, 'middle', 'center', TEXT_HEIGHT + 'px Brush Script MT', 'black', textTransparency, canvas.width * 0.5, 10);
 
         startAngle = finishAngle;
     }
