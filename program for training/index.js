@@ -227,7 +227,7 @@ function loop() {
         let transition = 1 - (camera.scale - 0.1) * 10 / 9;
         drawText(entryPos.x, entryPos.y - transition * 20, dataEntry.title, 'middle', 'center', '50px Brush Script MT', 'black', 1);
 
-        let textTransparency = transition * 2 - 1;
+        let textTransparency = 1 - (camera.scale - 0.1) / 0.05;
         if (textTransparency < 0) {
             textTransparency = 0;
         }
