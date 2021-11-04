@@ -132,49 +132,56 @@ const OFFSET_VALUE = 5;
 
 let data = [
     {
-        percent: '0.22',
+        percent: 0.22,
+        targetPercent: '0.22',
         color: 'black',
         offset: OFFSET_VALUE,
         title: "Сон",
         text: "Ты что совсем!!!!!!! Больше спать надо!",
     },
     {
-        percent: '0.78',
+        percent: 0.78,
+        targetPercent: '0.78',
         color: 'green',
         offset: OFFSET_VALUE,
         title: "Сон",
         text: "Ты что совсем!!!!!!! Больше спать надо!",
     },
     {
-        percent: '0.5',
+        percent: 0.5,
+        targetPercent: '0.5',
         color: 'red',
         offset: OFFSET_VALUE,
         title: "Сон",
         text: "Ты что совсем!!!!!!! Больше спать надо!",
     },
     {
-        percent: '1',
+        percent: 1,
+        targetPercent: '1',
         color: 'blue',
         offset: OFFSET_VALUE,
         title: "Сон",
         text: "Ты что совсем!!!!!!! Больше спать надо!",
     },
     {
-        percent: '0.55',
+        percent: 0.55,
+        targetPercent: '0.55',
         color: 'yellow',
         offset: OFFSET_VALUE,
         title: "Сон",
         text: "Ты что совсем!!!!!!! Больше спать надо!",
     },
     {
-        percent: '0.55',
+        percent: 0.55,
+        targetPercent: '0.55',
         color: 'orange',
         offset: OFFSET_VALUE,
         title: "Сон",
         text: "Ты что совсем!!!!!!! Больше спать надо! AAAAAAAAAAAAAA",
     },
     {
-        percent: '0.55',
+        percent: 0.55,
+        targetPercent: '0.55',
         color: 'magenta',
         offset: OFFSET_VALUE,
         title: "Сон",
@@ -183,7 +190,7 @@ let data = [
 ]
 
 const FULL_RADIUS = 300;
-const CAMERA_TRANSITION_VALUE = 0.1;
+const TRANSITION_VALUE = 0.1;
 const TEXT_HEIGHT = 50;
 
 let writingIndex = -1;
@@ -239,7 +246,10 @@ function loop() {
                 mouse.wentDown = false;
             }
             if (writingIndex === arcIndex) {
-                title = dataEntry.percent;
+                title = String(Math.round(dataEntry.percent * 100) / 100);
+                if (title.split('.').length === 1 && dataEntry.targetPercent[dataEntry.targetPercent.length - 1] === '.') {
+                    title += '.';
+                }
             }
         }
         dataEntry.offset = OFFSET_VALUE + (dataEntry.offset - OFFSET_VALUE) * 0.75;
@@ -260,6 +270,8 @@ function loop() {
         drawText(entryPos.x, entryPos.y, dataEntry.text, 'middle', 'center', TEXT_HEIGHT + 'px Brush Script MT', 'black', textTransparency, canvas.width * 0.5, 10);
 
         startAngle = finishAngle;
+
+        dataEntry.percent += (Number(dataEntry.targetPercent) - dataEntry.percent) * TRANSITION_VALUE;
     }
 
     if (Math.abs(camera.scale) !== 1 && mouse.wentDown) {
@@ -272,9 +284,9 @@ function loop() {
 
     ctx.translate(camera.x - canvas.width * 0.5, camera.y - canvas.height * 0.5);
 
-    camera.x += (camera.targetX - camera.x) * CAMERA_TRANSITION_VALUE;
-    camera.y += (camera.targetY - camera.y) * CAMERA_TRANSITION_VALUE;
-    camera.scale += (camera.targetScale - camera.scale) * CAMERA_TRANSITION_VALUE;
+    camera.x += (camera.targetX - camera.x) * TRANSITION_VALUE;
+    camera.y += (camera.targetY - camera.y) * TRANSITION_VALUE;
+    camera.scale += (camera.targetScale - camera.scale) * TRANSITION_VALUE;
 
     requestAnimationFrame(loop);
 }
