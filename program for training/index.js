@@ -130,70 +130,87 @@ function drawText(x, y, text, textBaseline, textAlign, font, fillStyle, alpha, w
 
 const OFFSET_VALUE = 5;
 
+let colors = [
+    'red',
+    'yellow',
+    'green',
+    'blue',
+    'orange',
+    'magenta',
+    'cyan',
+    'chartreuse',
+    'blueViolet',
+    'crimson',
+    'grey',
+    'black',
+]
+
 let data = [
     {
-        percent: 0.22,
-        targetPercent: '0.22',
-        color: 'black',
+        percent: 0,
+        targetPercent: '0',
         offset: OFFSET_VALUE,
         title: "Сон",
         text: "Ты что совсем!!!!!!! Больше спать надо!",
     },
     {
-        percent: 0.78,
-        targetPercent: '0.78',
-        color: 'green',
+        percent: 0,
+        targetPercent: '0',
         offset: OFFSET_VALUE,
         title: "Сон",
         text: "Ты что совсем!!!!!!! Больше спать надо!",
     },
     {
-        percent: 0.5,
-        targetPercent: '0.5',
-        color: 'red',
+        percent: 0,
+        targetPercent: '0',
         offset: OFFSET_VALUE,
         title: "Сон",
         text: "Ты что совсем!!!!!!! Больше спать надо!",
     },
     {
-        percent: 1,
-        targetPercent: '1',
-        color: 'blue',
+        percent: 0,
+        targetPercent: '0',
         offset: OFFSET_VALUE,
         title: "Сон",
         text: "Ты что совсем!!!!!!! Больше спать надо!",
     },
     {
-        percent: 0.55,
-        targetPercent: '0.55',
-        color: 'yellow',
+        percent: 0,
+        targetPercent: '0',
         offset: OFFSET_VALUE,
         title: "Сон",
         text: "Ты что совсем!!!!!!! Больше спать надо!",
     },
     {
-        percent: 0.55,
-        targetPercent: '0.55',
-        color: 'orange',
+        percent: 0,
+        targetPercent: '0',
         offset: OFFSET_VALUE,
         title: "Сон",
         text: "Ты что совсем!!!!!!! Больше спать надо! AAAAAAAAAAAAAA",
     },
     {
-        percent: 0.55,
-        targetPercent: '0.55',
-        color: 'magenta',
+        percent: 0,
+        targetPercent: '0',
         offset: OFFSET_VALUE,
         title: "Сон",
         text: "Ты что совсем!!!!!!! Больше спать надо!",
     },
 ]
 
+for (let index = 0; index < window.localStorage.length; index++) {
+    let entry = window.localStorage.getItem(String(index));
+    if (entry) {
+        data[index].targetPercent = entry;
+    }
+}
+
 const FULL_RADIUS = 300;
 const TRANSITION_VALUE = 0.1;
 const TEXT_HEIGHT = 50;
 
 let writingIndex = -1;
+
+const isMobile = navigator.userAgentData.mobile;
 
 function loop() {
     ctx.translate(-camera.x + canvas.width * 0.5, -camera.y + canvas.height * 0.5);
@@ -209,6 +226,9 @@ function loop() {
     if (writingIndex !== -1 && mouse.wentDown) {
         writingIndex = -1;
         buttonPressed = true;
+        for (let saveIndex = 0; saveIndex < data.length; saveIndex++) {
+            window.localStorage.setItem(String(saveIndex), data[saveIndex].targetPercent);
+        }
     }
 
     let startAngle = 0;
@@ -231,6 +251,9 @@ function loop() {
             if (mouse.worldX >= entryPos.x - textParam.width * 0.5 && mouse.worldX <= entryPos.x + textParam.width * 0.5 &&
                 mouse.worldY >= entryPos.y - TEXT_HEIGHT * 0.5 && mouse.worldY <= entryPos.y + TEXT_HEIGHT * 0.5) {
                 writingIndex = arcIndex;
+                if (isMobile) {
+                    prompt();
+                }
             }
         }
 
@@ -252,7 +275,7 @@ function loop() {
         dataEntry.offset = OFFSET_VALUE + (dataEntry.offset - OFFSET_VALUE) * 0.75;
 
 
-        drawArc(offset.x, offset.y, FULL_RADIUS * dataEntry.percent, startAngle, finishAngle, dataEntry.color);
+        drawArc(offset.x, offset.y, FULL_RADIUS * dataEntry.percent, startAngle, finishAngle, colors[arcIndex]);
 
         let finishPos = rotateVector(FULL_RADIUS * 1.2, 0, finishAngle);
         drawLine(0, 0, finishPos.x, finishPos.y, OFFSET_VALUE);
