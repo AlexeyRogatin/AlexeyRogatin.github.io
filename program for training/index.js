@@ -251,13 +251,17 @@ let data = [
     },
 ]
 
-if (window.localStorage.length > data.length) {
-    window.localStorage.clear();
-}
+// if (window.localStorage.length > data.length) {
+//     window.localStorage.clear();
+// }
 for (let index = 0; index < window.localStorage.length; index++) {
     let entry = window.localStorage.getItem(String(index));
     if (entry) {
-        data[index].targetPercent = entry;
+        if (data[index]) {
+            data[index].targetPercent = entry;
+        } else {
+            window.localStorage.removeItem(String(index));
+        }
     }
 }
 
