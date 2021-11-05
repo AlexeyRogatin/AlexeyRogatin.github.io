@@ -251,6 +251,9 @@ let data = [
     },
 ]
 
+if (window.localStorage.length > data.length) {
+    window.localStorage.clear();
+}
 for (let index = 0; index < window.localStorage.length; index++) {
     let entry = window.localStorage.getItem(String(index));
     if (entry) {
