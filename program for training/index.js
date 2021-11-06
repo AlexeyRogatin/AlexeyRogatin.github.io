@@ -2,7 +2,6 @@
 var canvas = document.getElementById("canvas");
 function handleResize() {
     var rect = canvas.getBoundingClientRect();
-    var SCREEN_RATIO = 1 / 1;
     var rectWidth = rect.width;
     var rectHeight = rect.height;
     // if (isMobile && (window.orientation === "portrait-primary" || window.orientation === "portrait-secondary")) {
@@ -333,7 +332,7 @@ function loop() {
         camera.targetScale = 1;
         lookingIndex = -1;
     }
-    drawText(canvas.width * 0.5, canvas.height * 0.5, 'Programmed by Alexey Rogatin', 'bottom', 'right', '15px comic', 'black', 1);
+    drawText(canvas.width * 0.5, canvas.height * 0.5, 'Programmed by Alexey Rogatin', 'bottom', 'right', '40px comic', 'black', 1);
     clearMouse();
     //перемещаем начало координат обратно
     ctx.translate(camera.x - canvas.width * 0.5, camera.y - canvas.height * 0.5);
