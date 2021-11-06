@@ -1,94 +1,80 @@
 'use strict';
-
-const canvas = document.getElementById("canvas");
-
-
+var canvas = document.getElementById("canvas");
 function handleResize() {
-    const rect = canvas.getBoundingClientRect();
-    let SCREEN_RATIO = 1 / 1;
-
-    let rectWidth = rect.width;
-    let rectHeight = rect.height;
+    var rect = canvas.getBoundingClientRect();
+    var SCREEN_RATIO = 1 / 1;
+    var rectWidth = rect.width;
+    var rectHeight = rect.height;
     // if (isMobile && (window.orientation === "portrait-primary" || window.orientation === "portrait-secondary")) {
     // rectWidth = rect.height;
     // rectHeight = rect.width;
     // }
-
     if (rectWidth >= rectHeight) {
         canvas.height = 1080;
         canvas.width = 1080 / rectHeight * rectWidth;
-        canvas.style.height = rectHeight;
-        canvas.style.width = rectWidth;
-    } else {
+        canvas.style.height = rectHeight.toString();
+        canvas.style.width = rectWidth.toString();
+    }
+    else {
         canvas.width = 1080;
         canvas.height = 1080 / rectWidth * rectHeight;
-        canvas.style.width = rectWidth;
-        canvas.style.height = rectHeight;
+        canvas.style.width = rectWidth.toString();
+        canvas.style.height = rectHeight.toString();
     }
 }
-
 handleResize();
 window.addEventListener('resize', handleResize);
-
-let camera = {
+var camera = {
     x: 0,
     y: 0,
     targetX: 0,
     targetY: 0,
     scale: 1,
-    targetScale: 1,
-}
-
-const ctx = canvas.getContext("2d");
-
+    targetScale: 1
+};
+var ctx = canvas.getContext("2d");
 function rotateVector(x, y, angle) {
-    let sin = Math.sin(angle);
-    let cos = Math.cos(angle);
-    let resultX = x * cos - y * sin;
-    let resultY = -y * cos - x * sin;
+    var sin = Math.sin(angle);
+    var cos = Math.cos(angle);
+    var resultX = x * cos - y * sin;
+    var resultY = -y * cos - x * sin;
     return {
         x: resultX,
-        y: resultY,
+        y: resultY
     };
 }
-
 function vectorLength(x, y) {
     return Math.sqrt(Math.pow(x, 2) + Math.pow(y, 2));
 }
-
 function dot(x1, y1, x2, y2) {
     return (x1 * x2 + y1 * y2);
 }
-
 function angleBetweenPoints(startX, startY, x, y) {
-    let dX = x - startX;
-    let dY = y - startY;
-    let angle = Math.acos(dot(1, 0, dX, dY) / vectorLength(dX, dY));
+    var dX = x - startX;
+    var dY = y - startY;
+    var angle = Math.acos(dot(1, 0, dX, dY) / vectorLength(dX, dY));
     if (dY > 0) {
         angle = Math.PI + (Math.PI - angle);
     }
     return angle;
 }
-
 function drawArc(x, y, radius, startAngle, finishAngle, color) {
     ctx.globalAlpha = 1;
     x = camera.x + (x - camera.x) / camera.scale;
     y = camera.y + (y - camera.y) / camera.scale;
     radius /= camera.scale;
     ctx.beginPath();
-    let finishPoint = rotateVector(radius, 0, finishAngle);
+    var finishPoint = rotateVector(radius, 0, finishAngle);
     finishPoint.x += x;
     finishPoint.y += y;
     ctx.moveTo(x, y);
     ctx.lineTo(finishPoint.x, finishPoint.y);
     ctx.arc(x, y, radius, -finishAngle, -startAngle);
     ctx.lineTo(x, y);
-
     ctx.fillStyle = color;
     ctx.fill();
     ctx.closePath();
 }
-
 function drawRect(x, y, width, height, angle, color) {
     ctx.globalAlpha = 1;
     x = camera.x + (x - camera.x) / camera.scale;
@@ -97,62 +83,52 @@ function drawRect(x, y, width, height, angle, color) {
     height /= camera.scale;
     ctx.translate(x, y);
     ctx.rotate(-angle);
-
     ctx.fillStyle = color;
     ctx.fillRect(-width * 0.5, -height * 0.5, width, height);
-
     ctx.rotate(angle);
     ctx.translate(-x, -y);
 }
-
 function drawLine(x1, y1, x2, y2, width) {
     x1 = camera.x + (x1 - camera.x) / camera.scale;
     y1 = camera.y + (y1 - camera.y) / camera.scale;
     x2 = camera.x + (x2 - camera.x) / camera.scale;
     y2 = camera.y + (y2 - camera.y) / camera.scale;
     ctx.lineWidth = width / camera.scale;
-
     ctx.beginPath();
     ctx.moveTo(x1, y1);
     ctx.lineTo(x2, y2);
     ctx.closePath();
     ctx.stroke();
 }
-
-let TEXT_HEIGHT = 50;
+var TEXT_HEIGHT = 50;
 if (isMobile) {
     TEXT_HEIGHT = 80;
 }
-let font = TEXT_HEIGHT + 'px Brush Script MT';
-
+var font = TEXT_HEIGHT + 'px Brush Script MT';
 function computeOffset(title, index, dataLength, distance) {
-    let angleDelta = Math.PI * 2 / dataLength;
-    let midAngle = (index + 0.5) * angleDelta;
-    let angle1 = index * angleDelta;
-    let angle2 = angle1 + angleDelta;
-
-    let offset = Math.ceil(distance);
-    let pos = rotateVector(offset, 0, midAngle);
-    let offsetDelta = rotateVector(1, 0, midAngle);
-
-    let sqrDistance = distance * distance;
+    var angleDelta = Math.PI * 2 / dataLength;
+    var midAngle = (index + 0.5) * angleDelta;
+    var angle1 = index * angleDelta;
+    var angle2 = angle1 + angleDelta;
+    var offset = Math.ceil(distance);
+    var pos = rotateVector(offset, 0, midAngle);
+    var offsetDelta = rotateVector(1, 0, midAngle);
+    var sqrDistance = distance * distance;
     ctx.font = font;
-    let hlfWidth = ctx.measureText(title).width * 0.5;
-    let hlfHeight = TEXT_HEIGHT * 0.5;
-
-    let points = [
+    var hlfWidth = ctx.measureText(title).width * 0.5;
+    var hlfHeight = TEXT_HEIGHT * 0.5;
+    var points = [
         { x: pos.x - hlfWidth, y: pos.y - hlfHeight },
         { x: pos.x - hlfWidth, y: pos.y + hlfHeight },
         { x: pos.x + hlfWidth, y: pos.y - hlfHeight },
         { x: pos.x + hlfWidth, y: pos.y + hlfHeight },
     ];
-
-    let isValid;
+    var isValid;
     do {
         isValid = true;
-        for (let pointIndex = 0; pointIndex < points.length; pointIndex++) {
-            let pointRadius = points[pointIndex].x * points[pointIndex].x + points[pointIndex].y * points[pointIndex].y;
-            let pointAngle = angleBetweenPoints(0, 0, points[pointIndex].x, points[pointIndex].y);
+        for (var pointIndex = 0; pointIndex < points.length; pointIndex++) {
+            var pointRadius = points[pointIndex].x * points[pointIndex].x + points[pointIndex].y * points[pointIndex].y;
+            var pointAngle = angleBetweenPoints(0, 0, points[pointIndex].x, points[pointIndex].y);
             if (pointRadius < sqrDistance || pointAngle < angle1 || pointAngle > angle2) {
                 isValid = false;
                 break;
@@ -166,14 +142,11 @@ function computeOffset(title, index, dataLength, distance) {
         points[2].y += offsetDelta.y;
         points[3].x += offsetDelta.x;
         points[3].y += offsetDelta.y;
-    }
-    while (!isValid);
+    } while (!isValid);
     return { x: points[0].x + hlfWidth, y: points[0].y + hlfHeight };
 }
-
-const LINE_WIDTH = 5;
-
-let colors = [
+var LINE_WIDTH = 5;
+var colors = [
     'red',
     'yellow',
     'green',
@@ -186,85 +159,76 @@ let colors = [
     'crimson',
     'grey',
     'black',
-]
-
-let data = [
+];
+var data = [
     {
         percent: 0,
         targetPercent: '0',
         offset: LINE_WIDTH,
         title: "Сон",
-        text: "Ты что совсем!!!!!!! Больше спать надо!",
+        text: "Ты что совсем!!!!!!! Больше спать надо!"
     },
     {
         percent: 0,
         targetPercent: '0',
         offset: LINE_WIDTH,
         title: "Тренировки",
-        text: "Ты что совсем!!!!!!! Больше спать надо!",
+        text: "Ты что совсем!!!!!!! Больше спать надо!"
     },
     {
         percent: 0,
         targetPercent: '0',
         offset: LINE_WIDTH,
         title: "Еда",
-        text: "Ты что совсем!!!!!!! Больше спать надо!",
+        text: "Ты что совсем!!!!!!! Больше спать надо!"
     },
     {
         percent: 0,
         targetPercent: '0',
         offset: LINE_WIDTH,
         title: "Вода",
-        text: "Ты что совсем!!!!!!! Больше спать надо!",
+        text: "Ты что совсем!!!!!!! Больше спать надо!"
     },
     {
         percent: 0,
         targetPercent: '0',
         offset: LINE_WIDTH,
         title: "Прогулки",
-        text: "Ты что совсем!!!!!!! Больше спать надо!",
+        text: "Ты что совсем!!!!!!! Больше спать надо!"
     },
-]
-
+];
 function setLocalStorage() {
-    for (let index = 0; index < data.length; index++) {
+    for (var index = 0; index < data.length; index++) {
         window.localStorage.setItem(String(index), data[index].targetPercent);
     }
 }
-
-for (let index = 0; index < window.localStorage.length; index++) {
-    let entry = window.localStorage.getItem(String(index));
+for (var index = 0; index < window.localStorage.length; index++) {
+    var entry = window.localStorage.getItem(String(index));
     if (entry) {
         if (data[index]) {
             data[index].targetPercent = entry;
-        } else {
+        }
+        else {
             window.localStorage.removeItem(String(index));
         }
     }
 }
-
-const FULL_RADIUS = 400;
-const TRANSITION_VALUE = 0.1;
-
-let writingIndex = -1;
-let lookingIndex = -1;
-
+var FULL_RADIUS = 400;
+var TRANSITION_VALUE = 0.1;
+var writingIndex = -1;
+var lookingIndex = -1;
 function loop() {
     //изменение положения отностительно камеры
     ctx.translate(-camera.x + canvas.width * 0.5, -camera.y + canvas.height * 0.5);
-
     //очистка экрана
     drawRect(camera.x, camera.y, canvas.width * camera.scale, canvas.height * camera.scale, 0, 'white');
-
     //вычисление координаты мыши относительно камеры
     mouse.worldX = mouse.x + camera.x - canvas.width * 0.5;
     mouse.worldY = mouse.y + camera.y - canvas.height * 0.5;
     mouse.worldX = camera.x + (mouse.worldX - camera.x) * camera.scale;
     mouse.worldY = camera.y + (mouse.worldY - camera.y) * camera.scale;
-
     //переменная следящая за тем, чтобы не было нажато больше одной кнопки
-    let buttonPressed = false;
-
+    var buttonPressed = false;
     //отмена режима ввода значений
     if (writingIndex !== -1 && mouse.wentUp) {
         //сохранение значений в localStorage
@@ -272,37 +236,32 @@ function loop() {
         writingIndex = -1;
         buttonPressed = true;
     }
-
     //подготовка значений единых для цикла
-    let startAngle = 0;
-    let angleDelta = Math.PI * 2 / data.length;
-    let mouseAngle = angleBetweenPoints(0, 0, mouse.worldX, mouse.worldY);
-
-    for (let arcIndex = 0; arcIndex < data.length; arcIndex++) {
+    var startAngle = 0;
+    var angleDelta = Math.PI * 2 / data.length;
+    var mouseAngle = angleBetweenPoints(0, 0, mouse.worldX, mouse.worldY);
+    for (var arcIndex = 0; arcIndex < data.length; arcIndex++) {
         //данные о дуге
-        let dataEntry = data[arcIndex];
-
-        let finishAngle = startAngle + angleDelta;
-        let midAngle = (startAngle + finishAngle) / 2;
-
+        var dataEntry = data[arcIndex];
+        var finishAngle = startAngle + angleDelta;
+        var midAngle = (startAngle + finishAngle) / 2;
         //смещение
-        let offset = rotateVector(dataEntry.offset, 0, midAngle);
-
+        var offset = rotateVector(dataEntry.offset, 0, midAngle);
         //вычисление позиции заголовка и текста записи
-        let entryPos = computeOffset(dataEntry.title, arcIndex, data.length, dataEntry.percent * FULL_RADIUS + 10);
+        var entryPos = computeOffset(dataEntry.title, arcIndex, data.length, dataEntry.percent * FULL_RADIUS + 10);
         entryPos.x += offset.x;
         entryPos.y += offset.y;
-
         //переход в режим записи при нажатие на заголовок
         if (camera.targetScale === 1 && mouse.wentUp && !buttonPressed) {
             ctx.font = font;
-            let textParam = ctx.measureText(dataEntry.title);
+            var textParam = ctx.measureText(dataEntry.title);
             if (mouse.worldX >= entryPos.x - textParam.width * 0.5 && mouse.worldX <= entryPos.x + textParam.width * 0.5 &&
                 mouse.worldY >= entryPos.y - TEXT_HEIGHT * 0.5 && mouse.worldY <= entryPos.y + TEXT_HEIGHT * 0.5) {
                 if (!isMobile) {
                     writingIndex = arcIndex;
-                } else {
-                    let saveValue = data[arcIndex].targetPercent;
+                }
+                else {
+                    var saveValue = data[arcIndex].targetPercent;
                     data[arcIndex].targetPercent = window.prompt('Введите значение', data[arcIndex].targetPercent);
                     if (data[arcIndex].targetPercent === null) {
                         data[arcIndex].targetPercent = saveValue;
@@ -311,19 +270,17 @@ function loop() {
                     if (isNaN(Number(data[arcIndex].targetPercent))) {
                         data[arcIndex].targetPercent = saveValue;
                         alert("Ошибка при обработке данных");
-                    } else {
+                    }
+                    else {
                         //сохранение значений в localStorage
                         setLocalStorage();
                     }
-
                     buttonPressed = true;
                 }
             }
         }
-
         //текст заголовка
-        let title = dataEntry.title;
-
+        var title = dataEntry.title;
         //если курсор наведён на дугу или режим ввода
         if (writingIndex === arcIndex || vectorLength(mouse.worldX, mouse.worldY) <= FULL_RADIUS * 1.2 && startAngle < mouseAngle && finishAngle > mouseAngle && camera.targetScale === 1) {
             //увеличивается смещение
@@ -340,23 +297,21 @@ function loop() {
         }
         //придаём инертности смещению заголовка при наведении мышки на дугу
         dataEntry.offset = LINE_WIDTH + (dataEntry.offset - LINE_WIDTH) * 0.75;
-
         //рисуем дугу
         drawArc(offset.x, offset.y, FULL_RADIUS * dataEntry.percent, startAngle, finishAngle, colors[arcIndex]);
-
         //рисуем линюю рядом
-        let finishPos = rotateVector(FULL_RADIUS * 1.2, 0, finishAngle);
+        var finishPos = rotateVector(FULL_RADIUS * 1.2, 0, finishAngle);
         drawLine(0, 0, finishPos.x, finishPos.y, LINE_WIDTH);
-
         //прозрачность для вознакающего текста
-        let textTransparency = 1 - (camera.scale - 0.1) / 0.05;
+        var textTransparency = 1 - (camera.scale - 0.1) / 0.05;
         if (textTransparency < 0) {
             textTransparency = 0;
         }
         //если мы рассматриваем другой сектор, то прозрачность не повышается
         if (arcIndex !== lookingIndex) {
             textTransparency = 0;
-        } else {
+        }
+        else {
             //концетрируемся на рассматриваемом секторе
             camera.targetX = entryPos.x;
             camera.targetY = entryPos.y;
@@ -366,14 +321,11 @@ function loop() {
         drawText(entryPos.x, entryPos.y - textTransparency * 20, title, 'middle', 'center', font, 'black', 1);
         drawText(entryPos.x, entryPos.y - textTransparency * 10, Math.round(dataEntry.percent * 100) + '%', 'middle', 'center', font, 'black', textTransparency);
         drawText(entryPos.x, entryPos.y, dataEntry.text, 'middle', 'center', font, 'black', textTransparency, canvas.width * 0.5, 10);
-
         //плавное изменение значений
         dataEntry.percent += (Number(dataEntry.targetPercent) - dataEntry.percent) * TRANSITION_VALUE;
-
         //рассматриваем для следующего угла
         startAngle = finishAngle;
     }
-
     //выходим из режима просмотра
     if (mouse.wentUp && !buttonPressed && lookingIndex !== -1) {
         camera.targetX = 0;
@@ -381,19 +333,14 @@ function loop() {
         camera.targetScale = 1;
         lookingIndex = -1;
     }
-
     drawText(canvas.width * 0.5, canvas.height * 0.5, 'Programmed by Alexey Rogatin', 'bottom', 'right', '15px comic', 'black', 1);
-
     clearMouse();
-
     //перемещаем начало координат обратно
     ctx.translate(camera.x - canvas.width * 0.5, camera.y - canvas.height * 0.5);
-
     //плавно перемещаем камеру
     camera.x += (camera.targetX - camera.x) * TRANSITION_VALUE;
     camera.y += (camera.targetY - camera.y) * TRANSITION_VALUE;
     camera.scale += (camera.targetScale - camera.scale) * TRANSITION_VALUE;
-
     requestAnimationFrame(loop);
 }
 requestAnimationFrame(loop);
