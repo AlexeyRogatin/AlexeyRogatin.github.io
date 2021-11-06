@@ -16,6 +16,17 @@ function makeTouch() {
 
 let mouse = makeTouch();
 
+function correctValueStr(valueStr) {
+    let correctedStr = valueStr.replace(/,/g, ".");
+    if (correctedStr[0] === '0' && correctedStr[1] !== '.' && correctedStr.length > 1) {
+        correctedStr = correctedStr.slice(1, correctedStr.length);
+    }
+    if (correctedStr.length === 0) {
+        correctedStr += '0';
+    }
+    return correctedStr;
+}
+
 if (!isMobile) {
     window.onmousemove = function onmousemove(event) {
         const rect = canvas.getBoundingClientRect();
@@ -40,17 +51,12 @@ if (!isMobile) {
                     }
                 } break;
                 default: {
-                    if (valueStr * 100 % 10 === 0 && (event.keyCode >= 48 && event.keyCode <= 57 || (event.key === '.' && valueStr.split('.').length === 1))) {
+                    if (valueStr * 100 % 10 === 0 && (event.keyCode >= 48 && event.keyCode <= 57 || ((event.key === '.' || event.key === ',') && valueStr.split('.').length === 1))) {
                         valueStr += event.key;
                     }
                 }
             }
-            if (valueStr[0] === '0' && valueStr[1] !== '.' && valueStr.length > 1) {
-                valueStr = valueStr.slice(1, valueStr.length);
-            }
-            if (valueStr.length === 0) {
-                valueStr += '0';
-            }
+            valueStr = correctValueStr(valueStr);
             data[writingIndex].targetPercent = valueStr;
         }
     }

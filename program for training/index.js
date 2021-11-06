@@ -251,9 +251,12 @@ let data = [
     },
 ]
 
-// if (window.localStorage.length > data.length) {
-//     window.localStorage.clear();
-// }
+function setLocalStorage() {
+    for (let index = 0; index < data.length; index++) {
+        window.localStorage.setItem(String(index), data[index].targetPercent);
+    }
+}
+
 for (let index = 0; index < window.localStorage.length; index++) {
     let entry = window.localStorage.getItem(String(index));
     if (entry) {
@@ -289,8 +292,8 @@ function loop() {
 
     //отмена режима ввода значений
     if (writingIndex !== -1 && mouse.wentUp) {
-        //сохранение изменённого значения в localStorage
-        window.localStorage.setItem(String(writingIndex), data[writingIndex].targetPercent);
+        //сохранение значений в localStorage
+        setLocalStorage();
         writingIndex = -1;
         buttonPressed = true;
     }
@@ -324,9 +327,20 @@ function loop() {
                 if (!isMobile) {
                     writingIndex = arcIndex;
                 } else {
+                    let saveValue = data[arcIndex].targetPercent;
                     data[arcIndex].targetPercent = window.prompt('Введите значение', data[arcIndex].targetPercent);
-                    //сохранение изменённого значения в localStorage
-                    window.localStorage.setItem(String(arcIndex), data[arcIndex].targetPercent);
+                    if (data[arcIndex].targetPercent === null) {
+                        data[arcIndex].targetPercent = saveValue;
+                    }
+                    data[arcIndex].targetPercent = correctValueStr(data[arcIndex].targetPercent);
+                    if (isNaN(Number(data[arcIndex].targetPercent))) {
+                        data[arcIndex].targetPercent = saveValue;
+                        alert("Ошибка при обработке данных");
+                    } else {
+                        //сохранение значений в localStorage
+                        setLocalStorage();
+                    }
+
                     buttonPressed = true;
                 }
             }
