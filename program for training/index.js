@@ -119,31 +119,6 @@ function drawLine(x1, y1, x2, y2, width) {
     ctx.stroke();
 }
 
-function drawText(x, y, text, textBaseline, textAlign, font, fillStyle, alpha, width = 999999, interval = 0) {
-    interval /= camera.scale;
-    x = camera.x + (x - camera.x) / camera.scale;
-    y = camera.y + (y - camera.y) / camera.scale;
-    ctx.globalAlpha = alpha;
-    ctx.fillStyle = fillStyle;
-    ctx.font = font;
-    ctx.textBaseline = textBaseline;
-    ctx.textAlign = textAlign;
-
-    let words = text.split(' ');
-    let line = '';
-    for (let wordIndex = 0; wordIndex < words.length; wordIndex++) {
-        let supposedLine = line + words[wordIndex] + ' ';
-        if (ctx.measureText(supposedLine).width > width) {
-            ctx.fillText(line, x, y);
-            y += interval;
-            line = words[wordIndex] + ' ';
-        } else {
-            line = supposedLine;
-        }
-    }
-    ctx.fillText(line, x, y);
-}
-
 let TEXT_HEIGHT = 50;
 if (isMobile) {
     TEXT_HEIGHT = 80;
