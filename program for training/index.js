@@ -325,6 +325,8 @@ function loop() {
                     writingIndex = arcIndex;
                 } else {
                     data[arcIndex].targetPercent = window.prompt('Введите значение', data[arcIndex].targetPercent);
+                    //сохранение изменённого значения в localStorage
+                    window.localStorage.setItem(String(writingIndex), data[writingIndex].targetPercent);
                     buttonPressed = true;
                 }
             }
