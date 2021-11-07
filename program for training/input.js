@@ -81,32 +81,6 @@ else {
         mouse.isDown = false;
     };
 }
-function drawText(x, y, text, textBaseline, textAlign, font, fillStyle, alpha, width, interval) {
-    if (width === void 0) { width = 999999; }
-    if (interval === void 0) { interval = 0; }
-    interval /= camera.scale;
-    x = camera.x + (x - camera.x) / camera.scale;
-    y = camera.y + (y - camera.y) / camera.scale;
-    ctx.globalAlpha = alpha;
-    ctx.fillStyle = fillStyle;
-    ctx.font = font;
-    ctx.textBaseline = textBaseline;
-    ctx.textAlign = textAlign;
-    var words = text.split(' ');
-    var line = '';
-    for (var wordIndex = 0; wordIndex < words.length; wordIndex++) {
-        var supposedLine = line + words[wordIndex] + ' ';
-        if (ctx.measureText(supposedLine).width > width) {
-            ctx.fillText(line, x, y);
-            y += interval;
-            line = words[wordIndex] + ' ';
-        }
-        else {
-            line = supposedLine;
-        }
-    }
-    ctx.fillText(line, x, y);
-}
 function clearMouse() {
     mouse.wentDown = false;
     mouse.wentUp = false;

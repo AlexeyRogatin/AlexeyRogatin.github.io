@@ -57,6 +57,32 @@ function angleBetweenPoints(startX, startY, x, y) {
     }
     return angle;
 }
+function drawText(x, y, text, textBaseline, textAlign, font, fillStyle, alpha, width, interval) {
+    if (width === void 0) { width = 999999; }
+    if (interval === void 0) { interval = 0; }
+    interval /= camera.scale;
+    x = camera.x + (x - camera.x) / camera.scale;
+    y = camera.y + (y - camera.y) / camera.scale;
+    ctx.globalAlpha = alpha;
+    ctx.fillStyle = fillStyle;
+    ctx.font = font;
+    ctx.textBaseline = textBaseline;
+    ctx.textAlign = textAlign;
+    var words = text.split(' ');
+    var line = '';
+    for (var wordIndex = 0; wordIndex < words.length; wordIndex++) {
+        var supposedLine = line + words[wordIndex] + ' ';
+        if (ctx.measureText(supposedLine).width > width) {
+            ctx.fillText(line, x, y);
+            y += interval;
+            line = words[wordIndex] + ' ';
+        }
+        else {
+            line = supposedLine;
+        }
+    }
+    ctx.fillText(line, x, y);
+}
 function drawArc(x, y, radius, startAngle, finishAngle, color) {
     ctx.globalAlpha = 1;
     x = camera.x + (x - camera.x) / camera.scale;
@@ -103,7 +129,7 @@ var TEXT_HEIGHT = 50;
 if (isMobile) {
     TEXT_HEIGHT = 80;
 }
-var font = TEXT_HEIGHT + 'px Brush Script MT';
+var font = TEXT_HEIGHT + 'px Arial';
 function computeOffset(title, index, dataLength, distance) {
     var angleDelta = Math.PI * 2 / dataLength;
     var midAngle = (index + 0.5) * angleDelta;
@@ -332,7 +358,7 @@ function loop() {
         camera.targetScale = 1;
         lookingIndex = -1;
     }
-    drawText(canvas.width * 0.5, canvas.height * 0.5, 'Programmed by Alexey Rogatin', 'bottom', 'right', '40px comic', 'black', 1);
+    drawText(canvas.width * 0.5, canvas.height * 0.5, 'Programmed by Alexey Rogatin', 'bottom', 'right', '15px comic', 'black', 1);
     clearMouse();
     //перемещаем начало координат обратно
     ctx.translate(camera.x - canvas.width * 0.5, camera.y - canvas.height * 0.5);
