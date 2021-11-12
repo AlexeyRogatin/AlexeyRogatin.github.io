@@ -26,17 +26,19 @@ const GAME_STATE_GRAPHIC_SETTINGS = 6;
 
 let gameState = GAME_STATE_MENU;
 
+const MENU_POS = { x: 0, y: -canvas.width * 2 };
+const SETTINGS_POS = { x: 0, y: -canvas.width * 4 };
+const GAME_SETTINGS_POS = { x: -canvas.width * 2, y: -canvas.width * 6 };
+const GRAPHICS_SETTINGS_POS = { x: canvas.width * 2, y: -canvas.width * 6 };
+
 let camera = {
     x: 0,
     y: 0,
+    targetX: MENU_POS.x,
+    targetY: MENU_POS.y,
 }
 
-let decks = [
-    [],
-    [],
-    [[], [], [], [], [], []],
-    [[], [], [], []]
-];
+let decks = [];
 
 const CARD_SET_36 = 0;
 const CARD_SET_52 = 1;
@@ -56,7 +58,7 @@ const LEAR_RUBY = 3;
 const VALUE_JACK = 11;
 const VALUE_DAMSEL = 12;
 const VALUE_KING = 13;
-const VALUE_ACE = 1;
+let VALUE_ACE = 5;
 
 function randomFloat(min, max) {
     let random = Math.random() * (max - min) + min;
@@ -80,8 +82,8 @@ function addCard(lear, value) {
     decks[DECKED_CLOSED].push({
         x: -canvas.width,
         y: -canvas.height,
-        visualX: 0,
-        visualY: 0,
+        visualX: mouse.x,
+        visualY: mouse.y + canvas.width * 2,
         isMooved: false,
         lear: lear,
         value: value,
@@ -101,7 +103,7 @@ function moveCardsBetweenDecks(count, deck1, deck2) {
 }
 
 function formStartDeck() {
-    let startValue = 6;
+    let startValue = 5;
     let columnsCount = 6;
     if (cardSet === CARD_SET_52) {
         startValue = 1;
@@ -226,9 +228,9 @@ function drawCard(card) {
                 valueChar = card.value;
             }
         }
-        drawText(card.visualX - CARD_WIDTH * 0.32, card.visualY - CARD_HEIGHT * 0.34, valueChar, 'middle', 'center', 'bold 30px Arial', color, 0);
+        drawText(card.visualX - CARD_WIDTH * 0.32, card.visualY - CARD_HEIGHT * 0.34, valueChar, 'middle', 'center', 'bold 30px Times', color, 0);
         drawSprite(card.visualX + CARD_WIDTH * 0.32, card.visualY - CARD_HEIGHT * 0.36, imgLear[card.lear], 0);
-        drawText(card.visualX + CARD_WIDTH * 0.32, card.visualY + CARD_HEIGHT * 0.32, valueChar, 'middle', 'center', 'bold 30px Arial', color, Math.PI);
+        drawText(card.visualX + CARD_WIDTH * 0.32, card.visualY + CARD_HEIGHT * 0.32, valueChar, 'middle', 'center', 'bold 30px Times', color, Math.PI);
         drawSprite(card.visualX - CARD_WIDTH * 0.32, card.visualY + CARD_HEIGHT * 0.32, imgLear[card.lear], Math.PI);
     } else {
         drawSprite(card.visualX, card.visualY, imgTurnedCard, 0);
@@ -319,8 +321,6 @@ function defineCardPos() {
     }
 }
 
-formStartDeck();
-
 function loopGame() {
     if (decks[ACED][0].length === 9 && decks[ACED][1].length === 9 && decks[ACED][2].length === 9 && decks[ACED][3].length === 9) {
         gameState = GAME_STATE_WIN;
@@ -357,7 +357,7 @@ function loopGame() {
             gameState = GAME_STATE_LOOSE;
         }
     }
-    drawText(-canvas.width * 0.5 + 200, canvas.height * 0.5 - 200, 'Сдаться', "middle", "center", boldness + " 40px Arial", "black", 0);
+    drawText(-canvas.width * 0.5 + 200, canvas.height * 0.5 - 200, 'Сдаться', "middle", "center", boldness + " 40px Times", "black", 0);
 
     let cardInfo = findClosestCard(mouse.x, mouse.y);
 
@@ -454,178 +454,114 @@ function loopGame() {
 }
 
 function loopWinningScreen() {
-    drawText(0, -canvas.height * 0.25, "Вы - выигрывающий!", "bottom", "center", "80px Arial", "yellow", 0);
+    drawText(0, -canvas.height * 0.25, "Вы - выигрывающий!", "bottom", "center", "80px Times", "yellow", 0);
     drawSprite(0, canvas.height * 0.5 - imgWin.height * 0.5, imgWin, 0);
     if (mouse.wentDown) {
+        camera.targetX = MENU_POS.x;
+        camera.targetY = MENU_POS.y;
         gameState = GAME_STATE_MENU;
     }
 }
 
 function loopLoosingScreen() {
-    drawText(0, -canvas.height * 0.25, "ВЫ - ПРОИГРЫВАЮЩИЙ!!!", "bottom", "center", "bold 80px Arial", "crimson", 0);
+    drawText(0, -canvas.height * 0.25, "ВЫ - ПРОИГРЫВАЮЩИЙ!!!", "bottom", "center", "bold 80px Times", "crimson", 0);
     drawSprite(0, (canvas.height - imgLoose.height) * 0.5, imgLoose, 0);
     if (mouse.wentDown) {
+        camera.targetX = MENU_POS.x;
+        camera.targetY = MENU_POS.y;
         gameState = GAME_STATE_MENU;
     }
 }
 
+const BUTTON_WIDTH = 700;
+const BUTTON_HEIGHT = 100;
+
+function renderButton(x, y, text, fnctn) {
+    drawSprite(x, y, imgMainMenuButton, 0, BUTTON_WIDTH, BUTTON_HEIGHT);
+
+    let boldness = '';
+    if (checkButton(mouse.x, mouse.y, x, y, BUTTON_WIDTH, BUTTON_HEIGHT)) {
+        boldness = 'bold ';
+
+        if (mouse.wentDown) {
+            fnctn();
+        }
+    }
+    drawText(x, y, text, "middle", "center", boldness + Math.floor(BUTTON_HEIGHT * 0.8) + 'px Times', 'yellow');
+}
+
 function loopMenu() {
+    drawText(MENU_POS.x, MENU_POS.y - 400, 'Поньямс Кормынка', "center", "middle", '90px MegaCursive', "yellow")
 
-    let buttonX = 0;
-    let buttonY = -100;
-    drawSprite(buttonX, buttonY, imgMainMenuButton, 0);
-
-    let boldness = '';
-    if (checkButton(mouse.x, mouse.y, buttonX, buttonY, imgMainMenuButton.width, imgMainMenuButton.height)) {
-        boldness = 'bold';
-        if (mouse.wentDown) {
-            gameState = GAME_STATE_GAME;
+    renderButton(MENU_POS.x, MENU_POS.y - 100, 'Начать игру', function startgame() {
+        camera.targetX = 0;
+        camera.targetY = 0;
+        gameState = GAME_STATE_GAME;
+        if (cardSet === CARD_SET_36) {
+            decks = [
+                [],
+                [],
+                [[], [], [], [], [], []],
+                [[], [], [], []]
+            ];
+            VALUE_ACE = 5;
+        } else {
+            decks = [
+                [],
+                [],
+                [[], [], [], [], [], [], []],
+                [[], [], [], []]
+            ];
+            VALUE_ACE = 1;
         }
-    }
-    drawText(buttonX, buttonY, 'Начать игру', "middle", "center", boldness + " " + imgMainMenuButton.height + "px Arial", "black", 0);
+        formStartDeck()
+    });
 
-    buttonX = 0;
-    buttonY = 100;
-    drawSprite(buttonX, buttonY, imgMainMenuButton, 0);
+    renderButton(MENU_POS.x, MENU_POS.y + 100, 'Настройки', function options() {
+        camera.targetX = SETTINGS_POS.x;
+        camera.targetY = SETTINGS_POS.y;
+    });
 
-    boldness = '';
-    if (checkButton(mouse.x, mouse.y, buttonX, buttonY, imgMainMenuButton.width, imgMainMenuButton.height)) {
-        boldness = 'bold';
-        if (mouse.wentDown) {
-            gameState = GAME_STATE_SETTINGS;
-        }
-    }
-    drawText(buttonX, buttonY, 'Настройки', "middle", "center", boldness + " " + imgMainMenuButton.height + "px Arial", "black", 0);
+    //настройки
+    renderButton(SETTINGS_POS.x, SETTINGS_POS.y - 100, 'Игровые', function gameSet() {
+        camera.targetX = GAME_SETTINGS_POS.x;
+        camera.targetY = GAME_SETTINGS_POS.y;
+    });
+
+    renderButton(SETTINGS_POS.x, SETTINGS_POS.y + 100, 'Графические', function graphics() {
+        camera.targetX = GRAPHICS_SETTINGS_POS.x;
+        camera.targetY = GRAPHICS_SETTINGS_POS.y;
+    });
+
+    renderButton(SETTINGS_POS.x, SETTINGS_POS.y + 300, 'Обратно', function back() {
+        camera.targetX = MENU_POS.x;
+        camera.targetY = MENU_POS.y;
+    });
+
+    //игровые
+    renderButton(GAME_SETTINGS_POS.x, GAME_SETTINGS_POS.y - 100, 'Набор ' + (36 + cardSet * 16) + ' карт(ы)', function chooseCardSet() {
+        cardSet++;
+        cardSet = cardSet % 2;
+    });
+
+    renderButton(GAME_SETTINGS_POS.x, GAME_SETTINGS_POS.y + 300, 'Обратно', function back() {
+        camera.targetX = SETTINGS_POS.x;
+        camera.targetY = SETTINGS_POS.y;
+    });
+
+    //графические
+    renderButton(GRAPHICS_SETTINGS_POS.x, GRAPHICS_SETTINGS_POS.y + 300, 'Обратно', function back() {
+        camera.targetX = SETTINGS_POS.x;
+        camera.targetY = SETTINGS_POS.y;
+    });
 }
 
-function loopGameSettings() {
-
-    let buttonX = 0;
-    let buttonY = 400;
-    drawSprite(buttonX, buttonY, imgMainMenuButton, 0);
-
-    let boldness = '';
-    if (checkButton(mouse.x, mouse.y, buttonX, buttonY, imgMainMenuButton.width, imgMainMenuButton.height)) {
-        boldness = 'bold';
-        if (mouse.wentDown) {
-            gameState = GAME_STATE_MENU;
-        }
-    }
-    let textHeight = imgMainMenuButton.height;
-    ctx.font = boldness + " " + textHeight + "px Arial";
-    let textParam = ctx.measureText('Вернуться в главное меню');
-    if (textParam.width > imgMainMenuButton.width) {
-        textHeight = Math.floor(textHeight * imgMainMenuButton.width / textParam.width);
-    }
-    drawText(buttonX, buttonY, 'Вернуться в главное меню', "middle", "center", boldness + " " + textHeight + "px Arial", "black", 0);
-
-    buttonX = 0;
-    buttonY = 200;
-    drawSprite(buttonX, buttonY, imgMainMenuButton, 0);
-
-    boldness = '';
-    if (checkButton(mouse.x, mouse.y, buttonX, buttonY, imgMainMenuButton.width, imgMainMenuButton.height)) {
-        boldness = 'bold';
-        if (mouse.wentDown) {
-            cardSet++;
-            cardSet = cardSet % 2;
-            if (cardSet === CARD_SET_36) {
-                decks = [
-                    [],
-                    [],
-                    [[], [], [], [], [], []],
-                    [[], [], [], []]
-                ];
-            } else {
-                decks = [
-                    [],
-                    [],
-                    [[], [], [], [], [], [], []],
-                    [[], [], [], []]
-                ];
-            }
-            formStartDeck()
-        }
-    }
-    textHeight = imgMainMenuButton.height;
-    ctx.font = boldness + " " + textHeight + "px Arial";
-    let additionalText = '';
-    if (cardSet === CARD_SET_52) {
-        additionalText = '52';
-    } else {
-        additionalText = '36';
-    }
-    textParam = ctx.measureText('Сменить набор карт (текущий - ' + additionalText + ' )');
-    if (textParam.width > imgMainMenuButton.width) {
-        textHeight = Math.floor(textHeight * imgMainMenuButton.width / textParam.width);
-    }
-    drawText(buttonX, buttonY, 'Сменить набор карт (текущий - ' + additionalText + ' )', "middle", "center", boldness + " " + textHeight + "px Arial", "black", 0);
-}
-
-function loopMainSettings() {
-    let buttonX = 0;
-    let buttonY = 400;
-    drawSprite(buttonX, buttonY, imgMainMenuButton, 0);
-
-    let boldness = '';
-    if (checkButton(mouse.x, mouse.y, buttonX, buttonY, imgMainMenuButton.width, imgMainMenuButton.height)) {
-        boldness = 'bold';
-        if (mouse.wentDown) {
-            gameState = GAME_STATE_MENU;
-        }
-    }
-    let textHeight = imgMainMenuButton.height;
-    ctx.font = boldness + " " + textHeight + "px Arial";
-    let textParam = ctx.measureText('Вернуться в главное меню');
-    if (textParam.width > imgMainMenuButton.width) {
-        textHeight = Math.floor(textHeight * imgMainMenuButton.width / textParam.width);
-    }
-    drawText(buttonX, buttonY, 'Вернуться в главное меню', "middle", "center", boldness + " " + textHeight + "px Arial", "black", 0);
-
-    buttonX = 0;
-    buttonY = 200;
-    drawSprite(buttonX, buttonY, imgMainMenuButton, 0);
-
-    boldness = '';
-    if (checkButton(mouse.x, mouse.y, buttonX, buttonY, imgMainMenuButton.width, imgMainMenuButton.height)) {
-        boldness = 'bold';
-        if (mouse.wentDown) {
-            gameState = GAME_STATE_GRAPHIC_SETTINGS;
-        }
-    }
-    textHeight = imgMainMenuButton.height;
-    ctx.font = boldness + " " + textHeight + "px Arial";
-    textParam = ctx.measureText('Настройки графики');
-    if (textParam.width > imgMainMenuButton.width) {
-        textHeight = Math.floor(textHeight * imgMainMenuButton.width / textParam.width);
-    }
-    drawText(buttonX, buttonY, 'Настройки графики', "middle", "center", boldness + " " + textHeight + "px Arial", "black", 0);
-
-    buttonX = 0;
-    buttonY = 0;
-    drawSprite(buttonX, buttonY, imgMainMenuButton, 0);
-
-    boldness = '';
-    if (checkButton(mouse.x, mouse.y, buttonX, buttonY, imgMainMenuButton.width, imgMainMenuButton.height)) {
-        boldness = 'bold';
-        if (mouse.wentDown) {
-            gameState = GAME_STATE_GAME_SETTINGS;
-        }
-    }
-    textHeight = imgMainMenuButton.height;
-    ctx.font = boldness + " " + textHeight + "px Arial";
-    textParam = ctx.measureText('Настройки игры');
-    if (textParam.width > imgMainMenuButton.width) {
-        textHeight = Math.floor(textHeight * imgMainMenuButton.width / textParam.width);
-    }
-    drawText(buttonX, buttonY, 'Настройки игры', "middle", "center", boldness + " " + textHeight + "px Arial", "black", 0);
-
-}
+const CAMERA_TRANSITION = 0.07;
 
 function loop() {
-    ctx.translate(camera.x + canvas.width * 0.5, camera.y + canvas.height * 0.5);
+    ctx.translate(-camera.x + canvas.width * 0.5, -camera.y + canvas.height * 0.5);
 
-    drawRect(0, 0, canvas.width, canvas.height, 0, 'blue');
+    drawRect(camera.x, camera.y, canvas.width, canvas.height, 0, 'blue');
 
     switch (gameState) {
         case GAME_STATE_GAME: {
@@ -640,20 +576,18 @@ function loop() {
         case GAME_STATE_MENU: {
             loopMenu();
         } break;
-        case GAME_STATE_SETTINGS: {
-            loopMainSettings();
-        } break;
-        case GAME_STATE_GAME_SETTINGS: {
-            loopGameSettings();
-        } break;
-        case GAME_STATE_GRAPHIC_SETTINGS: {
-            loopGraphicSettings();
-        } break;
     }
 
     clearMouse();
 
-    ctx.translate(-camera.x - canvas.width * 0.5, -camera.y - canvas.height * 0.5);
+    ctx.translate(camera.x - canvas.width * 0.5, camera.y - canvas.height * 0.5);
+    camera.x += (camera.targetX - camera.x) * CAMERA_TRANSITION;
+    camera.y += (camera.targetY - camera.y) * CAMERA_TRANSITION;
+    if (camera.targetY === 0) {
+        camera.x = 0;
+        camera.y = 0;
+    }
+
     requestAnimationFrame(loop);
 }
 
