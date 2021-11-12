@@ -67,3 +67,7 @@ let imgLear = [
 ]
 let imgReloadDeck = loadImage("sprites/reloadDeck.bmp");
 let imgCardDeck = loadImage("sprites/cardDeck.bmp");
+let imgWin = loadImage("sprites/win.bmp");
+let imgLoose = loadImage("sprites/loose.bmp");
+let imgButton = loadImage("sprites/button.bmp");
+let imgMainMenuButton = loadImage("sprites/mainmenubutton.bmp");
