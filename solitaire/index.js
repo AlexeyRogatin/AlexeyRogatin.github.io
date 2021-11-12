@@ -491,7 +491,7 @@ function renderButton(x, y, text, fnctn) {
 }
 
 function loopMenu() {
-    drawText(MENU_POS.x, MENU_POS.y - 400, 'Поньямс Кормынка', "center", "middle", '90px MegaCursive', "yellow")
+    drawText(MENU_POS.x, MENU_POS.y - 400, 'Поньямс Кормынка', "center", "middle", 'bold 90px MegaCursive', "yellow")
 
     renderButton(MENU_POS.x, MENU_POS.y - 100, 'Начать игру', function startgame() {
         camera.targetX = 0;
@@ -559,6 +559,9 @@ function loopMenu() {
 const CAMERA_TRANSITION = 0.07;
 
 function loop() {
+    mouse.x += camera.x - canvas.width * 0.5;
+    mouse.y += camera.y - canvas.height * 0.5;
+
     ctx.translate(-camera.x + canvas.width * 0.5, -camera.y + canvas.height * 0.5);
 
     drawRect(camera.x, camera.y, canvas.width, canvas.height, 0, 'blue');
@@ -581,6 +584,10 @@ function loop() {
     clearMouse();
 
     ctx.translate(camera.x - canvas.width * 0.5, camera.y - canvas.height * 0.5);
+
+    mouse.x -= camera.x - canvas.width * 0.5;
+    mouse.y -= camera.y - canvas.height * 0.5;
+
     camera.x += (camera.targetX - camera.x) * CAMERA_TRANSITION;
     camera.y += (camera.targetY - camera.y) * CAMERA_TRANSITION;
     if (camera.targetY === 0) {

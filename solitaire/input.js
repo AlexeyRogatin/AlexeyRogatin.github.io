@@ -10,8 +10,8 @@ let mouse = {
 
 window.onmousemove = function onmousemove(event) {
     const rect = canvas.getBoundingClientRect();
-    mouse.x = (event.clientX - rect.left) / canvas.clientWidth * canvas.width + camera.x - canvas.width * 0.5;
-    mouse.y = (event.clientY - rect.top) / canvas.clientHeight * canvas.height + camera.y - canvas.height * 0.5;
+    mouse.x = (event.clientX - rect.left) / canvas.clientWidth * canvas.width;
+    mouse.y = (event.clientY - rect.top) / canvas.clientHeight * canvas.height;
 }
 
 window.onmousedown = function onmousedown(event) {
