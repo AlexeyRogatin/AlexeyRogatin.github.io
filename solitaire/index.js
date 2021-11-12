@@ -82,8 +82,8 @@ function addCard(lear, value) {
     decks[DECKED_CLOSED].push({
         x: -canvas.width,
         y: -canvas.height,
-        visualX: mouse.x,
-        visualY: mouse.y + canvas.width * 2,
+        visualX: 0,
+        visualY: 0,
         isMooved: false,
         lear: lear,
         value: value,
@@ -561,6 +561,9 @@ const CAMERA_TRANSITION = 0.07;
 function loop() {
     mouse.x += camera.x - canvas.width * 0.5;
     mouse.y += camera.y - canvas.height * 0.5;
+    mouse.startX += camera.x - canvas.width * 0.5;
+    mouse.startY += camera.y - canvas.height * 0.5;
+
 
     ctx.translate(-camera.x + canvas.width * 0.5, -camera.y + canvas.height * 0.5);
 
@@ -587,6 +590,8 @@ function loop() {
 
     mouse.x -= camera.x - canvas.width * 0.5;
     mouse.y -= camera.y - canvas.height * 0.5;
+    mouse.startX -= camera.x - canvas.width * 0.5;
+    mouse.startY -= camera.y - canvas.height * 0.5;
 
     camera.x += (camera.targetX - camera.x) * CAMERA_TRANSITION;
     camera.y += (camera.targetY - camera.y) * CAMERA_TRANSITION;

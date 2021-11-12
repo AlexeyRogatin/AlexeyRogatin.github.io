@@ -1,6 +1,8 @@
 let mouse = {
     x: 0,
     y: 0,
+    worldX: 0,
+    worldY: 0,
     startX: 0,
     startY: 0,
     wentDown: false,
