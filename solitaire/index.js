@@ -322,7 +322,7 @@ function defineCardPos() {
 }
 
 function loopGame() {
-    let deckLength = (32 + 16 * cardSet) / 4;
+    let deckLength = (36 + 16 * cardSet) / 4;
     if (decks[ACED][0].length === deckLength && decks[ACED][1].length === deckLength && decks[ACED][2].length === deckLength && decks[ACED][3].length === deckLength) {
         gameState = GAME_STATE_WIN;
     }
