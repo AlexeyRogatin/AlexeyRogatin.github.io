@@ -31,7 +31,7 @@ function loadImage(src) {
     return img;
 }
 
-function drawText(x, y, text, textBaseline, textAlign, font, color, angle) {
+function drawText(x, y, text, textBaseline, textAlign, font, color, angle, outLineColor = 'black', outlineWidth = 0) {
     ctx.translate(x, y);
     ctx.rotate(-angle);
 
@@ -40,6 +40,7 @@ function drawText(x, y, text, textBaseline, textAlign, font, color, angle) {
     ctx.textBaseline = textBaseline;
     ctx.textAlign = textAlign;
     ctx.fillText(text, 0, 0);
+    ctx.strokeText(text, 0, 0);
 
     ctx.rotate(angle);
     ctx.translate(-x, -y);

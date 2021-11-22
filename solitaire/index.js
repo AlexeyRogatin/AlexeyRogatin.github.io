@@ -212,16 +212,16 @@ function drawCard(card) {
         }
         let valueChar;
         switch (card.value) {
-            case 11: {
+            case VALUE_JACK: {
                 valueChar = 'J';
             } break;
-            case 12: {
+            case VALUE_DAMSEL: {
                 valueChar = 'D';
             } break;
-            case 13: {
+            case VALUE_KING: {
                 valueChar = 'K';
             } break;
-            case 1: {
+            case VALUE_ACE: {
                 valueChar = 'A';
             } break;
             default: {
@@ -455,7 +455,7 @@ function loopGame() {
 }
 
 function loopWinningScreen() {
-    drawText(0, -canvas.height * 0.25, "Вы - выигрывающий!", "bottom", "center", "80px Times", "yellow", 0);
+    drawText(0, -canvas.height * 0.25, "Вы - выигрывающий!", "bottom", "center", "80px MegaCursive", "yellow", 0, 5, 'black');
     drawSprite(0, canvas.height * 0.5 - imgWin.height * 0.5, imgWin, 0);
     if (mouse.wentDown) {
         camera.targetX = MENU_POS.x;
@@ -465,7 +465,7 @@ function loopWinningScreen() {
 }
 
 function loopLoosingScreen() {
-    drawText(0, -canvas.height * 0.25, "ВЫ - ПРОИГРЫВАЮЩИЙ!!!", "bottom", "center", "bold 80px Times", "crimson", 0);
+    drawText(0, -canvas.height * 0.25, "You aure a looser!!!", "bottom", "center", "80px MegaCursive", "crimson", 0, 'white');
     drawSprite(0, (canvas.height - imgLoose.height) * 0.5, imgLoose, 0);
     if (mouse.wentDown) {
         camera.targetX = MENU_POS.x;
@@ -492,7 +492,7 @@ function renderButton(x, y, text, fnctn) {
 }
 
 function loopMenu() {
-    drawText(MENU_POS.x, MENU_POS.y - 400, 'Поньямс Кормынка', "center", "middle", 'bold 90px MegaCursive', "yellow")
+    drawText(MENU_POS.x, MENU_POS.y - 400, 'Поньямс Кормынка', "center", "middle", '90px MegaCursive', "yellow", 0, 5, 'black');
 
     renderButton(MENU_POS.x, MENU_POS.y - 100, 'Начать игру', function startgame() {
         camera.targetX = 0;
