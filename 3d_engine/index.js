@@ -5,6 +5,7 @@ let ctx = canvas.getContext("2d");
 
 const SCREEN_RATIO = 16 / 9;
 const SCREEN_WIDTH = 1920;
+const RECSIZE = 400;
 
 function handleResize() { //функция события изменения размера экрана
     var rect = canvas.getBoundingClientRect();
@@ -45,15 +46,15 @@ let camera = {
 let rectangle1 = {
     x: 0,
     y: 0,
-    z: 150,
+    z: RECSIZE,
     axisX: {
-        x: 300,
+        x: RECSIZE * 2,
         y: 0,
         z: 0,
     },
     axisY: {
         x: 0,
-        y: 300,
+        y: RECSIZE * 2,
         z: 0,
     },
     color: 'red'
@@ -62,84 +63,84 @@ let rectangle1 = {
 let rectangle2 = {
     x: 0,
     y: 0,
-    z: -150,
+    z: -RECSIZE,
     axisX: {
-        x: 300,
+        x: RECSIZE * 2,
         y: 0,
         z: 0,
     },
     axisY: {
         x: 0,
-        y: 300,
+        y: RECSIZE * 2,
         z: 0,
     },
     color: 'orange'
 }
 
 let rectangle3 = {
-    x: 150,
+    x: RECSIZE,
     y: 0,
     z: 0,
     axisX: {
         x: 0,
-        y: 300,
+        y: RECSIZE * 2,
         z: 0,
     },
     axisY: {
         x: 0,
         y: 0,
-        z: 300,
+        z: RECSIZE * 2,
     },
     color: 'yellow'
 }
 
 let rectangle4 = {
-    x: -150,
+    x: -RECSIZE,
     y: 0,
     z: 0,
     axisX: {
         x: 0,
-        y: 300,
+        y: RECSIZE * 2,
         z: 0,
     },
     axisY: {
         x: 0,
         y: 0,
-        z: 300,
+        z: RECSIZE * 2,
     },
     color: 'green'
 }
 
 let rectangle5 = {
     x: 0,
-    y: 150,
+    y: RECSIZE,
     z: 0,
     axisX: {
-        x: 300,
+        x: RECSIZE * 2,
         y: 0,
         z: 0,
     },
     axisY: {
         x: 0,
         y: 0,
-        z: 300,
+        z: RECSIZE * 2,
     },
     color: 'blue'
 }
 
 let rectangle6 = {
     x: 0,
-    y: -150,
+    y: -RECSIZE,
     z: 0,
     axisX: {
-        x: 300,
+        x: RECSIZE * 2,
         y: 0,
         z: 0,
     },
     axisY: {
         x: 0,
         y: 0,
-        z: 300,
+        z: RECSIZE * 2,
     },
     color: 'purple'
 }
