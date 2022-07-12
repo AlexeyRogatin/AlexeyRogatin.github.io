@@ -5,7 +5,8 @@ let ctx = canvas.getContext("2d");
 
 const SCREEN_RATIO = 16 / 9;
 const SCREEN_WIDTH = 1920;
-const RECSIZE = 400;
+const RECSIZE = 300;
+const VIEW_DIST = canvas.width * 10;
 
 function handleResize() { //функция события изменения размера экрана
     var rect = canvas.getBoundingClientRect();
@@ -191,11 +192,13 @@ function convert3dTo2d(V, camera) {
     let result = {
         x: 0,
         y: 0,
-        n: 0
+        z: 0
     }
     let vector = sum(V, invert(camera));
     result.x = dotProd(vector, camera.axisX) / length(camera.axisX);
     result.y = dotProd(vector, camera.axisY) / length(camera.axisY);
+    let normal = vectorProd(camera.axisX, camera.axisY);
+    result.z = dotProd(vector, normal) / length(normal);
 
     return result;
 }
@@ -205,7 +208,14 @@ function draw3dRectangle(rectangle, camera) {
     let V2 = convert3dTo2d(sum(sum(rectangle, mult(0.5, rectangle.axisX)), mult(-0.5, rectangle.axisY)), camera);
     let V3 = convert3dTo2d(sum(sum(rectangle, mult(0.5, rectangle.axisX)), mult(0.5, rectangle.axisY)), camera);
     let V4 = convert3dTo2d(sum(sum(rectangle, mult(-0.5, rectangle.axisX)), mult(0.5, rectangle.axisY)), camera);
-    drawRectangle(V1, V2, V3, V4, rectangle.color);
+    if (V1.z > 0 && V2.z > 0 && V3.z > 0 && V4.z > 0) {
+        V1 = mult(VIEW_DIST / (V1.z), V1);
+        V2 = mult(VIEW_DIST / (V2.z), V2);
+        V3 = mult(VIEW_DIST / (V3.z), V3);
+        V4 = mult(VIEW_DIST / (V4.z), V4);
+
+        drawRectangle(V1, V2, V3, V4, rectangle.color);
+    }
 }
 
 function add3dRectangle(drawQueue, rectangle) {
@@ -231,8 +241,8 @@ function drawRectangle(V1, V2, V3, V4, color) {
     ctx.fill();
 }
 
-const CAMERA_SPEED = 3;
-const CAMERA_ANGLE_SPEED = Math.PI / 60;
+const CAMERA_SPEED = 15;
+const CAMERA_ANGLE_SPEED = Math.PI / 120;
 
 function loop() {
     drawRectangle(
@@ -249,28 +259,30 @@ function loop() {
     add3dRectangle(drawQueue, rectangle5);
     add3dRectangle(drawQueue, rectangle6);
 
-    if (spaceKey.isDown) { //передвижение вперёд
-        let vector = vectorProd(camera.axisX, camera.axisY);
-        camera.x += vector.x * CAMERA_SPEED;
-        camera.y += vector.y * CAMERA_SPEED;
-        camera.z += vector.z * CAMERA_SPEED;
-    }
+    let vector = mult((shiftKey.isDown - ctrlKey.isDown), vectorProd(camera.axisX, camera.axisY));
+    let vectorX = mult((rightKey.isDown - leftKey.isDown), camera.axisX);
+    let vectorY = mult((downKey.isDown - upKey.isDown), camera.axisY);
+    camera.x += (vector.x + vectorX.x + vectorY.x) * CAMERA_SPEED;
+    camera.y += (vector.y + vectorX.y + vectorY.y) * CAMERA_SPEED;
+    camera.z += (vector.z + vectorX.z + vectorY.z) * CAMERA_SPEED;
 
     let normal = mult(CAMERA_ANGLE_SPEED, unit(camera.axisY));
-    camera.axisX = sum(camera.axisX, mult((rightKey.isDown - leftKey.isDown), vectorProd(normal, camera.axisX)));
+    camera.axisX = sum(camera.axisX, mult((dKey.isDown - aKey.isDown), vectorProd(normal, camera.axisX)));
 
     normal = mult(CAMERA_ANGLE_SPEED, unit(camera.axisX));
-    camera.axisY = sum(camera.axisY, mult((downKey.isDown - upKey.isDown), vectorProd(normal, camera.axisY)));
+    camera.axisY = sum(camera.axisY, mult((wKey.isDown - sKey.isDown), vectorProd(normal, camera.axisY)));
 
-    let mistakes = 0;
+    let mistakes = 1;
     while (mistakes !== 0) {
+        mistakes = 0;
         for (let queueIndex = 1; queueIndex < drawQueue.length; queueIndex++) {
-            let length2 = length(sum(drawQueue[drawIndex], invert(camera)));
-            let length1 = length(sum(drawQueue[drawIndex - 1], invert(camera)));
+            let length2 = length(sum(drawQueue[queueIndex], invert(camera)));
+            let length1 = length(sum(drawQueue[queueIndex - 1], invert(camera)));
             if (length1 < length2) {
                 let foo = drawQueue[queueIndex - 1];
-                drawQueue[queueIndex] = drawQueue[queueIndex - 1];
-                drawQueue[queueIndex - 1] = foo;
+                drawQueue[queueIndex - 1] = drawQueue[queueIndex];
+                drawQueue[queueIndex] = foo;
+                mistakes++;
             }
         }
     }
