@@ -5,7 +5,7 @@ let ctx = canvas.getContext("2d");
 
 const SCREEN_RATIO = 16 / 9;
 const SCREEN_WIDTH = 1920;
-const RECSIZE = 1920;
+const RECSIZE = SCREEN_WIDTH;
 const VIEW_DIST = SCREEN_WIDTH;
 
 function handleResize() { //функция события изменения размера экрана
@@ -231,12 +231,15 @@ function drawPolygon(color, points) {
 
 function draw3dPolygon(camera, color, points) {
     let points2d = [];
+    // let kek = true;
     for (let pointIndex = 0; pointIndex < points.length; pointIndex++) {
         let point = convert3dTo2d(points[pointIndex], camera);
         let nextPoint = convert3dTo2d(points[(pointIndex + 1) % points.length], camera);
         if (point.z >= 0) {
             points2d.push(point);
-            points2d[points2d.length - 1] = mult(VIEW_DIST / (points2d[points2d.length - 1].z + VIEW_DIST), points2d[points2d.length - 1]);
+            points2d[points2d.length - 1] = mult(VIEW_DIST / (points2d[points2d.length - 1].z), points2d[points2d.length - 1]);
+        } else {
+            // kek = false;
         }
         if (point.z * nextPoint.z < 0) {
             let S = sum(points[(pointIndex + 1) % points.length], invert(points[pointIndex]));
@@ -249,6 +252,16 @@ function draw3dPolygon(camera, color, points) {
         }
     }
     drawPolygon(color, points2d);
+    // if (kek) {
+    //     let axis1 = mult(1 / RECSIZE, sum(points2d[0], invert(points2d[1])));
+    //     let axis2 = mult(1 / RECSIZE, sum(points2d[2], invert(points2d[1])));
+    //     ctx.save();
+    //     ctx.transform(axis1.x, axis1.y, axis2.x, axis2.y, points2d[1].x + canvas.width / 2, points2d[1].y + canvas.height / 2);
+    //     let image = new Image;
+    //     image.src = './4.jpg';
+    //     ctx.drawImage(image, 0, 0, RECSIZE, RECSIZE);
+    //     ctx.restore();
+    // }
 }
 
 function draw3dRectangle(rectangle, camera) {
@@ -323,31 +336,31 @@ function loop() {
         draw3dRectangle(drawQueue[queueIndex], camera);
     }
 
-    let cameraLinePos = roundv(mult(1 / LINES_OFFSET, camera));
+    // let cameraLinePos = roundv(mult(1 / LINES_OFFSET, camera));
 
-    for (let linesIndexX = -LINES_COUNT + cameraLinePos.x; linesIndexX <= LINES_COUNT + cameraLinePos.x; linesIndexX++) {
-        for (let linesIndexY = -LINES_COUNT + cameraLinePos.y; linesIndexY <= LINES_COUNT + cameraLinePos.y; linesIndexY++) {
-            draw3dPolygon(camera, 'cyan',
-                [{ x: linesIndexX * LINES_OFFSET, y: linesIndexY * LINES_OFFSET, z: -Number.MAX_SAFE_INTEGER },
-                { x: linesIndexX * LINES_OFFSET, y: linesIndexY * LINES_OFFSET, z: Number.MAX_SAFE_INTEGER }]);
-        }
-    }
+    // for (let linesIndexX = -LINES_COUNT + cameraLinePos.x; linesIndexX <= LINES_COUNT + cameraLinePos.x; linesIndexX++) {
+    //     for (let linesIndexY = -LINES_COUNT + cameraLinePos.y; linesIndexY <= LINES_COUNT + cameraLinePos.y; linesIndexY++) {
+    //         draw3dPolygon(camera, 'cyan',
+    //             [{ x: linesIndexX * LINES_OFFSET, y: linesIndexY * LINES_OFFSET, z: -Number.MAX_SAFE_INTEGER },
+    //             { x: linesIndexX * LINES_OFFSET, y: linesIndexY * LINES_OFFSET, z: Number.MAX_SAFE_INTEGER }]);
+    //     }
+    // }
 
-    for (let linesIndexZ = -LINES_COUNT + cameraLinePos.z; linesIndexZ <= LINES_COUNT + cameraLinePos.z; linesIndexZ++) {
-        for (let linesIndexY = -LINES_COUNT + cameraLinePos.y; linesIndexY <= LINES_COUNT + cameraLinePos.y; linesIndexY++) {
-            draw3dPolygon(camera, 'cyan',
-                [{ z: linesIndexZ * LINES_OFFSET, y: linesIndexY * LINES_OFFSET, x: -Number.MAX_SAFE_INTEGER },
-                { z: linesIndexZ * LINES_OFFSET, y: linesIndexY * LINES_OFFSET, x: Number.MAX_SAFE_INTEGER }]);
-        }
-    }
+    // for (let linesIndexZ = -LINES_COUNT + cameraLinePos.z; linesIndexZ <= LINES_COUNT + cameraLinePos.z; linesIndexZ++) {
+    //     for (let linesIndexY = -LINES_COUNT + cameraLinePos.y; linesIndexY <= LINES_COUNT + cameraLinePos.y; linesIndexY++) {
+    //         draw3dPolygon(camera, 'cyan',
+    //             [{ z: linesIndexZ * LINES_OFFSET, y: linesIndexY * LINES_OFFSET, x: -Number.MAX_SAFE_INTEGER },
+    //             { z: linesIndexZ * LINES_OFFSET, y: linesIndexY * LINES_OFFSET, x: Number.MAX_SAFE_INTEGER }]);
+    //     }
+    // }
 
-    for (let linesIndexX = -LINES_COUNT + cameraLinePos.x; linesIndexX <= LINES_COUNT + cameraLinePos.x; linesIndexX++) {
-        for (let linesIndexZ = -LINES_COUNT + cameraLinePos.z; linesIndexZ <= LINES_COUNT + cameraLinePos.z; linesIndexZ++) {
-            draw3dPolygon(camera, 'cyan',
-                [{ x: linesIndexX * LINES_OFFSET, z: linesIndexZ * LINES_OFFSET, y: -Number.MAX_SAFE_INTEGER },
-                { x: linesIndexX * LINES_OFFSET, z: linesIndexZ * LINES_OFFSET, y: Number.MAX_SAFE_INTEGER }]);
-        }
-    }
+    // for (let linesIndexX = -LINES_COUNT + cameraLinePos.x; linesIndexX <= LINES_COUNT + cameraLinePos.x; linesIndexX++) {
+    //     for (let linesIndexZ = -LINES_COUNT + cameraLinePos.z; linesIndexZ <= LINES_COUNT + cameraLinePos.z; linesIndexZ++) {
+    //         draw3dPolygon(camera, 'cyan',
+    //             [{ x: linesIndexX * LINES_OFFSET, z: linesIndexZ * LINES_OFFSET, y: -Number.MAX_SAFE_INTEGER },
+    //             { x: linesIndexX * LINES_OFFSET, z: linesIndexZ * LINES_OFFSET, y: Number.MAX_SAFE_INTEGER }]);
+    //     }
+    // }
 
     // draw3dPolygon(camera, 'cyan',
     //     [{ x: camera.x, y: camera.y, z: -Number.MAX_SAFE_INTEGER },
