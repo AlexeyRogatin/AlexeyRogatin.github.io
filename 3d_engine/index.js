@@ -5,10 +5,23 @@ let ctx = canvas.getContext("2d");
 
 const SCREEN_RATIO = 16 / 9;
 const SCREEN_WIDTH = 1920;
-const RECSIZE = SCREEN_WIDTH;
-const VIEW_DIST = SCREEN_WIDTH;
 
-function handleResize() { //функция события изменения размера экрана
+const CUBESIZE = SCREEN_WIDTH;
+
+//the distance from the clipping plane to the viewer
+const ANGLE_OF_VIEW = Math.PI / 180 * 90;
+// const VIEW_DIST = SCREEN_WIDTH / 20;
+const VIEW_DIST = (SCREEN_WIDTH / 2) / Math.tan(ANGLE_OF_VIEW / 2);
+
+const CAMERA_SPEED = 75;
+const CAMERA_ANGLE_SPEED = Math.PI / 1800;
+
+//the number of lines in 3d space net
+const LINES_COUNT = 0.5;
+const LINES_OFFSET = CUBESIZE;
+
+//resize handling
+function handleResize() {
     var rect = canvas.getBoundingClientRect();
     var rectWidth = rect.width;
     var rectHeight = rect.height;
@@ -28,6 +41,7 @@ function handleResize() { //функция события изменения р�
 handleResize();
 window.addEventListener('resize', handleResize);
 
+//camera object sets the plane
 let camera = {
     x: 0,
     y: 0,
@@ -47,15 +61,15 @@ let camera = {
 let rectangle1 = {
     x: 0,
     y: 0,
-    z: RECSIZE,
+    z: CUBESIZE / 2,
     axisX: {
-        x: RECSIZE * 2,
+        x: CUBESIZE,
         y: 0,
         z: 0,
     },
     axisY: {
         x: 0,
-        y: RECSIZE * 2,
+        y: CUBESIZE,
         z: 0,
     },
     color: 'red'
@@ -64,90 +78,92 @@ let rectangle1 = {
 let rectangle2 = {
     x: 0,
     y: 0,
-    z: -RECSIZE,
+    z: -CUBESIZE / 2,
     axisX: {
-        x: RECSIZE * 2,
+        x: CUBESIZE,
         y: 0,
         z: 0,
     },
     axisY: {
         x: 0,
-        y: RECSIZE * 2,
+        y: CUBESIZE,
         z: 0,
     },
     color: 'orange'
 }
 
 let rectangle3 = {
-    x: RECSIZE,
+    x: CUBESIZE / 2,
     y: 0,
     z: 0,
     axisX: {
         x: 0,
-        y: RECSIZE * 2,
+        y: CUBESIZE,
         z: 0,
     },
     axisY: {
         x: 0,
         y: 0,
-        z: RECSIZE * 2,
+        z: CUBESIZE,
     },
     color: 'yellow'
 }
 
 let rectangle4 = {
-    x: -RECSIZE,
+    x: -CUBESIZE / 2,
     y: 0,
     z: 0,
     axisX: {
         x: 0,
-        y: RECSIZE * 2,
+        y: CUBESIZE,
         z: 0,
     },
     axisY: {
         x: 0,
         y: 0,
-        z: RECSIZE * 2,
+        z: CUBESIZE,
     },
     color: 'green'
 }
 
 let rectangle5 = {
     x: 0,
-    y: RECSIZE,
+    y: CUBESIZE / 2,
     z: 0,
     axisX: {
-        x: RECSIZE * 2,
+        x: CUBESIZE,
         y: 0,
         z: 0,
     },
     axisY: {
         x: 0,
         y: 0,
-        z: RECSIZE * 2,
+        z: CUBESIZE,
     },
     color: 'blue'
 }
 
 let rectangle6 = {
     x: 0,
-    y: -RECSIZE,
+    y: -CUBESIZE / 2,
     z: 0,
     axisX: {
-        x: RECSIZE * 2,
+        x: CUBESIZE,
         y: 0,
         z: 0,
     },
     axisY: {
         x: 0,
         y: 0,
-        z: RECSIZE * 2,
+        z: CUBESIZE,
     },
     color: 'purple'
 }
 
+//the queue for drawing objects
 let drawQueue = [];
 
+//functions for working with vectors
 function sum(V1, V2) {
     return {
         x: V1.x + V2.x,
@@ -196,21 +212,29 @@ function vectorProd(V1, V2) {
     }
 }
 
+//Converts point in 3d space to the point on the plane applying perspective to it
+//z shows if the point is in front of the clipping plane
 function convert3dTo2d(V, camera) {
     let result = {
         x: 0,
         y: 0,
-        z: 0
+        z: 1
     }
     let vector = sum(V, invert(camera));
     result.x = dotProd(vector, camera.axisX);
     result.y = dotProd(vector, camera.axisY);
     let normal = vectorProd(camera.axisX, camera.axisY);
-    result.z = dotProd(vector, normal) / length(normal);
+    let z = dotProd(vector, normal);
+    if (z <= 0) {
+        result.z = 0;
+    } else {
+        result = mult(VIEW_DIST / (z + VIEW_DIST), result);
+    }
 
     return result;
 }
 
+//draws 2d polygon by points
 function drawPolygon(color, points) {
     let size = {
         x: canvas.width / 2,
@@ -229,19 +253,16 @@ function drawPolygon(color, points) {
     ctx.stroke();
 }
 
+//draws a 3d polygon by points
 function draw3dPolygon(camera, color, points) {
     let points2d = [];
-    // let kek = true;
     for (let pointIndex = 0; pointIndex < points.length; pointIndex++) {
         let point = convert3dTo2d(points[pointIndex], camera);
         let nextPoint = convert3dTo2d(points[(pointIndex + 1) % points.length], camera);
-        if (point.z >= 0) {
+        if (point.z) {
             points2d.push(point);
-            points2d[points2d.length - 1] = mult(VIEW_DIST / (points2d[points2d.length - 1].z), points2d[points2d.length - 1]);
-        } else {
-            // kek = false;
         }
-        if (point.z * nextPoint.z < 0) {
+        if (point.z && !nextPoint.z || !point.z && nextPoint.z) {
             let S = sum(points[(pointIndex + 1) % points.length], invert(points[pointIndex]));
             let n = vectorProd(camera.axisX, camera.axisY);
             let intersectPoint = sum(points[pointIndex],
@@ -252,36 +273,20 @@ function draw3dPolygon(camera, color, points) {
         }
     }
     drawPolygon(color, points2d);
-    // if (kek) {
-    //     let axis1 = mult(1 / RECSIZE, sum(points2d[0], invert(points2d[1])));
-    //     let axis2 = mult(1 / RECSIZE, sum(points2d[2], invert(points2d[1])));
-    //     ctx.save();
-    //     ctx.transform(axis1.x, axis1.y, axis2.x, axis2.y, points2d[1].x + canvas.width / 2, points2d[1].y + canvas.height / 2);
-    //     let image = new Image;
-    //     image.src = './4.jpg';
-    //     ctx.drawImage(image, 0, 0, RECSIZE, RECSIZE);
-    //     ctx.restore();
-    // }
 }
 
-function draw3dRectangle(rectangle, camera) {
-    let points = [];
-    points.push(sum(sum(rectangle, mult(-0.5, rectangle.axisX)), mult(-0.5, rectangle.axisY)));
-    points.push(sum(sum(rectangle, mult(0.5, rectangle.axisX)), mult(-0.5, rectangle.axisY)));
-    points.push(sum(sum(rectangle, mult(0.5, rectangle.axisX)), mult(0.5, rectangle.axisY)));
-    points.push(sum(sum(rectangle, mult(-0.5, rectangle.axisX)), mult(0.5, rectangle.axisY)));
-    draw3dPolygon(camera, rectangle.color, points);
-}
-
+//pushes rectangle to drawing queue
 function add3dRectangle(drawQueue, rectangle) {
-    drawQueue.push(rectangle);
+    let drawing = {
+        points: [],
+        color: rectangle.color
+    }
+    drawing.points.push(sum(sum(rectangle, mult(-0.5, rectangle.axisX)), mult(-0.5, rectangle.axisY)));
+    drawing.points.push(sum(sum(rectangle, mult(0.5, rectangle.axisX)), mult(-0.5, rectangle.axisY)));
+    drawing.points.push(sum(sum(rectangle, mult(0.5, rectangle.axisX)), mult(0.5, rectangle.axisY)));
+    drawing.points.push(sum(sum(rectangle, mult(-0.5, rectangle.axisX)), mult(0.5, rectangle.axisY)));
+    drawQueue.push(drawing);
 }
-
-const CAMERA_SPEED = 75;
-const CAMERA_ANGLE_SPEED = Math.PI / 1800;
-
-const LINES_COUNT = 0.5;
-const LINES_OFFSET = SCREEN_WIDTH * 2;
 
 function loop() {
     drawPolygon('grey',
@@ -315,14 +320,30 @@ function loop() {
     camera.axisX = unit(camera.axisX);
     camera.axisY = unit(camera.axisY);
 
+    if (dotProd(camera.axisY, { x: 0, y: 1, z: 0 }) < 0) {
+        let normal = vectorProd(camera.axisX, { x: 0, y: 1, z: 0 });
+        camera.axisY = mult(Math.sign(dotProd(camera.axisY, normal)), normal);
+    }
+
+
     let mistakes = 1;
     while (mistakes !== 0) {
         mistakes = 0;
         for (let queueIndex = 1; queueIndex < drawQueue.length; queueIndex++) {
             let normal = vectorProd(camera.axisX, camera.axisY);
             let realCamera = sum(mult(-VIEW_DIST, normal), camera);
-            let length2 = length(sum(drawQueue[queueIndex], invert(realCamera)));
-            let length1 = length(sum(drawQueue[queueIndex - 1], invert(realCamera)));
+            let center = { x: 0, y: 0, z: 0 };
+            for (let pointIndex = 0; pointIndex < drawQueue[queueIndex].points.length; pointIndex++) {
+                center = sum(center, drawQueue[queueIndex].points[pointIndex]);
+            }
+            center = mult(1 / drawQueue[queueIndex].points.length, center);
+            let length2 = length(sum(center, invert(realCamera)));
+            center = { x: 0, y: 0, z: 0 };
+            for (let pointIndex = 0; pointIndex < drawQueue[queueIndex - 1].points.length; pointIndex++) {
+                center = sum(center, drawQueue[queueIndex - 1].points[pointIndex]);
+            }
+            center = mult(1 / drawQueue[queueIndex - 1].points.length, center);
+            let length1 = length(sum(center, invert(realCamera)));
             if (length1 < length2) {
                 let foo = drawQueue[queueIndex - 1];
                 drawQueue[queueIndex - 1] = drawQueue[queueIndex];
@@ -333,7 +354,7 @@ function loop() {
     }
 
     for (let queueIndex = 0; queueIndex < drawQueue.length; queueIndex++) {
-        draw3dRectangle(drawQueue[queueIndex], camera);
+        draw3dPolygon(camera, drawQueue[queueIndex].color, drawQueue[queueIndex].points);
     }
 
     // let cameraLinePos = roundv(mult(1 / LINES_OFFSET, camera));
