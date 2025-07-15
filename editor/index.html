@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Live HTML Editor</title>
+    <style>
+      body {
+        display: flex;
+        height: 100vh;
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
+      }
+      #sidebar {
+        flex: 0;
+        display: flex;
+        flex-direction: column;
+        background-color: rgb(21, 23, 28);
+        color: white;
+      }
+      #sidebar button {
+        border: 1px solid white;
+        margin: 0;
+        padding: 0.5rem;
+        cursor: pointer;
+        background-color: rgb(21, 23, 28);
+        color: white;
+      }
+      #sidebar button:disabled {
+        border: 1px solid rgb(86, 86, 86);
+        margin: 0;
+        padding: 0.5rem;
+        cursor: pointer;
+        background-color: rgb(21, 23, 28);
+        color: rgb(86, 86, 86);
+      }
+      #editor,
+      #preview {
+        flex: 1;
+        height: 100%;
+        box-sizing: border-box;
+      }
+      #editor textarea {
+        box-sizing: border-box;
+        padding: 0.5rem;
+        background-color: #262539;
+        color: white;
+        width: 100%;
+        height: 100%;
+        resize: none;
+        border: none;
+        outline: none;
+        font-family: monospace;
+        font-size: 1rem;
+      }
+      #preview {
+        overflow: auto;
+      }
+      @media (orientation: portrait) {
+        body {
+          flex-direction: column;
+        }
+        #sidebar {
+          flex-direction: row;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="sidebar">
+      <button id="backButton" disabled>Назад</button>
+      <button id="forwardButton" disabled>Вперёд</button>
+      <button id="formatButton">Форматировать</button>
+    </div>
+    <div id="editor">
+      <textarea id="htmlInput" placeholder="Type HTML here..."></textarea>
+    </div>
+    <div id="preview"></div>
+
+    <script src="index.js"></script>
+  </body>
+</html>
