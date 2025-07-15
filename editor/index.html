@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <title>Live HTML Editor</title>
+    <title>Enhanced HTML Editor with Syntax Highlighting</title>
     <style>
       body {
         display: flex;
@@ -10,73 +10,690 @@
         margin: 0;
         padding: 0;
         overflow: hidden;
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+        color: #e6e6e6;
       }
+
       #sidebar {
         flex: 0;
         display: flex;
         flex-direction: column;
-        background-color: rgb(21, 23, 28);
+        background-color: rgba(21, 23, 28, 0.9);
         color: white;
+        padding: 10px;
+        box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
+        z-index: 10;
       }
+
       #sidebar button {
-        border: 1px solid white;
-        margin: 0;
-        padding: 0.5rem;
+        border: 1px solid #4a4a8a;
+        margin: 5px 0;
+        padding: 0.8rem;
         cursor: pointer;
-        background-color: rgb(21, 23, 28);
+        background: linear-gradient(to bottom, #2c3e50, #1a1a2e);
         color: white;
+        border-radius: 4px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
       }
+
+      #sidebar button:hover {
+        background: linear-gradient(to bottom, #3498db, #2980b9);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+      }
+
+      #sidebar button:active {
+        transform: translateY(1px);
+      }
+
       #sidebar button:disabled {
-        border: 1px solid rgb(86, 86, 86);
-        margin: 0;
-        padding: 0.5rem;
-        cursor: pointer;
-        background-color: rgb(21, 23, 28);
-        color: rgb(86, 86, 86);
+        background: #333;
+        color: #777;
+        cursor: not-allowed;
+        transform: none;
+        box-shadow: none;
       }
+
+      .editor-container {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        background: rgba(30, 30, 46, 0.8);
+        border-radius: 8px;
+        margin: 10px;
+        box-shadow: 0 0 20px rgba(0, 0, 0, 0.4);
+      }
+
+      .panel-header {
+        padding: 12px 15px;
+        background: rgba(25, 25, 40, 0.9);
+        border-bottom: 1px solid #444;
+        font-weight: bold;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
       #editor,
       #preview {
         flex: 1;
         height: 100%;
         box-sizing: border-box;
+        position: relative;
       }
-      #editor textarea {
+
+      .editor-wrapper {
+        position: relative;
+        height: 100%;
+      }
+
+      #htmlInput {
         box-sizing: border-box;
-        padding: 0.5rem;
-        background-color: #262539;
-        color: white;
+        padding: 15px;
+        background-color: transparent;
+        color: transparent;
         width: 100%;
         height: 100%;
         resize: none;
         border: none;
         outline: none;
-        font-family: monospace;
-        font-size: 1rem;
+        font-family: "Fira Code", "Consolas", monospace;
+        font-size: 15px;
+        line-height: 1.6;
+        caret-color: #f8f8f2;
+        position: relative;
+        z-index: 2;
       }
+
+      #syntaxHighlight {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        padding: 15px;
+        box-sizing: border-box;
+        font-family: "Fira Code", "Consolas", monospace;
+        font-size: 15px;
+        line-height: 1.6;
+        white-space: pre-wrap;
+        word-wrap: break-word;
+        overflow: auto;
+        z-index: 1;
+        background-color: #262539;
+        color: #f8f8f2;
+      }
+
       #preview {
         overflow: auto;
+        padding: 20px;
+        background: white;
+        color: #333;
       }
+
+      /* Syntax Highlighting Styles */
+      .tag {
+        color: #ff79c6;
+      }
+      .tag-name {
+        color: #ff79c6;
+      }
+      .attr {
+        color: #50fa7b;
+      }
+      .attr-value {
+        color: #f1fa8c;
+      }
+      .comment {
+        color: #6272a4;
+        font-style: italic;
+      }
+      .doctype {
+        color: #bd93f9;
+      }
+      .punctuation {
+        color: #f8f8f2;
+      }
+      .text {
+        color: #f8f8f2;
+      }
+
       @media (orientation: portrait) {
         body {
           flex-direction: column;
         }
         #sidebar {
           flex-direction: row;
+          justify-content: space-around;
+          padding: 5px;
+        }
+        #sidebar button {
+          padding: 0.5rem;
+          margin: 0 3px;
+          font-size: 12px;
+        }
+        .editor-container {
+          margin: 5px;
         }
       }
+
+      /* Scrollbar styling */
+      ::-webkit-scrollbar {
+        width: 10px;
+        height: 10px;
+      }
+
+      ::-webkit-scrollbar-track {
+        background: rgba(30, 30, 40, 0.5);
+      }
+
+      ::-webkit-scrollbar-thumb {
+        background: #44475a;
+        border-radius: 5px;
+      }
+
+      ::-webkit-scrollbar-thumb:hover {
+        background: #6272a4;
+      }
+
+      .logo {
+        text-align: center;
+        padding: 10px 0;
+        font-size: 18px;
+        font-weight: bold;
+        color: #8be9fd;
+        border-bottom: 1px solid #444;
+        margin-bottom: 10px;
+      }
     </style>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
   </head>
   <body>
     <div id="sidebar">
-      <button id="backButton" disabled>Назад</button>
-      <button id="forwardButton" disabled>Вперёд</button>
-      <button id="formatButton">Форматировать</button>
+      <div class="logo">HTML Editor</div>
+      <button id="backButton" title="Undo (Ctrl+Z)" disabled>↩ Undo</button>
+      <button id="forwardButton" title="Redo (Ctrl+Y)" disabled>↪ Redo</button>
+      <button id="formatButton" title="Format Code (Ctrl+L)">✨ Format</button>
+      <button id="clearButton" title="Clear All">❌ Clear</button>
+      <button id="saveButton" title="Save to Local Storage">💾 Save</button>
     </div>
-    <div id="editor">
-      <textarea id="htmlInput" placeholder="Type HTML here..."></textarea>
-    </div>
-    <div id="preview"></div>
 
-    <script src="index.js"></script>
+    <div class="editor-container">
+      <div class="panel-header">
+        <span>HTML Editor</span>
+        <span id="charCount">0 characters</span>
+      </div>
+      <div id="editor">
+        <div class="editor-wrapper">
+          <div id="syntaxHighlight"></div>
+          <textarea id="htmlInput" placeholder="Type HTML here..."></textarea>
+        </div>
+      </div>
+    </div>
+
+    <div class="editor-container">
+      <div class="panel-header">Preview</div>
+      <div id="preview"></div>
+    </div>
+
+    <script>
+      const htmlInput = document.getElementById("htmlInput");
+      const preview = document.getElementById("preview");
+      const sidebar = document.getElementById("sidebar");
+      const backButton = document.getElementById("backButton");
+      const forwardButton = document.getElementById("forwardButton");
+      const formatButton = document.getElementById("formatButton");
+      const clearButton = document.getElementById("clearButton");
+      const saveButton = document.getElementById("saveButton");
+      const syntaxHighlight = document.getElementById("syntaxHighlight");
+      const charCount = document.getElementById("charCount");
+
+      const MAX_HISTORY = 50;
+      let history = [];
+      let currentIndex = -1;
+      let historyVersion = 0;
+
+      let currentCallback = null;
+      let currentTimeout = null;
+
+      function initEditor() {
+        const savedContent = localStorage.getItem("htmlContent");
+        const initialContent =
+          savedContent ||
+          `<!DOCTYPE html>
+<html>
+<head>
+  <title>My Page</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 40px;
+    }
+    h1 {
+      color: #2c3e50;
+    }
+  </style>
+</head>
+<body>
+  <!-- This is a comment -->
+  <h1>Hello, world!</h1>
+  <p class="intro">Edit this HTML and see the preview update in real-time!</p>
+  <ul id="list">
+    <li>Item 1</li>
+    <li>Item 2</li>
+    <li>Item 3</li>
+  </ul>
+</body>
+</html>`;
+
+        htmlInput.value = initialContent;
+        updateCharCount();
+        updatePreview(null, true);
+        updateSyntaxHighlighting();
+
+        history = [initialContent];
+        currentIndex = 0;
+      }
+
+      function saveHistory() {
+        const content = htmlInput.value;
+        const currentVersion = ++historyVersion;
+
+        currentCallback = () => {
+          if (historyVersion !== currentVersion) return;
+
+          if (currentIndex < history.length - 1) {
+            history.splice(currentIndex + 1);
+          }
+
+          history.push(content);
+          currentIndex++;
+
+          if (history.length > MAX_HISTORY) {
+            history.shift();
+            currentIndex--;
+          }
+          backButton.disabled = currentIndex === 0;
+          forwardButton.disabled = currentIndex === history.length - 1;
+          currentCallback = null;
+          clearTimeout(currentTimeout);
+        };
+        currentTimeout = setTimeout(currentCallback, 500);
+      }
+
+      function updatePreview(_, immediate = false) {
+        preview.innerHTML = htmlInput.value;
+        localStorage.setItem("htmlContent", htmlInput.value);
+        if (immediate) return;
+        saveHistory();
+        updateCharCount();
+      }
+
+      function updateCharCount() {
+        const count = htmlInput.value.length;
+        charCount.textContent = `${count} ${
+          count === 1 ? "character" : "characters"
+        }`;
+      }
+
+      function undo() {
+        if (currentCallback) {
+          currentCallback();
+        }
+        if (currentIndex > 0) {
+          navigateHistory(currentIndex - 1);
+        }
+        backButton.disabled = currentIndex === 0;
+      }
+
+      function redo() {
+        if (currentCallback) {
+          currentCallback();
+        }
+        if (currentIndex < history.length - 1) {
+          navigateHistory(currentIndex + 1);
+        }
+        forwardButton.disabled = currentIndex === history.length - 1;
+      }
+
+      function navigateHistory(index) {
+        const start = htmlInput.selectionStart;
+        const end = htmlInput.selectionEnd;
+        setTimeout(() => {
+          htmlInput.setSelectionRange(start, end);
+        }, 1);
+        currentIndex = index;
+        htmlInput.value = history[currentIndex];
+        preview.innerHTML = history[currentIndex];
+        localStorage.setItem("htmlContent", history[currentIndex]);
+        updateSyntaxHighlighting();
+        updateCharCount();
+      }
+
+      function updateSyntaxHighlighting() {
+        const html = htmlInput.value;
+        syntaxHighlight.innerHTML = highlightHTML(html);
+      }
+
+      function highlightHTML(html) {
+        const tokens = [];
+        let i = 0;
+        let inTag = false;
+        let inComment = false;
+        let inDoctype = false;
+        let inAttribute = false;
+        let currentAttrName = "";
+        let currentQuote = "";
+        let currentToken = { type: "text", value: "" };
+
+        while (i < html.length) {
+          if (!inTag && !inComment && html.substr(i, 4) === "<!--") {
+            if (currentToken.value) tokens.push(currentToken);
+            currentToken = { type: "comment", value: "<!--" };
+            inComment = true;
+            i += 4;
+            continue;
+          }
+
+          if (inComment && html.substr(i, 3) === "-->") {
+            currentToken.value += "-->";
+            tokens.push(currentToken);
+            currentToken = { type: "text", value: "" };
+            inComment = false;
+            i += 3;
+            continue;
+          }
+
+          if (inComment) {
+            currentToken.value += html[i];
+            i++;
+            continue;
+          }
+
+          if (!inTag && html.substr(i, 9).toUpperCase() === "<!DOCTYPE") {
+            if (currentToken.value) tokens.push(currentToken);
+            currentToken = { type: "doctype", value: "<!DOCTYPE" };
+            inDoctype = true;
+            i += 9;
+            continue;
+          }
+
+          if (inDoctype && html[i] === ">") {
+            currentToken.value += ">";
+            tokens.push(currentToken);
+            currentToken = { type: "text", value: "" };
+            inDoctype = false;
+            i++;
+            continue;
+          }
+
+          if (inDoctype) {
+            currentToken.value += html[i];
+            i++;
+            continue;
+          }
+
+          if (!inTag && html[i] === "<") {
+            if (currentToken.value) tokens.push(currentToken);
+            currentToken = { type: "punctuation", value: "<" };
+            tokens.push(currentToken);
+            inTag = true;
+            currentToken = { type: "tag-name", value: "" };
+            i++;
+            continue;
+          }
+
+          if (inTag && html[i] === ">") {
+            if (currentToken.value) tokens.push(currentToken);
+            currentToken = { type: "punctuation", value: ">" };
+            tokens.push(currentToken);
+            currentToken = { type: "text", value: "" };
+            inTag = false;
+            inAttribute = false;
+            i++;
+            continue;
+          }
+
+          if (inTag && html[i] === "/" && html[i + 1] === ">") {
+            if (currentToken.value) tokens.push(currentToken);
+            currentToken = { type: "punctuation", value: "/>" };
+            tokens.push(currentToken);
+            currentToken = { type: "text", value: "" };
+            inTag = false;
+            inAttribute = false;
+            i += 2;
+            continue;
+          }
+
+          if (
+            inTag &&
+            !inAttribute &&
+            (html[i] === " " || html[i] === "\t" || html[i] === "\n")
+          ) {
+            if (currentToken.value) tokens.push(currentToken);
+            currentToken = { type: "attr", value: "" };
+            inAttribute = true;
+            i++;
+            continue;
+          }
+
+          if (
+            inAttribute &&
+            !currentQuote &&
+            (html[i] === '"' || html[i] === "'")
+          ) {
+            currentQuote = html[i];
+            if (currentToken.value) tokens.push(currentToken);
+            currentToken = { type: "punctuation", value: currentQuote };
+            tokens.push(currentToken);
+            currentToken = { type: "attr-value", value: "" };
+            i++;
+            continue;
+          }
+
+          if (inAttribute && currentQuote && html[i] === currentQuote) {
+            if (currentToken.value) tokens.push(currentToken);
+            currentToken = { type: "punctuation", value: currentQuote };
+            tokens.push(currentToken);
+            currentToken = { type: "attr", value: "" };
+            currentQuote = "";
+            i++;
+            continue;
+          }
+
+          if (inTag && html[i] === "=" && inAttribute) {
+            if (currentToken.value) tokens.push(currentToken);
+            currentToken = { type: "punctuation", value: "=" };
+            tokens.push(currentToken);
+            currentToken = { type: "attr-value", value: "" };
+            i++;
+            continue;
+          }
+
+          currentToken.value += html[i];
+          i++;
+        }
+
+        if (currentToken.value) tokens.push(currentToken);
+
+        // Generate HTML with syntax highlighting
+        let highlightedHTML = "";
+        tokens.forEach((token) => {
+          let content = token.value;
+          // Escape HTML entities except inside attribute values
+          if (token.type !== "attr-value") {
+            content = content
+              .replace(/&/g, "&amp;")
+              .replace(/</g, "&lt;")
+              .replace(/>/g, "&gt;")
+              .replace(/"/g, "&quot;")
+              .replace(/'/g, "&#039;");
+          }
+          highlightedHTML += `<span class="${token.type}">${content}</span>`;
+        });
+
+        return highlightedHTML;
+      }
+
+      function formatHTML(html) {
+        try {
+          const tokens = [];
+          let i = 0;
+
+          while (i < html.length) {
+            if (html[i] === "<") {
+              let tag = "";
+              do {
+                tag += html[i];
+                i++;
+              } while (i < html.length && html[i] !== ">");
+              if (i < html.length) tag += html[i++];
+              tokens.push({ type: "tag", value: tag });
+            } else {
+              let text = "";
+              while (i < html.length && html[i] !== "<") {
+                text += html[i];
+                i++;
+              }
+              tokens.push({ type: "text", value: text });
+            }
+          }
+
+          let output = "";
+          let indent = 0;
+          const voidElements = [
+            "area",
+            "base",
+            "br",
+            "col",
+            "embed",
+            "hr",
+            "img",
+            "input",
+            "link",
+            "meta",
+            "param",
+            "source",
+            "track",
+            "wbr",
+          ];
+
+          for (let j = 0; j < tokens.length; j++) {
+            const token = tokens[j];
+            if (token.type === "tag") {
+              const tag = token.value;
+              const isClosing = tag.startsWith("</");
+              const isSelfClosing =
+                tag.endsWith("/>") ||
+                voidElements.some((ve) =>
+                  tag.match(new RegExp(`^<${ve}\\s|^<${ve}>`, "i"))
+                );
+              const isVoid = voidElements.some((ve) =>
+                tag.match(new RegExp(`^<${ve}\\s|^<${ve}>`, "i"))
+              );
+
+              if (isClosing) {
+                indent = Math.max(0, indent - 1);
+                output += "  ".repeat(indent) + tag + "\n";
+              } else if (isSelfClosing || isVoid) {
+                output += "  ".repeat(indent) + tag + "\n";
+              } else {
+                output += "  ".repeat(indent) + tag + "\n";
+                indent++;
+              }
+            } else {
+              const lines = token.value
+                .split("\n")
+                .filter((l) => l.trim() !== "");
+              for (const line of lines) {
+                output += "  ".repeat(indent) + line.trim() + "\n";
+              }
+            }
+          }
+
+          return output.trim();
+        } catch (e) {
+          console.error("Formatting error:", e);
+          return html;
+        }
+      }
+
+      function formatCurrentContent() {
+        const content = htmlInput.value;
+        const formatted = formatHTML(content);
+        htmlInput.value = formatted;
+        updatePreview();
+        updateSyntaxHighlighting();
+      }
+
+      function clearEditor() {
+        if (confirm("Are you sure you want to clear the editor?")) {
+          htmlInput.value = "";
+          updatePreview();
+          updateSyntaxHighlighting();
+          updateCharCount();
+        }
+      }
+
+      function saveContent() {
+        localStorage.setItem("htmlContent", htmlInput.value);
+        alert("Content saved to local storage!");
+      }
+
+      document.addEventListener("keydown", (e) => {
+        if (
+          (e.ctrlKey || e.metaKey) &&
+          !e.altKey &&
+          !e.shiftKey &&
+          e.key === "z"
+        ) {
+          e.preventDefault();
+          undo();
+        } else if ((e.ctrlKey || e.metaKey) && e.key === "y") {
+          e.preventDefault();
+          redo();
+        } else if ((e.ctrlKey || e.metaKey) && e.key === "l") {
+          e.preventDefault();
+          formatCurrentContent();
+        } else if (e.key === "Tab" && document.activeElement === htmlInput) {
+          e.preventDefault();
+          const start = htmlInput.selectionStart;
+          const end = htmlInput.selectionEnd;
+          htmlInput.value =
+            htmlInput.value.substring(0, start) +
+            "  " +
+            htmlInput.value.substring(end);
+          updatePreview();
+          updateSyntaxHighlighting();
+          setTimeout(() => {
+            htmlInput.setSelectionRange(start + 2, start + 2);
+          }, 1);
+        }
+      });
+
+      function syncScroll() {
+        syntaxHighlight.scrollTop = htmlInput.scrollTop;
+        syntaxHighlight.scrollLeft = htmlInput.scrollLeft;
+      }
+
+      initEditor();
+      htmlInput.addEventListener("input", () => {
+        updatePreview();
+        updateSyntaxHighlighting();
+      });
+      htmlInput.addEventListener("scroll", syncScroll);
+      backButton.addEventListener("click", undo);
+      forwardButton.addEventListener("click", redo);
+      formatButton.addEventListener("click", formatCurrentContent);
+      clearButton.addEventListener("click", clearEditor);
+      saveButton.addEventListener("click", saveContent);
+    </script>
   </body>
 </html>
