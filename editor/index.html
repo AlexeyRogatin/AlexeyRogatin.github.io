@@ -130,7 +130,6 @@
 
       #preview {
         overflow: auto;
-        padding: 20px;
         background: white;
         color: #333;
       }
@@ -222,7 +221,6 @@
       <button id="forwardButton" title="Redo (Ctrl+Y)" disabled>↪ Redo</button>
       <button id="formatButton" title="Format Code (Ctrl+L)">✨ Format</button>
       <button id="clearButton" title="Clear All">❌ Clear</button>
-      <button id="saveButton" title="Save to Local Storage">💾 Save</button>
     </div>
 
     <div class="editor-container">
@@ -233,14 +231,18 @@
       <div id="editor">
         <div class="editor-wrapper">
           <div id="syntaxHighlight"></div>
-          <textarea id="htmlInput" placeholder="Type HTML here..."></textarea>
+          <textarea
+            id="htmlInput"
+            placeholder="Type HTML here..."
+            spellcheck="false"
+          ></textarea>
         </div>
       </div>
     </div>
 
     <div class="editor-container">
       <div class="panel-header">Preview</div>
-      <div id="preview"></div>
+      <iframe id="preview"></iframe>
     </div>
 
     <script>
@@ -251,7 +253,6 @@
       const forwardButton = document.getElementById("forwardButton");
       const formatButton = document.getElementById("formatButton");
       const clearButton = document.getElementById("clearButton");
-      const saveButton = document.getElementById("saveButton");
       const syntaxHighlight = document.getElementById("syntaxHighlight");
       const charCount = document.getElementById("charCount");
 
@@ -267,31 +268,13 @@
         const savedContent = localStorage.getItem("htmlContent");
         const initialContent =
           savedContent ||
-          `<!DOCTYPE html>
-<html>
-<head>
-  <title>My Page</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      margin: 40px;
-    }
-    h1 {
-      color: #2c3e50;
-    }
-  </style>
-</head>
-<body>
-  <!-- This is a comment -->
-  <h1>Hello, world!</h1>
-  <p class="intro">Edit this HTML and see the preview update in real-time!</p>
-  <ul id="list">
-    <li>Item 1</li>
-    <li>Item 2</li>
-    <li>Item 3</li>
-  </ul>
-</body>
-</html>`;
+          `<h1>Hello, world!</h1>
+<p class="intro">Edit this HTML and see the preview update in real-time!</p>
+<ul id="list">
+  <li>Item 1</li>
+  <li>Item 2</li>
+  <li>Item 3</li>
+</ul>`;
 
         htmlInput.value = initialContent;
         updateCharCount();
@@ -329,7 +312,7 @@
       }
 
       function updatePreview(_, immediate = false) {
-        preview.innerHTML = htmlInput.value;
+        preview.srcdoc = htmlInput.value;
         localStorage.setItem("htmlContent", htmlInput.value);
         if (immediate) return;
         saveHistory();
@@ -351,6 +334,7 @@
           navigateHistory(currentIndex - 1);
         }
         backButton.disabled = currentIndex === 0;
+        forwardButton.disabled = false;
       }
 
       function redo() {
@@ -371,7 +355,7 @@
         }, 1);
         currentIndex = index;
         htmlInput.value = history[currentIndex];
-        preview.innerHTML = history[currentIndex];
+        preview.srcdoc = history[currentIndex];
         localStorage.setItem("htmlContent", history[currentIndex]);
         updateSyntaxHighlighting();
         updateCharCount();
@@ -478,6 +462,7 @@
             (html[i] === " " || html[i] === "\t" || html[i] === "\n")
           ) {
             if (currentToken.value) tokens.push(currentToken);
+            tokens.push({ type: "punctuation", value: html[i] });
             currentToken = { type: "attr", value: "" };
             inAttribute = true;
             i++;
@@ -628,9 +613,11 @@
       function formatCurrentContent() {
         const content = htmlInput.value;
         const formatted = formatHTML(content);
-        htmlInput.value = formatted;
-        updatePreview();
-        updateSyntaxHighlighting();
+        if (content !== formatted) {
+          htmlInput.value = formatted;
+          updatePreview();
+          updateSyntaxHighlighting();
+        }
       }
 
       function clearEditor() {
@@ -640,11 +627,6 @@
           updateSyntaxHighlighting();
           updateCharCount();
         }
-      }
-
-      function saveContent() {
-        localStorage.setItem("htmlContent", htmlInput.value);
-        alert("Content saved to local storage!");
       }
 
       document.addEventListener("keydown", (e) => {
@@ -675,6 +657,8 @@
           setTimeout(() => {
             htmlInput.setSelectionRange(start + 2, start + 2);
           }, 1);
+        } else if ((e.ctrlKey || e.metaKey) && e.key === "s") {
+          e.preventDefault();
         }
       });
 
@@ -693,7 +677,6 @@
       forwardButton.addEventListener("click", redo);
       formatButton.addEventListener("click", formatCurrentContent);
       clearButton.addEventListener("click", clearEditor);
-      saveButton.addEventListener("click", saveContent);
     </script>
   </body>
 </html>
